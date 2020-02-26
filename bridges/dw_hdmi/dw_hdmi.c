@@ -249,7 +249,8 @@ static const struct drm_connector_helper_funcs
 };
 
 static int
-dw_hdmi_bridge_attach(struct drm_bridge *bridge)
+dw_hdmi_bridge_attach(struct drm_bridge *bridge,
+    enum drm_bridge_attach_flags flags)
 {
 	struct dw_hdmi_softc *sc;
 
@@ -707,7 +708,7 @@ dw_hdmi_add_bridge(struct dw_hdmi_softc *sc)
 {
 
 	sc->bridge.funcs = &dw_hdmi_bridge_funcs;
-	drm_bridge_attach(&sc->encoder, &sc->bridge, NULL);
+	drm_bridge_attach(&sc->encoder, &sc->bridge, NULL, 0);
 }
 
 static void

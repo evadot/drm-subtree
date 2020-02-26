@@ -264,7 +264,8 @@ static const struct drm_connector_helper_funcs anx6345_connector_helper_funcs = 
 };
 
 static int
-anx6345_bridge_attach(struct drm_bridge *bridge)
+anx6345_bridge_attach(struct drm_bridge *bridge,
+    enum drm_bridge_attach_flags flags)
 {
 	struct anx6345_softc *sc;
 
@@ -347,7 +348,7 @@ anx6345_add_bridge(device_t dev, struct drm_encoder *encoder, struct drm_device 
 
 	sc->encoder = *encoder;
 	sc->bridge.funcs = &anx6345_bridge_funcs;
-	drm_bridge_attach(&sc->encoder, &sc->bridge, NULL);
+	drm_bridge_attach(&sc->encoder, &sc->bridge, NULL, 0);
 
 	return (0);
 }
