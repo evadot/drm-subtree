@@ -2399,7 +2399,7 @@ EXPORT_SYMBOL(drm_mode_put_tile_group);
  * tile group or NULL if not found.
  */
 struct drm_tile_group *drm_mode_get_tile_group(struct drm_device *dev,
-					       char topology[8])
+					       const char topology[8])
 {
 	struct drm_tile_group *tg;
 	int id;
@@ -2429,7 +2429,7 @@ EXPORT_SYMBOL(drm_mode_get_tile_group);
  * new tile group or NULL.
  */
 struct drm_tile_group *drm_mode_create_tile_group(struct drm_device *dev,
-						  char topology[8])
+						  const char topology[8])
 {
 	struct drm_tile_group *tg;
 	int ret;
