@@ -33,7 +33,7 @@ __FBSDID("$FreeBSD$");
 
 #include <linux/compat.h>
 
-static MALLOC_DEFINE(M_DRMKPI_CURRENT, "drmkpcurrent", "LinuxKPI task structure");
+static MALLOC_DEFINE(M_DRMKPI_CURRENT, "drmkpicurrent", "DRMKPI task structure");
 
 int
 drmkpi_alloc_current(struct thread *td, int flags)
