@@ -10,3 +10,7 @@ To update:
  - git fetch drm-subtree
  - git subtree pull --prefix sys/dev/drm/ drm-subtree master
  - Check if there is any new patches in extra_patches and git am them
+
+DRMKPI todos:
+ - Remove struct task_struct and usage of td->td_lkpi_task
+ - Finish checking that it doesn't conflict with linuxkpi
