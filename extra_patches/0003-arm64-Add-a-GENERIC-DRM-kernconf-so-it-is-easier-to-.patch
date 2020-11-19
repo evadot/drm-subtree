@@ -1,0 +1,40 @@
+From 75f3563508835154d1bde732f92997baf47fc8f6 Mon Sep 17 00:00:00 2001
+From: Emmanuel Vadot <manu@FreeBSD.org>
+Date: Thu, 19 Nov 2020 11:46:20 +0100
+Subject: [PATCH 3/3] arm64: Add a GENERIC-DRM kernconf so it is easier to test
+ it for now
+Content-Type: text/plain; charset=UTF-8
+
+---
+ sys/arm64/conf/GENERIC-DRM | 19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
+ create mode 100644 sys/arm64/conf/GENERIC-DRM
+
+diff --git a/sys/arm64/conf/GENERIC-DRM b/sys/arm64/conf/GENERIC-DRM
+new file mode 100644
+index 000000000000..618b2036f913
+--- /dev/null
++++ b/sys/arm64/conf/GENERIC-DRM
+@@ -0,0 +1,19 @@
++#
++# GENERIC-DRM
++#
++# Custom kernel for arm64 plus DRM
++#
++# $FreeBSD$
++
++#NO_UNIVERSE
++
++include		GENERIC
++ident		GENERIC-DRM
++
++# DRM Support
++options		COMPAT_DRMKPI
++options		COMPAT_LINUXKPI
++
++device		drm
++device		aw_de2_drm
++device		dw_hdmi
+-- 
+2.29.2
+
