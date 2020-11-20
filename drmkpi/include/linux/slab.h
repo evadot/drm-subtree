@@ -41,7 +41,7 @@
 #include <linux/types.h>
 #include <linux/gfp.h>
 
-MALLOC_DECLARE(M_KMALLOC);
+MALLOC_DECLARE(M_DRMKMALLOC);
 
 #define	kvmalloc(size)			kmalloc(size, 0)
 #define	kvzalloc(size, flags)		kmalloc(size, (flags) | __GFP_ZERO)
@@ -109,50 +109,50 @@ linux_check_m_flags(gfp_t flags)
 static inline void *
 kmalloc(size_t size, gfp_t flags)
 {
-	return (malloc(size, M_KMALLOC, linux_check_m_flags(flags)));
+	return (malloc(size, M_DRMKMALLOC, linux_check_m_flags(flags)));
 }
 
 static inline void *
 kcalloc(size_t n, size_t size, gfp_t flags)
 {
 	flags |= __GFP_ZERO;
-	return (mallocarray(n, size, M_KMALLOC, linux_check_m_flags(flags)));
+	return (mallocarray(n, size, M_DRMKMALLOC, linux_check_m_flags(flags)));
 }
 
 static inline void *
 __vmalloc(size_t size, gfp_t flags, int other)
 {
-	return (malloc(size, M_KMALLOC, linux_check_m_flags(flags)));
+	return (malloc(size, M_DRMKMALLOC, linux_check_m_flags(flags)));
 }
 
 static inline void *
 vmalloc_32(size_t size)
 {
-	return (contigmalloc(size, M_KMALLOC, M_WAITOK, 0, UINT_MAX, 1, 1));
+	return (contigmalloc(size, M_DRMKMALLOC, M_WAITOK, 0, UINT_MAX, 1, 1));
 }
 
 static inline void *
 kmalloc_array(size_t n, size_t size, gfp_t flags)
 {
-	return (mallocarray(n, size, M_KMALLOC, linux_check_m_flags(flags)));
+	return (mallocarray(n, size, M_DRMKMALLOC, linux_check_m_flags(flags)));
 }
 
 static inline void *
 kvmalloc_array(size_t n, size_t size, gfp_t flags)
 {
-	return (mallocarray(n, size, M_KMALLOC, linux_check_m_flags(flags)));
+	return (mallocarray(n, size, M_DRMKMALLOC, linux_check_m_flags(flags)));
 }
 
 static inline void *
 krealloc(void *ptr, size_t size, gfp_t flags)
 {
-	return (realloc(ptr, size, M_KMALLOC, linux_check_m_flags(flags)));
+	return (realloc(ptr, size, M_DRMKMALLOC, linux_check_m_flags(flags)));
 }
 
 static inline void
 kfree(const void *ptr)
 {
-	free(__DECONST(void *, ptr), M_KMALLOC);
+	free(__DECONST(void *, ptr), M_DRMKMALLOC);
 }
 
 static inline size_t
