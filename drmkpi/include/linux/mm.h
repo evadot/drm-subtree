@@ -46,7 +46,7 @@
 #define	PAGE_ALIGN(x)	ALIGN(x, PAGE_SIZE)
 
 /*
- * Make sure our LinuxKPI defined virtual memory flags don't conflict
+ * Make sure our DRMKPI defined virtual memory flags don't conflict
  * with the ones defined by FreeBSD:
  */
 CTASSERT((VM_PROT_ALL & -(1 << 8)) == 0);

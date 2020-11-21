@@ -59,7 +59,7 @@
 #define	__GFP_NO_KSWAPD	0
 #define	__GFP_KSWAPD_RECLAIM	0
 #define	__GFP_WAIT	M_WAITOK
-#define	__GFP_DMA32	(1U << 24) /* LinuxKPI only */
+#define	__GFP_DMA32	(1U << 24) /* DRMKPI only */
 #define	__GFP_BITS_SHIFT 25
 #define	__GFP_BITS_MASK	((1 << __GFP_BITS_SHIFT) - 1)
 #define	__GFP_NOFAIL	M_WAITOK

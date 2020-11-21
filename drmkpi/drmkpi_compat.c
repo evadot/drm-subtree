@@ -142,6 +142,6 @@ drmkpi_iminor(struct inode *inode)
  * NOTE: Linux frequently uses "unsigned long" for pointer to integer
  * conversion and vice versa, where in FreeBSD "uintptr_t" would be
  * used. Assert these types have the same size, else some parts of the
- * LinuxKPI may not work like expected:
+ * DRMKPI may not work like expected:
  */
 CTASSERT(sizeof(unsigned long) == sizeof(uintptr_t));

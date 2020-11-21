@@ -49,7 +49,7 @@ __FBSDID("$FreeBSD$");
 #include <drmkpi/srcu.h>
 
 /*
- * By defining CONFIG_NO_RCU_SKIP LinuxKPI RCU locks and asserts will
+ * By defining CONFIG_NO_RCU_SKIP DRMKPI RCU locks and asserts will
  * not be skipped during panic().
  */
 #ifdef CONFIG_NO_RCU_SKIP
@@ -80,7 +80,7 @@ struct linux_epoch_record {
  * Verify that "struct rcu_head" is big enough to hold "struct
  * callback_head". This has been done to avoid having to add special
  * compile flags for including ck_epoch.h to all clients of the
- * LinuxKPI.
+ * DRMKPI.
  */
 CTASSERT(sizeof(struct rcu_head) == sizeof(struct callback_head));
 

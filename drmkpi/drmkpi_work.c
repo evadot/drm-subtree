@@ -96,11 +96,11 @@ drmkpi_update_state(atomic_t *v, const uint8_t *pstate)
 }
 
 /*
- * A LinuxKPI task is allowed to free itself inside the callback function
+ * A DRMKPI task is allowed to free itself inside the callback function
  * and cannot safely be referred after the callback function has
  * completed. This function gives the drmkpi_work_fn() function a hint,
  * that the task is not going away and can have its state checked
- * again. Without this extra hint LinuxKPI tasks cannot be serialized
+ * again. Without this extra hint DRMKPI tasks cannot be serialized
  * accross multiple worker threads.
  */
 static bool

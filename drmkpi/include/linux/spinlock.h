@@ -47,7 +47,7 @@ typedef struct {
 } spinlock_t;
 
 /*
- * By defining CONFIG_SPIN_SKIP LinuxKPI spinlocks and asserts will be
+ * By defining CONFIG_SPIN_SKIP DRMKPI spinlocks and asserts will be
  * skipped during panic(). By default it is disabled due to
  * performance reasons.
  */

@@ -49,22 +49,22 @@ typedef unsigned long pgprot_t;
 
 #define page	vm_page
 
-#define	LINUXKPI_PROT_VALID (1 << 3)
-#define	LINUXKPI_CACHE_MODE_SHIFT 4
+#define	DRMKPI_PROT_VALID (1 << 3)
+#define	DRMKPI_CACHE_MODE_SHIFT 4
 
-CTASSERT((VM_PROT_ALL & -LINUXKPI_PROT_VALID) == 0);
+CTASSERT((VM_PROT_ALL & -DRMKPI_PROT_VALID) == 0);
 
 static inline pgprot_t
 cachemode2protval(vm_memattr_t attr)
 {
-	return ((attr << LINUXKPI_CACHE_MODE_SHIFT) | LINUXKPI_PROT_VALID);
+	return ((attr << DRMKPI_CACHE_MODE_SHIFT) | DRMKPI_PROT_VALID);
 }
 
 static inline vm_memattr_t
 pgprot2cachemode(pgprot_t prot)
 {
-	if (prot & LINUXKPI_PROT_VALID)
-		return (prot >> LINUXKPI_CACHE_MODE_SHIFT);
+	if (prot & DRMKPI_PROT_VALID)
+		return (prot >> DRMKPI_CACHE_MODE_SHIFT);
 	else
 		return (VM_MEMATTR_DEFAULT);
 }
@@ -85,7 +85,7 @@ pgprot2cachemode(pgprot_t prot)
 /*
  * Modifying PAGE_MASK in the above way breaks trunc_page, round_page,
  * and btoc macros. Therefore, redefine them in a way that makes sense
- * so the LinuxKPI consumers don't get totally broken behavior.
+ * so the DRMKPI consumers don't get totally broken behavior.
  */
 #undef	btoc
 #define	btoc(x)	(((vm_offset_t)(x) + PAGE_SIZE - 1) >> PAGE_SHIFT)

@@ -187,7 +187,7 @@ free_irq(unsigned int irq, void *device)
 #endif
 
 /*
- * LinuxKPI tasklet support
+ * DRMKPI tasklet support
  */
 typedef void tasklet_func_t(unsigned long);
 

@@ -58,7 +58,7 @@ __FBSDID("$FreeBSD$");
 
 #include "iicbus_if.h"
 
-/* Redefine msleep because of linuxkpi */
+/* Redefine msleep because of drmkpi */
 #undef msleep
 #define	msleep(chan, mtx, pri, wmesg, timo)				\
 	_sleep((chan), &(mtx)->lock_object, (pri), (wmesg),		\

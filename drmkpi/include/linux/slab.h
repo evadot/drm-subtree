@@ -102,7 +102,7 @@ linux_check_m_flags(gfp_t flags)
 	else if ((flags & m) == m)
 		flags &= ~M_WAITOK;
 
-	/* mask away LinuxKPI specific flags */
+	/* mask away DRMKPI specific flags */
 	return (flags & GFP_NATIVE_MASK);
 }
 

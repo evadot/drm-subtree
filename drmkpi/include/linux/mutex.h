@@ -42,7 +42,7 @@
 #include <drmkpi/mutex.h>
 
 /*
- * By defining CONFIG_NO_MUTEX_SKIP LinuxKPI mutexes and asserts will
+ * By defining CONFIG_NO_MUTEX_SKIP DRMKPI mutexes and asserts will
  * not be skipped during panic().
  */
 #ifdef CONFIG_NO_MUTEX_SKIP
