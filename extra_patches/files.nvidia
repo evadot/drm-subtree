@@ -1,0 +1,8 @@
+dev/drm/nvidia/tegra_drm_if.m	optional	drm
+dev/drm/nvidia/tegra_drm_subr.c	optional	drm compile-with "${DRM_C}"
+dev/drm/nvidia/tegra_host1x.c	optional	drm compile-with "${DRM_C}"
+dev/drm/nvidia/tegra_hdmi.c	optional	drm compile-with "${DRM_C}"
+dev/drm/nvidia/tegra_dc_if.m	optional	drm
+dev/drm/nvidia/tegra_dc.c	optional	drm compile-with "${DRM_C}"
+dev/drm/nvidia/tegra_fb.c	optional	drm compile-with "${DRM_C}"
+dev/drm/nvidia/tegra_bo.c	optional	drm compile-with "${DRM_C}"
