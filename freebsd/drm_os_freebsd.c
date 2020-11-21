@@ -40,8 +40,6 @@ __FBSDID("$FreeBSD$");
 #include <drm/drmP.h>
 #include "../..//drm_internal.h"
 
-const char *fb_mode_option = NULL;
-
 MALLOC_DEFINE(DRM_MEM_DRIVER, "drm_driver", "DRM DRIVER Data Structures");
 MALLOC_DEFINE(DRM_MEM_KMS, "drm_kms", "DRM KMS Data Structures");
 

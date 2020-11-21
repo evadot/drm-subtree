@@ -29,33 +29,6 @@ __FBSDID("$FreeBSD$");
 MALLOC_DECLARE(DRM_MEM_DRIVER);
 MALLOC_DECLARE(DRM_MEM_KMS);
 
-extern const char *fb_mode_option;
-
-#define DRM_WAIT_ON( ret, queue, timeout, condition )		\
-do {								\
-	DECLARE_WAITQUEUE(entry, current);			\
-	unsigned long end = ticks + (timeout);		\
-	add_wait_queue(&(queue), &entry);			\
-								\
-	for (;;) {						\
-		__set_current_state(TASK_INTERRUPTIBLE);	\
-		if (condition)					\
-			break;					\
-		if (time_after_eq(ticks, end)) {		\
-			ret = -EBUSY;				\
-			break;					\
-		}						\
-		schedule_timeout((HZ/100 > 1) ? HZ/100 : 1);	\
-		if (signal_pending(current)) {			\
-			ret = -EINTR;				\
-			break;					\
-		}						\
-	}							\
-	__set_current_state(TASK_RUNNING);			\
-	remove_wait_queue(&(queue), &entry);			\
-} while (0)
-
-
 struct drm_minor;
 struct drm_device;
 int drm_fbsd_cdev_create(struct drm_minor *minor);
