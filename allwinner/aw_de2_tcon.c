@@ -382,11 +382,11 @@ aw_crtc_mode_set_nofb(struct drm_crtc *crtc)
 	if (__drm_debug & DRM_UT_DRIVER)
 		aw_de2_tcon_dump_regs(sc);
 	clk_get_freq(sc->clk_tcon, &freq);
-	DRM_DEBUG_DRIVER("%s: Current freq: %lu, Changing to %lu\n",
-	    __func__, freq, mode->crtc_clock * 1000);
+	DRM_DEBUG_DRIVER("%s: Current freq: %ju, Changing to %ju\n",
+	    __func__, (uintmax_t)freq, (uintmax_t)mode->crtc_clock * 1000);
 	clk_set_freq(sc->clk_tcon, mode->crtc_clock * 1000, CLK_SET_ROUND_ANY);
 	clk_get_freq(sc->clk_tcon, &freq);
-	DRM_DEBUG_DRIVER("%s: New freq: %lu\n", __func__, freq);
+	DRM_DEBUG_DRIVER("%s: New freq: %ju\n", __func__, (uintmax_t)freq);
 	clk_enable(sc->clk_tcon);
 	AW_DE2_TCON_LOCK(sc);
 

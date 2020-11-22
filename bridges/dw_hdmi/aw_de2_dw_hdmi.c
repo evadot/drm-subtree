@@ -419,6 +419,7 @@ dw_hdmi_bridge_enable(struct drm_bridge *bridge)
 	    "hdisplay: %d\n"
 	    "vdisplay: %d\n"
 	    "htotal: %d\n"
+	    "vtotal: %d\n"
 	    "hsync_start: %d\n"
 	    "hsync_end: %d\n"
 	    "vsync_start: %d\n"
