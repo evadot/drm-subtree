@@ -37,10 +37,11 @@
 #include <sys/lock.h>
 #include <sys/mutex.h>
 #include <sys/kdb.h>
+#include <sys/proc.h>
+#include <sys/sched.h>
 
 #include <linux/compiler.h>
 #include <linux/rwlock.h>
-#include <linux/bottom_half.h>
 
 typedef struct {
 	struct mtx m;
@@ -61,7 +62,7 @@ typedef struct {
 	if (SPIN_SKIP())			\
 		break;				\
 	mtx_lock(&(_l)->m);			\
-	drmkpi_local_bh_disable();		\
+	sched_pin();		\
 } while (0)
 
 #define	spin_lock_bh(_l) do {			\
@@ -75,7 +76,7 @@ typedef struct {
 #define	spin_unlock(_l)	do {			\
 	if (SPIN_SKIP())			\
 		break;				\
-	drmkpi_local_bh_enable();		\
+	sched_unpin();		\
 	mtx_unlock(&(_l)->m);			\
 } while (0)
 
@@ -94,7 +95,7 @@ typedef struct {
 	} else {				\
 		__ret = mtx_trylock(&(_l)->m);	\
 		if (likely(__ret != 0))		\
-			drmkpi_local_bh_disable();	\
+			sched_pin();	\
 	}					\
 	__ret;					\
 })
@@ -106,7 +107,7 @@ typedef struct {
 	if (SPIN_SKIP())			\
 		break;				\
 	mtx_lock_flags(&(_l)->m, MTX_DUPOK);	\
-	drmkpi_local_bh_disable();		\
+	sched_pin();		\
 } while (0)
 
 #define	spin_lock_irqsave(_l, flags) do {	\
