@@ -54,31 +54,31 @@
 } while (0)
 
 #define	DEFINE_WAIT_FUNC(name, function)				\
-	wait_queue_t name = {						\
+	wait_queue_entry_t name = {					\
 		.private = current,					\
 		.func = function,					\
-		.task_list = LINUX_LIST_HEAD_INIT(name.task_list)	\
+		.entry = LINUX_LIST_HEAD_INIT(name.entry)		\
 	}
 
 #define	DEFINE_WAIT(name) \
 	DEFINE_WAIT_FUNC(name, drmkpi_autoremove_wake_function)
 
 #define	DECLARE_WAITQUEUE(name, task)					\
-	wait_queue_t name = {						\
+	wait_queue_entry_t name = {					\
 		.private = task,					\
-		.task_list = LINUX_LIST_HEAD_INIT(name.task_list)	\
+		.entry = LINUX_LIST_HEAD_INIT(name.entry)		\
 	}
 
 #define	DECLARE_WAIT_QUEUE_HEAD(name)					\
 	wait_queue_head_t name = {					\
-		.task_list = LINUX_LIST_HEAD_INIT(name.task_list),	\
+		.entry = LINUX_LIST_HEAD_INIT(name.entry),		\
 	};								\
 	MTX_SYSINIT(name, &(name).lock.m, spin_lock_name("wqhead"), MTX_DEF)
 
 #define	init_waitqueue_head(wqh) do {					\
 	mtx_init(&(wqh)->lock.m, spin_lock_name("wqhead"),		\
 	    NULL, MTX_DEF | MTX_NEW | MTX_NOWITNESS);			\
-	INIT_LIST_HEAD(&(wqh)->task_list);				\
+	INIT_LIST_HEAD(&(wqh)->head);					\
 } while (0)
 
 #define	wake_up(wqh)							\

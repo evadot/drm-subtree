@@ -33,37 +33,28 @@
 #ifndef __DRMKPI_WAIT_H__
 #define	__DRMKPI_WAIT_H__
 
-struct wait_queue;
+struct wait_queue_entry;
 struct wait_queue_head;
 
-#define	wait_queue_entry wait_queue
-
-typedef struct wait_queue wait_queue_t;
 typedef struct wait_queue_entry wait_queue_entry_t;
 typedef struct wait_queue_head wait_queue_head_t;
 
-typedef int wait_queue_func_t(wait_queue_t *, unsigned int, int, void *);
+typedef int wait_queue_func_t(wait_queue_entry_t *, unsigned int, int, void *);
 
 /*
  * Many API consumers directly reference these fields and those of
  * wait_queue_head.
  */
-struct wait_queue {
+struct wait_queue_entry {
 	unsigned int flags;	/* always 0 */
 	void *private;
 	wait_queue_func_t *func;
-	union {
-		struct list_head task_list; /* < v4.13 */
-		struct list_head entry; /* >= v4.13 */
-	};
+	struct list_head entry;
 };
 
 struct wait_queue_head {
 	spinlock_t lock;
-	union {
-		struct list_head task_list; /* < v4.13 */
-		struct list_head head; /* >= v4.13 */
-	};
+	struct list_head head;
 };
 
 /*
@@ -74,11 +65,11 @@ extern wait_queue_func_t drmkpi_autoremove_wake_function;
 
 void drmkpi_wake_up(wait_queue_head_t *, unsigned int, int, bool);
 
-int drmkpi_wait_event_common(wait_queue_head_t *, wait_queue_t *, int,
+int drmkpi_wait_event_common(wait_queue_head_t *, wait_queue_entry_t *, int,
     unsigned int, spinlock_t *);
 
-void drmkpi_prepare_to_wait(wait_queue_head_t *, wait_queue_t *, int);
-void drmkpi_finish_wait(wait_queue_head_t *, wait_queue_t *);
+void drmkpi_prepare_to_wait(wait_queue_head_t *, wait_queue_entry_t *, int);
+void drmkpi_finish_wait(wait_queue_head_t *, wait_queue_entry_t *);
 
 struct task_struct;
 bool drmkpi_wake_up_state(struct task_struct *, unsigned int);

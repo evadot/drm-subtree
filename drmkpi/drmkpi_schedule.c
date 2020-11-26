@@ -113,7 +113,7 @@ drmkpi_signal_pending(struct task_struct *task)
 }
 
 int
-drmkpi_autoremove_wake_function(wait_queue_t *wq, unsigned int state, int flags,
+drmkpi_autoremove_wake_function(wait_queue_entry_t *wq, unsigned int state, int flags,
     void *key __unused)
 {
 	struct task_struct *task;
@@ -121,18 +121,18 @@ drmkpi_autoremove_wake_function(wait_queue_t *wq, unsigned int state, int flags,
 
 	task = wq->private;
 	if ((ret = wake_up_task(task, state)) != 0)
-		list_del_init(&wq->task_list);
+		list_del_init(&wq->entry);
 	return (ret);
 }
 
 void
 drmkpi_wake_up(wait_queue_head_t *wqh, unsigned int state, int nr, bool locked)
 {
-	wait_queue_t *pos, *next;
+	wait_queue_entry_t *pos, *next;
 
 	if (!locked)
 		spin_lock(&wqh->lock);
-	list_for_each_entry_safe(pos, next, &wqh->task_list, task_list) {
+	list_for_each_entry_safe(pos, next, &wqh->head, entry) {
 		if (pos->func == NULL) {
 			if (wake_up_task(pos->private, state) != 0 && --nr == 0)
 				break;
@@ -146,31 +146,31 @@ drmkpi_wake_up(wait_queue_head_t *wqh, unsigned int state, int nr, bool locked)
 }
 
 void
-drmkpi_prepare_to_wait(wait_queue_head_t *wqh, wait_queue_t *wq, int state)
+drmkpi_prepare_to_wait(wait_queue_head_t *wqh, wait_queue_entry_t *wq, int state)
 {
 
 	spin_lock(&wqh->lock);
-	if (list_empty(&wq->task_list))
-		list_add(&wqh->task_list, &wq->task_list);
+	if (list_empty(&wq->entry))
+		list_add(&wqh->head, &wq->entry);
 	set_task_state(current, state);
 	spin_unlock(&wqh->lock);
 }
 
 void
-drmkpi_finish_wait(wait_queue_head_t *wqh, wait_queue_t *wq)
+drmkpi_finish_wait(wait_queue_head_t *wqh, wait_queue_entry_t *wq)
 {
 
 	spin_lock(&wqh->lock);
 	set_task_state(current, TASK_RUNNING);
-	if (!list_empty(&wq->task_list)) {
-		list_del(&wq->task_list);
-		INIT_LIST_HEAD(&wq->task_list);
+	if (!list_empty(&wq->entry)) {
+		list_del(&wq->entry);
+		INIT_LIST_HEAD(&wq->entry);
 	}
 	spin_unlock(&wqh->lock);
 }
 
 int
-drmkpi_wait_event_common(wait_queue_head_t *wqh, wait_queue_t *wq, int timeout,
+drmkpi_wait_event_common(wait_queue_head_t *wqh, wait_queue_entry_t *wq, int timeout,
     unsigned int state, spinlock_t *lock)
 {
 	struct task_struct *task;
