@@ -66,6 +66,8 @@ drm_gem_cma_destruct(struct drm_gem_cma_object *bo)
 
 	for (i = 0; i < bo->npages; i++) {
 		m = bo->m[i];
+		if (m == NULL)
+			break;
 		vm_page_lock(m);
 		m->flags &= ~PG_FICTITIOUS;
 		vm_page_unwire_noq(m);
@@ -235,6 +237,18 @@ drm_gem_cma_create_with_handle(struct drm_file *file, struct drm_device *drm,
 /*
  * Exported functions 
  */
+
+vm_page_t *
+drm_gem_cma_get_pages(struct drm_gem_object *gem_obj, int *npages)
+{
+	struct drm_gem_cma_object *bo;
+
+	bo = container_of(gem_obj, struct drm_gem_cma_object, gem_obj);
+
+	*npages = bo->npages;
+
+	return (bo->m);
+}
 
 void
 drm_gem_cma_free_object(struct drm_gem_object *gem_obj)

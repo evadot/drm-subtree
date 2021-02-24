@@ -47,6 +47,8 @@ void drm_gem_cma_free_object(struct drm_gem_object *gem_obj);
 int drm_gem_cma_dumb_create(struct drm_file *file, struct drm_device *drm_dev,
     struct drm_mode_create_dumb *args);
 int drm_gem_cma_mmap(struct file *file, struct vm_area_struct *vma);
+vm_page_t *drm_gem_cma_get_pages(struct drm_gem_object *gem_obj,
+    int *npages);
 
 extern const struct vm_operations_struct drm_gem_cma_vm_ops;
 

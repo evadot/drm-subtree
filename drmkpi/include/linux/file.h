@@ -41,13 +41,11 @@
 
 #include <linux/fs.h>
 
-
 static inline void
 put_unused_fd(unsigned int fd)
 {
 	struct file *file;
 
-	panic("%s: Not implemented yet.", __func__);
 	if (fget_unlocked(curthread->td_proc->p_fd, fd,
 	    &cap_no_rights, &file) != 0) {
 		return;
@@ -79,26 +77,59 @@ get_unused_fd(void)
 	return (fd);
 }
 
+static int gcnt = 0;
+
 static inline int
 get_unused_fd_flags(int flags)
 {
-	struct file *file;
+	struct filedesc *fdp;
+	struct proc *p;
 	int rv;
 	int fd;
 
-	panic("%s: Not implemented yet.", __func__);
-	rv = falloc(curthread, &file, &fd, flags);
+	p = curthread->td_proc;
+
+	/*
+	 * Not sure how to use flags here,
+	 * UF_EXCLOSE set later in fd_install().
+	 */
+	KASSERT(flags == UF_EXCLOSE, ("Unexpected flags"));
+
+	fdp = p->p_fd;
+
+	FILEDESC_XLOCK(fdp);
+	rv = fdalloc(curthread, 0, &fd);
+	FILEDESC_XUNLOCK(fdp);
 	if (rv)
 		return (-rv);
-	/* drop the extra reference */
-	fdrop(file, curthread);
+
 	return (fd);
 }
 
 static inline void
-fd_install(unsigned int fd, struct file *file)
+fd_install(unsigned int fd, struct file *filp)
 {
-	panic("%s: Not implemented yet.", __func__);
+	struct filedescent *fde;
+	struct fdescenttbl *fdt;
+	struct filecaps *fcaps;
+	struct filedesc *fdp;
+	struct proc *p;
+
+	p = curthread->td_proc;
+	fdp = p->p_fd;
+
+	FILEDESC_XLOCK(fdp);
+	fdt = atomic_load_ptr(&fdp->fd_files);
+	fde = &fdt->fdt_ofiles[fd];
+	fde->fde_file = filp;
+	fde->fde_flags = UF_EXCLOSE;
+
+	fcaps = &fde->fde_caps;
+	CAP_ALL(&fcaps->fc_rights);
+	fcaps->fc_ioctls = NULL;
+	fcaps->fc_nioctls = -1;
+	fcaps->fc_fcntls = CAP_FCNTL_ALL;
+	FILEDESC_XUNLOCK(fdp);
 }
 
 static inline void

@@ -124,15 +124,19 @@ drm_gem_destroy(struct drm_device *dev)
 int drm_gem_object_init(struct drm_device *dev,
 			struct drm_gem_object *obj, size_t size)
 {
+#ifdef __linux__
 	struct file *filp;
+#endif
 
 	drm_gem_private_object_init(dev, obj, size);
 
+#ifdef __linux__
 	filp = shmem_file_setup("drm mm object", size, VM_NORESERVE);
 	if (IS_ERR(filp))
 		return PTR_ERR(filp);
 
 	obj->filp = filp;
+#endif
 
 	return 0;
 }
