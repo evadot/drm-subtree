@@ -1236,7 +1236,7 @@ static void complete_signaling(struct drm_device *dev,
 	if (install_fds) {
 		for (i = 0; i < num_fences; i++)
 			fd_install(fence_state[i].fd,
-				   fence_state[i].sync_file->file);
+				   fence_state[i].sync_file->sf_file);
 
 		kfree(fence_state);
 		return;
@@ -1260,7 +1260,7 @@ static void complete_signaling(struct drm_device *dev,
 
 	for (i = 0; i < num_fences; i++) {
 		if (fence_state[i].sync_file)
-			fput(fence_state[i].sync_file->file);
+			fput(fence_state[i].sync_file->sf_file);
 		if (fence_state[i].fd >= 0)
 			put_unused_fd(fence_state[i].fd);
 
