@@ -62,21 +62,21 @@ MALLOC_DECLARE(M_DRMKMALLOC);
  * Prefix some functions with linux_ to avoid namespace conflict
  * with the OpenSolaris code in the kernel.
  */
-#define	kmem_cache		linux_kmem_cache
-#define	kmem_cache_create(...)	linux_kmem_cache_create(__VA_ARGS__)
-#define	kmem_cache_alloc(...)	linux_kmem_cache_alloc(__VA_ARGS__)
-#define	kmem_cache_free(...)	linux_kmem_cache_free(__VA_ARGS__)
-#define	kmem_cache_destroy(...) linux_kmem_cache_destroy(__VA_ARGS__)
+#define	kmem_cache		drmkpi_kmem_cache
+#define	kmem_cache_create(...)	drmkpi_kmem_cache_create(__VA_ARGS__)
+#define	kmem_cache_alloc(...)	drmkpi_kmem_cache_alloc(__VA_ARGS__)
+#define	kmem_cache_free(...)	drmkpi_kmem_cache_free(__VA_ARGS__)
+#define	kmem_cache_destroy(...) drmkpi_kmem_cache_destroy(__VA_ARGS__)
 
 #define	KMEM_CACHE(__struct, flags)					\
-	linux_kmem_cache_create(#__struct, sizeof(struct __struct),	\
+	drmkpi_kmem_cache_create(#__struct, sizeof(struct __struct),	\
 	__alignof(struct __struct), (flags), NULL)
 
-typedef void linux_kmem_ctor_t (void *);
+typedef void drmkpi_kmem_ctor_t (void *);
 
-struct linux_kmem_cache {
+struct drmkpi_kmem_cache {
 	uma_zone_t cache_zone;
-	linux_kmem_ctor_t *cache_ctor;
+	drmkpi_kmem_ctor_t *cache_ctor;
 	unsigned cache_flags;
 	unsigned cache_size;
 };
@@ -161,34 +161,34 @@ ksize(const void *ptr)
 	return (malloc_usable_size(ptr));
 }
 
-extern struct linux_kmem_cache *linux_kmem_cache_create(const char *name,
-    size_t size, size_t align, unsigned flags, linux_kmem_ctor_t *ctor);
+extern struct drmkpi_kmem_cache *drmkpi_kmem_cache_create(const char *name,
+    size_t size, size_t align, unsigned flags, drmkpi_kmem_ctor_t *ctor);
 
 static inline void *
-linux_kmem_cache_alloc(struct linux_kmem_cache *c, gfp_t flags)
+drmkpi_kmem_cache_alloc(struct drmkpi_kmem_cache *c, gfp_t flags)
 {
 	return (uma_zalloc_arg(c->cache_zone, c,
 	    linux_check_m_flags(flags)));
 }
 
 static inline void *
-kmem_cache_zalloc(struct linux_kmem_cache *c, gfp_t flags)
+kmem_cache_zalloc(struct drmkpi_kmem_cache *c, gfp_t flags)
 {
 	return (uma_zalloc_arg(c->cache_zone, c,
 	    linux_check_m_flags(flags | M_ZERO)));
 }
 
-extern void linux_kmem_cache_free_rcu(struct linux_kmem_cache *, void *);
+extern void drmkpi_kmem_cache_free_rcu(struct drmkpi_kmem_cache *, void *);
 
 static inline void
-linux_kmem_cache_free(struct linux_kmem_cache *c, void *m)
+drmkpi_kmem_cache_free(struct drmkpi_kmem_cache *c, void *m)
 {
 	if (unlikely(c->cache_flags & SLAB_TYPESAFE_BY_RCU))
-		linux_kmem_cache_free_rcu(c, m);
+		drmkpi_kmem_cache_free_rcu(c, m);
 	else
 		uma_zfree(c->cache_zone, m);
 }
 
-extern void linux_kmem_cache_destroy(struct linux_kmem_cache *);
+extern void drmkpi_kmem_cache_destroy(struct drmkpi_kmem_cache *);
 
 #endif	/* __DRMKPI_LINUX_SLAB_H__ */
