@@ -352,6 +352,10 @@ struct drm_file {
 #if IS_ENABLED(CONFIG_DRM_LEGACY)
 	unsigned long lock_count; /* DRI1 legacy lock count */
 #endif
+
+	struct selinfo	drm_rsel;
+	struct mtx	drm_mtx;
+	int		ev_cnt;
 };
 
 /**
@@ -388,6 +392,7 @@ ssize_t drm_read(struct file *filp, char __user *buffer,
 		 size_t count, loff_t *offset);
 int drm_release(struct inode *inode, struct file *filp);
 __poll_t drm_poll(struct file *filp, struct poll_table_struct *wait);
+int drm_kqfilter(struct file *filp, struct knote *kn);
 int drm_event_reserve_init_locked(struct drm_device *dev,
 				  struct drm_file *file_priv,
 				  struct drm_pending_event *p,
