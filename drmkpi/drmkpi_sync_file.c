@@ -24,11 +24,20 @@ static fo_close_t syncfile_fop_close;
 static fo_ioctl_t syncfile_fop_ioctl;
 static fo_poll_t syncfile_fop_poll;
 
+static int
+syncfile_fo_fill_kinfo(struct file *fp, struct kinfo_file *kif,
+    struct filedesc *fdp)
+{
+
+	return (0);
+}
+
 static struct fileops syncfile_fileops = {
 	.fo_close = syncfile_fop_close,
 	.fo_ioctl = syncfile_fop_ioctl,
 	.fo_poll = syncfile_fop_poll,
 	.fo_flags = DFLAG_PASSABLE,
+	.fo_fill_kinfo = syncfile_fo_fill_kinfo,
 };
 
 #define	DTYPE_SYNCFILE		101	/* XXX */
