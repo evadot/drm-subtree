@@ -510,6 +510,22 @@ static int drm_syncobj_file_close(struct file *file, struct thread *td)
 	drm_syncobj_put(syncobj);
 	return 0;
 }
+static __inline int
+drm_syncobj_file_stat(struct file *fp, struct stat *sb,
+    struct ucred *active_cred, struct thread *td)
+{
+
+	return (0);
+}
+
+static __inline int
+drm_syncobj_fo_fill_kinfo(struct file *fp, struct kinfo_file *kif,
+    struct filedesc *fdp)
+{
+
+	return (0);
+}
+
 #endif
 
 #ifdef __linux__
@@ -519,6 +535,8 @@ static const struct file_operations drm_syncobj_file_fops = {
 #elif defined(__FreeBSD__)
 static struct fileops drm_syncobj_file_fops = {
 	.fo_close = drm_syncobj_file_close,
+	.fo_stat = drm_syncobj_file_stat,
+	.fo_fill_kinfo = drm_syncobj_fo_fill_kinfo,
 };
 #endif
 
@@ -693,7 +711,7 @@ static int drm_syncobj_export_sync_file(struct drm_file *file_private,
 		goto err_put_fd;
 	}
 
-	fd_install(fd, sync_file->file);
+	fd_install(fd, sync_file->sf_file);
 
 	*p_fd = fd;
 	return 0;
