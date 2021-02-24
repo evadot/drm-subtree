@@ -57,6 +57,7 @@ struct dma_fence {
 	TAILQ_HEAD(, dma_fence_cb)	f_callbacks;
 	struct cv			f_cv;
 	struct rcu_head			f_rcu;
+	struct rcu_head			rcu;
 };
 
 enum dma_fence_flag_bits {

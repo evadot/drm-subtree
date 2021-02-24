@@ -56,6 +56,18 @@
 
 #define	HZ	hz
 
+extern uint64_t drmkpi_nsec2hz_rem;
+extern uint64_t drmkpi_nsec2hz_div;
+extern uint64_t drmkpi_nsec2hz_max;
+
+extern uint64_t drmkpi_usec2hz_rem;
+extern uint64_t drmkpi_usec2hz_div;
+extern uint64_t drmkpi_usec2hz_max;
+
+extern uint64_t drmkpi_msec2hz_rem;
+extern uint64_t drmkpi_msec2hz_div;
+extern uint64_t drmkpi_msec2hz_max;
+
 static inline int
 timespec_to_jiffies(const struct timespec *ts)
 {
@@ -72,12 +84,11 @@ timespec_to_jiffies(const struct timespec *ts)
 static inline int
 msecs_to_jiffies(uint64_t msec)
 {
-	uint64_t msec_max, result;
+	uint64_t result;
 
-	msec_max = -1ULL / (uint64_t)hz;
-	if (msec > msec_max)
-		msec = msec_max;
-	result = howmany(msec * (uint64_t)hz, 1000ULL);
+	if (msec > drmkpi_msec2hz_max)
+		msec = drmkpi_msec2hz_max;
+	result = howmany(msec * drmkpi_msec2hz_rem, drmkpi_msec2hz_div);
 	if (result > MAX_JIFFY_OFFSET)
 		result = MAX_JIFFY_OFFSET;
 
@@ -87,12 +98,11 @@ msecs_to_jiffies(uint64_t msec)
 static inline int
 usecs_to_jiffies(uint64_t usec)
 {
-	uint64_t usec_max, result;
+	uint64_t result;
 
-	usec_max = -1ULL / (uint64_t)hz;
-	if (usec > usec_max)
-		usec = usec_max;
-	result = howmany(usec * (uint64_t)hz, 1000000ULL);
+	if (usec > drmkpi_usec2hz_max)
+		usec = drmkpi_usec2hz_max;
+	result = howmany(usec * drmkpi_usec2hz_rem, drmkpi_usec2hz_div);
 	if (result > MAX_JIFFY_OFFSET)
 		result = MAX_JIFFY_OFFSET;
 
@@ -102,23 +112,24 @@ usecs_to_jiffies(uint64_t usec)
 static inline uint64_t
 nsecs_to_jiffies64(uint64_t nsec)
 {
-	uint64_t nsec_max, result;
 
-	nsec_max = -1ULL / (uint64_t)hz;
-	if (nsec > nsec_max)
-		nsec = nsec_max;
-	result = howmany(nsec * (uint64_t)hz, 1000000000ULL);
-	if (result > MAX_JIFFY_OFFSET)
-		result = MAX_JIFFY_OFFSET;
-
-	return (result);
+	if (nsec > drmkpi_nsec2hz_max)
+		nsec = drmkpi_nsec2hz_max;
+	return (howmany(nsec * drmkpi_nsec2hz_rem, drmkpi_nsec2hz_div));
 }
 
-static inline uint64_t
-nsecs_to_jiffies(uint64_t n)
+static inline unsigned long
+nsecs_to_jiffies(uint64_t nsec)
 {
 
-	return (usecs_to_jiffies(howmany(n, 1000ULL)));
+	if (sizeof(unsigned long) >= sizeof(uint64_t)) {
+		if (nsec > drmkpi_nsec2hz_max)
+			nsec = drmkpi_nsec2hz_max;
+	} else {
+		if (nsec > (drmkpi_nsec2hz_max >> 32))
+			nsec = (drmkpi_nsec2hz_max >> 32);
+	}
+	return (howmany(nsec * drmkpi_nsec2hz_rem, drmkpi_nsec2hz_div));
 }
 
 static inline uint64_t
@@ -140,6 +151,16 @@ get_jiffies_64(void)
 {
 
 	return ((uint64_t)(unsigned int)ticks);
+}
+
+static inline int
+linux_timer_jiffies_until(int expires)
+{
+	int delta = expires - jiffies;
+	/* guard against already expired values */
+	if (delta < 1)
+		delta = 1;
+	return (delta);
 }
 
 #endif	/* _LINUX_JIFFIES_H_ */
