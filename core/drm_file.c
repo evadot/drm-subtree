@@ -143,6 +143,9 @@ struct drm_file *drm_file_alloc(struct drm_minor *minor)
 
 	mutex_init(&file->event_read_lock);
 
+	mtx_init(&file->drm_mtx, "drm_mtx", NULL, MTX_DEF);
+	knlist_init_mtx(&file->drm_rsel.si_note, &file->drm_mtx);
+
 	if (drm_core_check_feature(dev, DRIVER_GEM))
 		drm_gem_open(dev, file);
 
@@ -188,6 +191,7 @@ static void drm_events_release(struct drm_file *file_priv)
 
 	/* Remove unconsumed events */
 	list_for_each_entry_safe(e, et, &file_priv->event_list, link) {
+		atomic_add_int(&file_priv->ev_cnt, -1);
 		list_del(&e->link);
 		kfree(e);
 	}
@@ -510,6 +514,7 @@ ssize_t drm_read(struct file *filp, char __user *buffer,
 					struct drm_pending_event, link);
 			file_priv->event_space += e->event->length;
 			list_del(&e->link);
+			atomic_add_int(&file_priv->ev_cnt, -1);
 		}
 		spin_unlock_irq(&dev->event_lock);
 
@@ -537,6 +542,13 @@ put_back_event:
 				spin_lock_irq(&dev->event_lock);
 				file_priv->event_space -= length;
 				list_add(&e->link, &file_priv->event_list);
+				atomic_add_int(&file_priv->ev_cnt, 1);
+
+				mtx_lock(&file_priv->drm_mtx);
+				KNOTE_LOCKED(&file_priv->drm_rsel.si_note, 0);
+				selwakeup(&file_priv->drm_rsel);
+				mtx_unlock(&file_priv->drm_mtx);
+
 				spin_unlock_irq(&dev->event_lock);
 				wake_up_interruptible(&file_priv->event_wait);
 				break;
@@ -607,6 +619,65 @@ __poll_t drm_poll(struct file *filp, struct poll_table_struct *wait)
 #endif
 }
 EXPORT_SYMBOL(drm_poll);
+
+static void
+drm_fstub_kqdetach(struct knote *kn)
+{
+	struct drm_file *file_priv;
+
+	file_priv = kn->kn_hook;
+	knlist_remove(&file_priv->drm_rsel.si_note, kn, 0);
+}
+
+static int
+drm_fstub_kqread(struct knote *kn, long hint)
+{
+	struct drm_file *file_priv;
+	struct drm_device *dev;
+	int rv;
+
+	file_priv = kn->kn_hook;
+	dev = file_priv->minor->dev;
+
+	kn->kn_data = file_priv->ev_cnt;
+	if (kn->kn_data)
+		rv = 1;
+	else
+		rv = 0;
+
+	return (rv);
+}
+
+static struct filterops drm_fstub_read_filterops = {
+	.f_isfd =	1,
+	.f_attach =	NULL,
+	.f_detach =	drm_fstub_kqdetach,
+	.f_event =	drm_fstub_kqread,
+};
+
+int
+drm_kqfilter(struct file *filp, struct knote *kn)
+{
+	struct drm_file *file_priv;
+
+	file_priv = filp->private_data;
+
+	switch(kn->kn_filter) {
+	case EVFILT_READ:
+		kn->kn_fop = &drm_fstub_read_filterops;
+		break;
+	case EVFILT_WRITE:
+		panic("here");
+	default:
+		return(EINVAL);
+	}
+
+	kn->kn_hook = file_priv;
+	knlist_add(&file_priv->drm_rsel.si_note, kn, 0);
+
+	return (0);
+}
+EXPORT_SYMBOL(drm_kqfilter);
 
 /**
  * drm_event_reserve_init_locked - init a DRM event and reserve space for it
@@ -754,11 +825,16 @@ void drm_send_event_locked(struct drm_device *dev, struct drm_pending_event *e)
 	list_del(&e->pending_link);
 	list_add_tail(&e->link,
 		      &e->file_priv->event_list);
+	atomic_add_int(&e->file_priv->ev_cnt, 1);
 	wake_up_interruptible(&e->file_priv->event_wait);
 #ifdef __FreeBSD__
 	selwakeup(&e->file_priv->event_poll);
 #endif
 
+	mtx_lock(&e->file_priv->drm_mtx);
+	KNOTE_LOCKED(&e->file_priv->drm_rsel.si_note, 0);
+	selwakeup(&e->file_priv->drm_rsel);
+	mtx_unlock(&e->file_priv->drm_mtx);
 }
 EXPORT_SYMBOL(drm_send_event_locked);
 
