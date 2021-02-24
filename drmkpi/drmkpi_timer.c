@@ -37,17 +37,17 @@ __FBSDID("$FreeBSD$");
 
 unsigned long drmkpi_timer_hz_mask;
 
-static uint64_t drmkpi_nsec2hz_rem;
-static uint64_t drmkpi_nsec2hz_div = 1000000000ULL;
-static uint64_t drmkpi_nsec2hz_max;
+uint64_t drmkpi_nsec2hz_rem;
+uint64_t drmkpi_nsec2hz_div = 1000000000ULL;
+uint64_t drmkpi_nsec2hz_max;
 
-static uint64_t drmkpi_usec2hz_rem;
-static uint64_t drmkpi_usec2hz_div = 1000000ULL;
-static uint64_t drmkpi_usec2hz_max;
+uint64_t drmkpi_usec2hz_rem;
+uint64_t drmkpi_usec2hz_div = 1000000ULL;
+uint64_t drmkpi_usec2hz_max;
 
-static uint64_t drmkpi_msec2hz_rem;
-static uint64_t drmkpi_msec2hz_div = 1000ULL;
-static uint64_t drmkpi_msec2hz_max;
+uint64_t drmkpi_msec2hz_rem;
+uint64_t drmkpi_msec2hz_div = 1000ULL;
+uint64_t drmkpi_msec2hz_max;
 
 static inline int
 timer_jiffies_until(int expires)
