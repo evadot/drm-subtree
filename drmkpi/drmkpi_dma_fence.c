@@ -304,6 +304,9 @@ dma_fence_ensure_signal_enabled(struct dma_fence *fence)
 	if (test_and_set_bit(DMA_FENCE_FLAG_ENABLE_SIGNAL_BIT, &fence->flags))
 		return 0;
 
+	if (fence->ops->enable_signaling == NULL)
+		return 0;
+
 	/* Otherwise, note that we've called it and call it.  */
 	if (!(*fence->ops->enable_signaling)(fence)) {
 		/* If it failed, signal and return -ENOENT.  */
@@ -676,12 +679,18 @@ out0:	return ret;
 long
 dma_fence_wait_timeout(struct dma_fence *fence, bool intr, long timeout)
 {
+	long rv;
 
 	MPASS(dma_fence_referenced_p(fence));
 	MPASS(timeout >= 0);
 	MPASS(timeout < MAX_SCHEDULE_TIMEOUT);
 
-	return (*fence->ops->wait)(fence, intr, timeout);
+	if (fence->ops->wait)
+		rv = fence->ops->wait(fence, intr, timeout);
+	else
+		rv = dma_fence_default_wait(fence, intr, timeout);
+
+	return (rv);
 }
 
 /*
@@ -826,6 +835,7 @@ static const struct dma_fence_ops dma_fence_stub_ops = {
 
 struct dma_fence *dma_fence_get_stub(void)
 {
+	spin_lock(&dma_fence_stub_lock);
 	if (!dma_fence_stub.ops) {
 		dma_fence_init(&dma_fence_stub,
 			       &dma_fence_stub_ops,
