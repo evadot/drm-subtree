@@ -1,8 +1,48 @@
+From 525ccc859d9fa7d61a55e6852f8df3be068856a2 Mon Sep 17 00:00:00 2001
+From: Emmanuel Vadot <manu@FreeBSD.org>
+Date: Thu, 18 Mar 2021 10:26:55 +0100
+Subject: [PATCH] Hook DRM to the build
+Content-Type: text/plain; charset=UTF-8
+
+---
+ sys/arm64/conf/GENERIC-DRM | 21 +++++++++++++++++++++
+ sys/conf/kern.pre.mk       | 15 +++++++++++++++
+ sys/conf/options           |  1 +
+ 3 files changed, 37 insertions(+)
+ create mode 100644 sys/arm64/conf/GENERIC-DRM
+
+diff --git a/sys/arm64/conf/GENERIC-DRM b/sys/arm64/conf/GENERIC-DRM
+new file mode 100644
+index 00000000000..db1fffb1729
+--- /dev/null
++++ b/sys/arm64/conf/GENERIC-DRM
+@@ -0,0 +1,21 @@
++#
++# GENERIC-DRM
++#
++# Custom kernel for arm64 plus DRM
++#
++# $FreeBSD$
++
++#NO_UNIVERSE
++
++include		GENERIC
++ident		GENERIC-DRM
++
++# DRM Support
++options		COMPAT_DRMKPI
++options		COMPAT_LINUXKPI
++
++device		drm
++device		aw_de2_drm
++device		dw_hdmi
++files		"../../dev/drm/extra_patches/files"
++files		"../../dev/drm/extra_patches/files.aw"
 diff --git a/sys/conf/kern.pre.mk b/sys/conf/kern.pre.mk
-index e13af7cea00..f86fae0607a 100644
+index 75f59a90484..3f9fc2c17ae 100644
 --- a/sys/conf/kern.pre.mk
 +++ b/sys/conf/kern.pre.mk
-@@ -306,6 +306,21 @@ MLXFW_C=	${OFED_C_NOIMP} \
+@@ -310,6 +310,21 @@ MLXFW_C=	${OFED_C_NOIMP} \
  		-I${SRCTOP}/sys/contrib/xz-embedded/linux/lib/xz \
  		${.IMPSRC}
  
@@ -25,7 +65,7 @@ index e13af7cea00..f86fae0607a 100644
  SYSTEM_CFILES= config.c env.c hints.c vnode_if.c
  SYSTEM_DEP= Makefile ${SYSTEM_OBJS}
 diff --git a/sys/conf/options b/sys/conf/options
-index 9df829867b6..50a86909d9d 100644
+index b6956193d84..7c00aaa634d 100644
 --- a/sys/conf/options
 +++ b/sys/conf/options
 @@ -95,6 +95,7 @@ COMPAT_CLOUDABI32	opt_dontuse.h
@@ -36,3 +76,6 @@ index 9df829867b6..50a86909d9d 100644
  COMPILING_LINT	opt_global.h
  CY_PCI_FASTINTR
  DEADLKRES	opt_watchdog.h
+-- 
+2.30.1
+
