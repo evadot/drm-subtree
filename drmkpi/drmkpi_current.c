@@ -43,7 +43,8 @@ drmkpi_alloc_current(struct thread *td, int flags)
 
 	MPASS(td->td_lkpi_task == NULL);
 
-	ts = malloc(sizeof(*ts), M_DRMKPI_CURRENT, flags | M_ZERO);
+	flags &= ~M_WAITOK;
+	ts = malloc(sizeof(*ts), M_DRMKPI_CURRENT, flags | M_ZERO | M_NOWAIT);
 	if (ts == NULL)
 		return (ENOMEM);
 
