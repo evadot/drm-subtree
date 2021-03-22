@@ -4,7 +4,7 @@ From a checkout freebsd git repo :
 - git checkout -b drm-base-subtree
 - git remote add drm-subtree https://github.com/evadot/drm-subtree.git
 - git subtree add --prefix sys/dev/drm/ drm-subtree master
-- git am sys/dev/drm/*
+- git am sys/dev/drm/extra_patches/*.patch
 
 To update:
  - git fetch drm-subtree
