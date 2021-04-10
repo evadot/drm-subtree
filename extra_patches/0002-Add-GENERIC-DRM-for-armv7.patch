@@ -1,0 +1,40 @@
+From cad0d55e8c7ebdbe2f5411495d3e524893769674 Mon Sep 17 00:00:00 2001
+From: Emmanuel Vadot <manu@FreeBSD.org>
+Date: Sat, 10 Apr 2021 21:56:31 +0200
+Subject: [PATCH 1/2] Add GENERIC-DRM for armv7
+
+---
+ sys/arm/conf/GENERIC-DRM | 21 +++++++++++++++++++++
+ 1 file changed, 21 insertions(+)
+ create mode 100644 sys/arm/conf/GENERIC-DRM
+
+diff --git a/sys/arm/conf/GENERIC-DRM b/sys/arm/conf/GENERIC-DRM
+new file mode 100644
+index 00000000000..df1fe081f26
+--- /dev/null
++++ b/sys/arm/conf/GENERIC-DRM
+@@ -0,0 +1,21 @@
++#
++# GENERIC-DRM
++#
++# Custom kernel for armv7 plus DRM
++#
++# $FreeBSD$
++
++#NO_UNIVERSE
++
++include		GENERIC
++ident		GENERIC-DRM
++
++# DRM Support
++options		COMPAT_DRMKPI
++options		COMPAT_LINUXKPI
++
++device		drm
++device		aw_de2_drm
++device		dw_hdmi
++files		"../../dev/drm/extra_patches/files"
++files		"../../dev/drm/extra_patches/files.aw"
+-- 
+2.31.1
+
