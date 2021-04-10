@@ -70,17 +70,24 @@ struct tcon_config {
 
 static struct tcon_config a83t_tcon_lcd = {
 	.model = A83T_TCON_LCD,
-	.name = "Allwinner DE2 LCD TCON",
+	.name = "Allwinner A83T DE2 LCD TCON",
 	.clk_parent_name = "pll_video0-2x",
 };
 
 static struct tcon_config a83t_tcon_tv = {
 	.model = A83T_TCON_TV,
-	.name = "Allwinner DE2 TV TCON",
+	.name = "Allwinner A83T DE2 TV TCON",
 	.clk_parent_name = "pll_video1",
 };
 
+static struct tcon_config h3_tcon_tv = {
+	.model = A83T_TCON_TV,
+	.name = "Allwinner H3 DE2 TV TCON",
+	.clk_parent_name = "pll_video",
+};
+
 static struct ofw_compat_data compat_data[] = {
+	{ "allwinner,sun8i-h3-tcon-tv",	(uintptr_t)&h3_tcon_tv },
 	{ "allwinner,sun8i-a83t-tcon-lcd",	(uintptr_t)&a83t_tcon_lcd },
 	{ "allwinner,sun8i-a83t-tcon-tv",	(uintptr_t)&a83t_tcon_tv },
 	{ NULL,					0 }
