@@ -266,6 +266,7 @@
 #define	 DW_HDMI_I2CM_SOFTRSTZ_RST	(1 << 0)
 
 #define	DW_HDMI_I2CM_SEGPTR		0x7E0A
+<<<<<<< HEAD
 
 /* HDMI PHY register with access through I2C */
 #define	DW_HDMI_PHY_I2C_CKCALCTRL	0x5
