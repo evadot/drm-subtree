@@ -1,5 +1,11 @@
 /*-
+ * SPDX-License-Identifier: BSD-2-Clause
+ *
+ * Copyright (c) 2020-2021 Ruslan Bukin <br@bsdpad.com>
  * Copyright (c) 2019 Emmanuel Vadot <manu@FreeBSD.org>
+ *
+ * Portions of this work were supported by Innovate UK project 105694,
+ * "Digital Security by Design (DSbD) Technology Platform Prototype".
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -10,15 +16,15 @@
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
  *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
- * IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
- * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
@@ -41,6 +47,7 @@ __FBSDID("$FreeBSD$");
 #include <dev/ofw/ofw_bus_subr.h>
 
 #include <dev/extres/clk/clk.h>
+#include <dev/extres/syscon/syscon.h>
 #include <dev/extres/hwreset/hwreset.h>
 
 #include <drm/drm_atomic_helper.h>
@@ -56,7 +63,10 @@ __FBSDID("$FreeBSD$");
 #include "dw_hdmi_if.h"
 #include "dw_hdmi_phy_if.h"
 
+#include "syscon_if.h"
 #include "iicbus_if.h"
+
+#define	DW_HDMI_MAX_PORTS	32
 
 /* Redefine msleep because of drmkpi */
 #undef msleep
@@ -107,6 +117,13 @@ struct aw_dw_hdmi_softc {
 
 struct rk_dw_hdmi_softc {
 	struct dw_hdmi_softc base_sc;
+	struct syscon		*grf;
+#define	RK_CLK_NENTRIES	5
+	clk_t clk[RK_CLK_NENTRIES];
+};
+
+static char * rk_clk_table[RK_CLK_NENTRIES] = {
+	"iahb", "isfr", "vpll", "grf", "cec",
 };
 
 static struct resource_spec dw_hdmi_spec[] = {
@@ -140,6 +157,7 @@ static enum drm_connector_status
 dw_hdmi_connector_detect(struct drm_connector *connector, bool force)
 {
 	struct dw_hdmi_softc *sc;
+	uint32_t reg;
 
 	sc = container_of(connector, struct dw_hdmi_softc, connector);
 
@@ -147,7 +165,9 @@ dw_hdmi_connector_detect(struct drm_connector *connector, bool force)
 		if (DW_HDMI_PHY_DETECT_HPD(sc->phydev))
 			return (connector_status_connected);
 	} else {
-		/* Handle internal phy */
+		reg = dw_hdmi_read(sc, DW_HDMI_PHY_STAT0);
+		if (reg & HDMI_PHY_STAT0_HPD)
+			return (connector_status_connected);
 	}
 
 	return (connector_status_disconnected);
@@ -411,6 +431,235 @@ dw_hdmi_dump_fc_regs(struct dw_hdmi_softc *sc)
 }
 
 static void
+dw_hdmi_phy_sel_data_en_pol(struct dw_hdmi_softc *sc, uint8_t enable)
+{
+	uint8_t reg;
+
+	reg = dw_hdmi_read(sc, DW_HDMI_PHY_CONF0);
+	reg &= ~HDMI_PHY_CONF0_SELDATAENPOL_MASK;
+	reg |= (enable << HDMI_PHY_CONF0_SELDATAENPOL_OFFSET);
+	dw_hdmi_write(sc, DW_HDMI_PHY_CONF0, reg);
+}
+
+static void
+dw_hdmi_phy_sel_interface_control(struct dw_hdmi_softc *sc, uint8_t enable)
+{
+	uint8_t reg;
+
+	reg = dw_hdmi_read(sc, DW_HDMI_PHY_CONF0);
+	reg &= ~HDMI_PHY_CONF0_SELDIPIF_MASK;
+	reg |= (enable << HDMI_PHY_CONF0_SELDIPIF_OFFSET);
+	dw_hdmi_write(sc, DW_HDMI_PHY_CONF0, reg);
+}
+
+static void
+dw_hdmi_phy_enable_tmds(struct dw_hdmi_softc *sc, uint8_t enable)
+{
+	uint8_t reg;
+
+	reg = dw_hdmi_read(sc, DW_HDMI_PHY_CONF0);
+	reg &= ~HDMI_PHY_CONF0_ENTMDS_MASK;
+	reg |= (enable << HDMI_PHY_CONF0_ENTMDS_OFFSET);
+	dw_hdmi_write(sc, DW_HDMI_PHY_CONF0, reg);
+}
+
+static void
+dw_hdmi_phy_enable_power(struct dw_hdmi_softc *sc, uint8_t enable)
+{
+	uint8_t reg;
+
+	reg = dw_hdmi_read(sc, DW_HDMI_PHY_CONF0);
+	reg &= ~HDMI_PHY_CONF0_PDZ_MASK;
+	reg |= (enable << HDMI_PHY_CONF0_PDZ_OFFSET);
+	dw_hdmi_write(sc, DW_HDMI_PHY_CONF0, reg);
+}
+
+static void
+dw_hdmi_phy_enable_spare(struct dw_hdmi_softc *sc, uint8_t enable)
+{
+	uint8_t reg;
+
+	reg = dw_hdmi_read(sc, DW_HDMI_PHY_CONF0);
+	reg &= ~HDMI_PHY_CONF0_SPARECTRL_MASK;
+	reg |= (enable << HDMI_PHY_CONF0_SPARECTRL_OFFSET);
+	dw_hdmi_write(sc, DW_HDMI_PHY_CONF0, reg);
+}
+
+static void
+dw_hdmi_phy_gen2_txpwron(struct dw_hdmi_softc *sc, uint8_t enable)
+{
+	uint8_t reg;
+
+	reg = dw_hdmi_read(sc, DW_HDMI_PHY_CONF0);
+	reg &= ~HDMI_PHY_CONF0_GEN2_TXPWRON_MASK;
+	reg |= (enable << HDMI_PHY_CONF0_GEN2_TXPWRON_OFFSET);
+	dw_hdmi_write(sc, DW_HDMI_PHY_CONF0, reg);
+}
+
+static void
+dw_hdmi_phy_gen2_pddq(struct dw_hdmi_softc *sc, uint8_t enable)
+{
+	uint8_t reg;
+
+	reg = dw_hdmi_read(sc, DW_HDMI_PHY_CONF0);
+	reg &= ~HDMI_PHY_CONF0_GEN2_PDDQ_MASK;
+	reg |= (enable << HDMI_PHY_CONF0_GEN2_PDDQ_OFFSET);
+	dw_hdmi_write(sc, DW_HDMI_PHY_CONF0, reg);
+}
+
+static inline void
+dw_hdmi_phy_test_clear(struct dw_hdmi_softc *sc, unsigned char bit)
+{
+	uint8_t val;
+
+	val = dw_hdmi_read(sc, DW_HDMI_PHY_TST0);
+	val &= ~HDMI_PHY_TST0_TSTCLR_MASK;
+	val |= (bit << HDMI_PHY_TST0_TSTCLR_OFFSET) &
+		HDMI_PHY_TST0_TSTCLR_MASK;
+	dw_hdmi_write(sc, DW_HDMI_PHY_TST0, val);
+}
+
+static void
+dw_hdmi_phy_wait_i2c_done(struct dw_hdmi_softc *sc, int msec)
+{
+	uint8_t val;
+
+	val = dw_hdmi_read(sc, DW_HDMI_IH_I2CMPHY_STAT0) &
+	    (DW_HDMI_IH_I2CMPHY_STAT0_DONE | DW_HDMI_IH_I2CMPHY_STAT0_ERROR);
+	while (val == 0) {
+		pause("DW_HDMI_PHY", hz/100);
+		msec -= 10;
+		if (msec <= 0)
+			return;
+		val = dw_hdmi_read(sc, DW_HDMI_IH_I2CMPHY_STAT0) &
+		    (DW_HDMI_IH_I2CMPHY_STAT0_DONE |
+		    DW_HDMI_IH_I2CMPHY_STAT0_ERROR);
+	}
+}
+
+static void
+dw_hdmi_phy_i2c_write(struct dw_hdmi_softc *sc, unsigned short data,
+    unsigned char addr)
+{
+
+	/* clear DONE and ERROR flags */
+	dw_hdmi_write(sc, DW_HDMI_IH_I2CMPHY_STAT0,
+	    DW_HDMI_IH_I2CMPHY_STAT0_DONE | DW_HDMI_IH_I2CMPHY_STAT0_ERROR);
+	dw_hdmi_write(sc, DW_HDMI_PHY_I2CM_ADDRESS_ADDR, addr);
+	dw_hdmi_write(sc, DW_HDMI_PHY_I2CM_DATAO_1_ADDR, ((data >> 8) & 0xff));
+	dw_hdmi_write(sc, DW_HDMI_PHY_I2CM_DATAO_0_ADDR, ((data >> 0) & 0xff));
+	dw_hdmi_write(sc, DW_HDMI_PHY_I2CM_OPERATION_ADDR,
+	    HDMI_PHY_I2CM_OPERATION_ADDR_WRITE);
+	dw_hdmi_phy_wait_i2c_done(sc, 1000);
+}
+
+/*
+ * The phy configuration values here are for RK3399 and not tested
+ * on any other platform.
+ */
+static int
+dw_hdmi_phy_configure(struct dw_hdmi_softc *sc)
+{
+	uint8_t val;
+	uint8_t msec;
+
+	dw_hdmi_write(sc, DW_HDMI_MC_FLOWCTRL,
+	    HDMI_MC_FLOWCTRL_FEED_THROUGH_OFF_CSC_BYPASS);
+
+	/* gen2 tx power off */
+	dw_hdmi_phy_gen2_txpwron(sc, 0);
+
+	/* gen2 pddq */
+	dw_hdmi_phy_gen2_pddq(sc, 1);
+
+	/* PHY reset */
+	dw_hdmi_write(sc, DW_HDMI_MC_PHYRSTZ, HDMI_MC_PHYRSTZ_DEASSERT);
+	dw_hdmi_write(sc, DW_HDMI_MC_PHYRSTZ, HDMI_MC_PHYRSTZ_ASSERT);
+
+	dw_hdmi_write(sc, DW_HDMI_MC_HEACPHY_RST, HDMI_MC_HEACPHY_RST_ASSERT);
+
+	dw_hdmi_phy_test_clear(sc, 1);
+	dw_hdmi_write(sc, DW_HDMI_PHY_I2CM_SLAVE_ADDR,
+	    HDMI_PHY_I2CM_SLAVE_ADDR_PHY_GEN2);
+	dw_hdmi_phy_test_clear(sc, 0);
+
+	/*
+	 * Following initialization are for 8bit per color case
+	 */
+	dw_hdmi_phy_i2c_write(sc, 0x0051, DW_HDMI_PHY_I2C_CPCE_CTRL);
+	dw_hdmi_phy_i2c_write(sc, 0x0003, DW_HDMI_PHY_I2C_GMPCTRL);
+	dw_hdmi_phy_i2c_write(sc, 0x0000, DW_HDMI_PHY_I2C_CURRCTRL);
+
+	dw_hdmi_phy_i2c_write(sc, 0x0000, DW_HDMI_PHY_I2C_PLLPHBYCTRL);
+	dw_hdmi_phy_i2c_write(sc, MSM_CTRL_FB_CLK, DW_HDMI_PHY_I2C_MSM_CTRL);
+
+	/* REMOVE CLK TERM */
+	dw_hdmi_phy_i2c_write(sc, CKCALCTRL_OVERRIDE,
+	    DW_HDMI_PHY_I2C_CKCALCTRL);
+
+	switch (sc->mode.crtc_clock) {
+	case 148500:
+		dw_hdmi_phy_i2c_write(sc, 0x802b, DW_HDMI_PHY_I2C_CKSYMTXCTRL);
+		dw_hdmi_phy_i2c_write(sc, 0x0004, DW_HDMI_PHY_I2C_TXTERM);
+		dw_hdmi_phy_i2c_write(sc, 0x028d, DW_HDMI_PHY_I2C_VLEVCTRL);
+		break;
+	case 297000:
+		dw_hdmi_phy_i2c_write(sc, 0x8039, DW_HDMI_PHY_I2C_CKSYMTXCTRL);
+		dw_hdmi_phy_i2c_write(sc, 0x0005, DW_HDMI_PHY_I2C_TXTERM);
+		dw_hdmi_phy_i2c_write(sc, 0x028d, DW_HDMI_PHY_I2C_VLEVCTRL);
+		break;
+	default:
+		device_printf(sc->dev, "unknown clock %d\n",
+		    sc->mode.crtc_clock);
+		return (ENXIO);
+	}
+
+	dw_hdmi_phy_enable_power(sc, 1);
+
+	/* toggle TMDS enable */
+	dw_hdmi_phy_enable_tmds(sc, 0);
+	dw_hdmi_phy_enable_tmds(sc, 1);
+
+	/* gen2 tx power on */
+	dw_hdmi_phy_gen2_txpwron(sc, 1);
+	dw_hdmi_phy_gen2_pddq(sc, 0);
+
+	dw_hdmi_phy_enable_spare(sc, 1);
+
+	/* Wait for PHY PLL lock */
+	msec = 4;
+	val = dw_hdmi_read(sc, DW_HDMI_PHY_STAT0) & HDMI_PHY_TX_PHY_LOCK;
+	while (val == 0) {
+		DELAY(1000);
+		if (msec-- == 0) {
+			device_printf(sc->dev, "PHY PLL not locked\n");
+			return (-1);
+		}
+		val = dw_hdmi_read(sc, DW_HDMI_PHY_STAT0) & \
+		    HDMI_PHY_TX_PHY_LOCK;
+	}
+
+	return true;
+}
+
+static void
+dw_hdmi_phy_init(struct dw_hdmi_softc *sc)
+{
+	int i;
+
+	/* HDMI Phy spec says to do the phy initialization sequence twice */
+	for (i = 0 ; i < 2 ; i++) {
+		dw_hdmi_phy_sel_data_en_pol(sc, 1);
+		dw_hdmi_phy_sel_interface_control(sc, 0);
+		dw_hdmi_phy_enable_tmds(sc, 0);
+		dw_hdmi_phy_enable_power(sc, 0);
+
+		/* Enable CSC */
+		dw_hdmi_phy_configure(sc);
+	}
+}
+
+static void
 dw_hdmi_bridge_enable(struct drm_bridge *bridge)
 {
 	struct dw_hdmi_softc *sc;
@@ -480,7 +729,10 @@ dw_hdmi_bridge_enable(struct drm_bridge *bridge)
 	    sc->mode.vsync_end - sc->mode.vsync_start);
 
 	/* Configure the PHY */
-	DW_HDMI_PHY_CONFIG(sc->phydev, &sc->mode);
+	if (sc->phydev != NULL)
+		DW_HDMI_PHY_CONFIG(sc->phydev, &sc->mode);
+	else /* Internal PHY. */
+		dw_hdmi_phy_init(sc);
 
 	/* 12 pixel clock cycles */
 	dw_hdmi_write(sc, DW_HDMI_FC_CTRLDUR, 12);
@@ -585,6 +837,11 @@ static void rk_dw_hdmi_encoder_mode_set(struct drm_encoder *encoder,
 
 	base_sc = container_of(encoder, struct dw_hdmi_softc, encoder);
 	sc = container_of(base_sc, struct rk_dw_hdmi_softc, base_sc);
+
+	/*
+	 * Note: we are setting vpll, which should be the same as vop dclk.
+	 */
+	clk_set_freq(sc->clk[2], mode->crtc_clock * 1000, 0);
 }
 
 static const struct drm_encoder_helper_funcs rk_dw_hdmi_encoder_helper_funcs = {
@@ -801,7 +1058,6 @@ dw_hdmi_attach(device_t dev)
 		sc->ddc = i2c_bsd_adapter(sc->iicbus);
 	}
 
-	return (0);
 fail:
 	return (error);
 }
@@ -912,6 +1168,60 @@ MODULE_DEPEND(aw_de2_dw_hdmi, aw_de2_hdmi_phy, 1, 1, 1);
 
 /* Rockchip */
 
+static void
+rk_hdmi_configure(struct rk_dw_hdmi_softc *sc)
+{
+	uint32_t reg;
+
+	/* Select VOP Little for HDMI. */
+	reg = SYSCON_READ_4(sc->grf, GRF_SOC_CON20);
+	reg &= ~CON20_HDMI_VOP_SEL_M;
+	reg |= CON20_HDMI_VOP_SEL_L;
+	SYSCON_WRITE_4(sc->grf, GRF_SOC_CON20, reg);
+}
+
+static int
+rk_hdmi_clk_enable(device_t dev)
+{
+	struct rk_dw_hdmi_softc *sc;
+	uint64_t rate;
+	int error;
+	int i;
+
+	sc = device_get_softc(dev);
+
+	for (i = 0; i < RK_CLK_NENTRIES; i++) {
+		error = clk_get_by_ofw_name(dev, 0, rk_clk_table[i],
+		    &sc->clk[i]);
+		if (error != 0) {
+			device_printf(dev, "cannot get '%s' clock\n",
+			    rk_clk_table[i]);
+			return (ENXIO);
+		}
+	}
+
+	for (i = 0; i < RK_CLK_NENTRIES; i++) {
+		error = clk_enable(sc->clk[i]);
+		if (error != 0) {
+			device_printf(dev, "cannot enable '%s' clock\n",
+			    rk_clk_table[i]);
+			return (ENXIO);
+		}
+
+		error = clk_get_freq(sc->clk[i], &rate);
+		if (error != 0) {
+			device_printf(dev, "cannot get '%s' clock frequency\n",
+			    rk_clk_table[i]);
+			return (ENXIO);
+		}
+
+		device_printf(dev, "%s rate is %ld Hz\n", rk_clk_table[i],
+		    rate);
+	}
+
+	return (0);
+}
+
 static int
 rk_dw_hdmi_probe(device_t dev)
 {
@@ -929,12 +1239,30 @@ static int
 rk_dw_hdmi_attach(device_t dev)
 {
 	struct rk_dw_hdmi_softc *sc;
+	phandle_t ddc;
 	phandle_t node;
+	device_t i2c_dev;
 	int error;
 
 	sc = device_get_softc(dev);
 
 	node = ofw_bus_get_node(dev);
+
+	error = syscon_get_by_ofw_property(dev, node, "rockchip,grf", &sc->grf);
+	if (error != 0) {
+		device_printf(dev, "cannot get grf syscon: %d\n", error);
+		return (ENXIO);
+	}
+
+	rk_hdmi_configure(sc);
+	rk_hdmi_clk_enable(dev);
+
+	ddc = 0;
+	OF_getencprop(node, "ddc-i2c-bus", &ddc, sizeof(ddc));
+	if (ddc > 0) {
+		i2c_dev = OF_device_from_xref(ddc);
+		sc->base_sc.ddc = i2c_bsd_adapter(i2c_dev);
+	}
 
 	error = dw_hdmi_attach(dev);
 	if (error != 0)
