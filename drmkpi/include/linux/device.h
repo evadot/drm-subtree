@@ -41,7 +41,7 @@
 struct device_type {
 	const char	*name;
 };
-struct device;
+#define	device _device
 
 char *kvasprintf(gfp_t, const char *, va_list);
 char *kasprintf(gfp_t, const char *, ...);
