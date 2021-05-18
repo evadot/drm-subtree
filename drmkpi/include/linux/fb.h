@@ -4,6 +4,10 @@
 #define __DRMKPI_LINUX_FB_H_
 #include <sys/fbio.h>
 
+#ifdef __FreeBSD__
+#include <linux/device.h>
+#endif
+
 #include <linux/fs.h>
 #include <linux/init.h>
 #include <linux/workqueue.h>

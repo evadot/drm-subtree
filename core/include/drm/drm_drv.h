@@ -788,14 +788,14 @@ struct drm_driver {
 
 int drm_dev_init(struct drm_device *dev,
 		 struct drm_driver *driver,
-		 struct device *parent);
-int devm_drm_dev_init(struct device *parent,
+		 struct _device *parent);
+int devm_drm_dev_init(struct _device *parent,
 		      struct drm_device *dev,
 		      struct drm_driver *driver);
 void drm_dev_fini(struct drm_device *dev);
 
 struct drm_device *drm_dev_alloc(struct drm_driver *driver,
-				 struct device *parent);
+				 struct _device *parent);
 int drm_dev_register(struct drm_device *dev, unsigned long flags);
 void drm_dev_unregister(struct drm_device *dev);
 
