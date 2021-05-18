@@ -631,7 +631,7 @@ static void drm_fs_inode_free(struct inode *inode)
  */
 int drm_dev_init(struct drm_device *dev,
 		 struct drm_driver *driver,
-		 struct device *parent)
+		 struct _device *parent)
 {
 	int ret;
 
@@ -738,7 +738,7 @@ static void devm_drm_dev_init_release(void *data)
  * RETURNS:
  * 0 on success, or error code on failure.
  */
-int devm_drm_dev_init(struct device *parent,
+int devm_drm_dev_init(struct _device *parent,
 		      struct drm_device *dev,
 		      struct drm_driver *driver)
 {
@@ -819,7 +819,7 @@ EXPORT_SYMBOL(drm_dev_fini);
  * Pointer to new DRM device, or ERR_PTR on failure.
  */
 struct drm_device *drm_dev_alloc(struct drm_driver *driver,
-				 struct device *parent)
+				 struct _device *parent)
 {
 	struct drm_device *dev;
 	int ret;
