@@ -65,7 +65,7 @@ struct drm_device {
 	struct kref ref;
 
 	/** @dev: Device structure of bus-device */
-	struct device *dev;
+	struct _device *dev;
 
 	/** @driver: DRM driver managing the device */
 	struct drm_driver *driver;
