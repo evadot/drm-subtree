@@ -162,9 +162,23 @@ out_release:
 static int
 drm_fstub_kqfilter(struct file *file, struct knote *kn)
 {
+	const struct file_operations *fops;
+	struct drm_minor *minor;
+	struct cdev *cdev;
+	int ref;
+	int rv;
 
-	printf("%s: Not implemented yet.", __func__);
-	return (ENXIO);
+	rv = drm_fstub_file_check(file, &cdev, &ref, &minor);
+	if (rv != 0)
+		return (ENXIO);
+
+	fops = minor->dev->driver->fops;
+	if (fops->kqfilter != NULL) {
+		rv = fops->kqfilter(file, kn);
+		return (rv);
+	}
+
+	return (EINVAL);
 }
 
 static int
@@ -184,7 +198,7 @@ drm_fstub_poll(struct file *file, int events, struct ucred *cred,
 	const struct file_operations *fops;
 	int ref, rv;
 
-	if ((events & (POLLIN | POLLRDNORM)) != 0)
+	if ((events & (POLLIN | POLLRDNORM)) == 0)
 		return (0);
 
 	rv = drm_fstub_file_check(file, &cdev, &ref, &minor);
@@ -484,7 +498,7 @@ drm_fstub_do_mmap(struct file *file, const struct file_operations *fops,
 //	if (unlikely(down_write_killable(&vmap->vm_mm->mmap_sem))) {
 //		rv = EINTR;
 //	} else {
-		rv = -fops->mmap(file, vmap);
+//		rv = -fops->mmap(file, vmap);
 //		up_write(&vmap->vm_mm->mmap_sem);
 //	}
 	if (rv != 0) {
