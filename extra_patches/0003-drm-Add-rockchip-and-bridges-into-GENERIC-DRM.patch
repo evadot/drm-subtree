@@ -1,0 +1,28 @@
+From 82729b2c07109ae2066f5ba281c6535b708e5162 Mon Sep 17 00:00:00 2001
+From: Emmanuel Vadot <manu@FreeBSD.org>
+Date: Wed, 26 May 2021 19:07:35 +0200
+Subject: [PATCH] drm: Add rockchip and bridges into GENERIC-DRM
+Content-Type: text/plain; charset=UTF-8
+
+---
+ sys/arm64/conf/GENERIC-DRM | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/sys/arm64/conf/GENERIC-DRM b/sys/arm64/conf/GENERIC-DRM
+index db1fffb1729..1b7f9b0a5d7 100644
+--- a/sys/arm64/conf/GENERIC-DRM
++++ b/sys/arm64/conf/GENERIC-DRM
+@@ -16,6 +16,10 @@ options		COMPAT_LINUXKPI
+ 
+ device		drm
+ device		aw_de2_drm
++device		rk_drm
+ device		dw_hdmi
++
+ files		"../../dev/drm/extra_patches/files"
+ files		"../../dev/drm/extra_patches/files.aw"
++files		"../../dev/drm/extra_patches/files.bridges"
++files		"../../dev/drm/extra_patches/files.rk"
+-- 
+2.31.1
+
