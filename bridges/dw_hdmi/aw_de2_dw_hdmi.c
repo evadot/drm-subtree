@@ -597,18 +597,20 @@ dw_hdmi_phy_configure(struct dw_hdmi_softc *sc)
 	dw_hdmi_phy_i2c_write(sc, CKCALCTRL_OVERRIDE,
 	    DW_HDMI_PHY_I2C_CKCALCTRL);
 
-	switch (sc->mode.crtc_clock) {
-	case 148500:
+	/* Those value are rockchip specific, will need to put that in the subclassed driver */
+	if (sc->mode.crtc_clock <= 74250) {
+		dw_hdmi_phy_i2c_write(sc, 0x8009, DW_HDMI_PHY_I2C_CKSYMTXCTRL);
+		dw_hdmi_phy_i2c_write(sc, 0x0004, DW_HDMI_PHY_I2C_TXTERM);
+		dw_hdmi_phy_i2c_write(sc, 0x0272, DW_HDMI_PHY_I2C_VLEVCTRL);
+	} else if (sc->mode.crtc_clock <= 148500) {
 		dw_hdmi_phy_i2c_write(sc, 0x802b, DW_HDMI_PHY_I2C_CKSYMTXCTRL);
 		dw_hdmi_phy_i2c_write(sc, 0x0004, DW_HDMI_PHY_I2C_TXTERM);
 		dw_hdmi_phy_i2c_write(sc, 0x028d, DW_HDMI_PHY_I2C_VLEVCTRL);
-		break;
-	case 297000:
+	} else if (sc->mode.crtc_clock <= 297000) {
 		dw_hdmi_phy_i2c_write(sc, 0x8039, DW_HDMI_PHY_I2C_CKSYMTXCTRL);
 		dw_hdmi_phy_i2c_write(sc, 0x0005, DW_HDMI_PHY_I2C_TXTERM);
 		dw_hdmi_phy_i2c_write(sc, 0x028d, DW_HDMI_PHY_I2C_VLEVCTRL);
-		break;
-	default:
+	} else {
 		device_printf(sc->dev, "unknown clock %d\n",
 		    sc->mode.crtc_clock);
 		return (ENXIO);
