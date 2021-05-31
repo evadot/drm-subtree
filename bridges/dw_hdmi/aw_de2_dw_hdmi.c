@@ -1058,6 +1058,10 @@ dw_hdmi_attach(device_t dev)
 		sc->ddc = i2c_bsd_adapter(sc->iicbus);
 	}
 
+	if (__drm_debug & DRM_UT_DRIVER) {
+		dw_hdmi_dump_vp_regs(sc);
+		dw_hdmi_dump_fc_regs(sc);
+	}
 fail:
 	return (error);
 }
