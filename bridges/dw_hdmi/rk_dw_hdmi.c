@@ -67,12 +67,8 @@ static struct ofw_compat_data rk_compat_data[] = {
 struct rk_dw_hdmi_softc {
 	struct dw_hdmi_softc base_sc;
 	struct syscon		*grf;
-#define	RK_CLK_NENTRIES	5
-	clk_t clk[RK_CLK_NENTRIES];
-};
-
-static char * rk_clk_table[RK_CLK_NENTRIES] = {
-	"iahb", "isfr", "vpll", "grf", "cec",
+	clk_t			clk_vpll;
+	clk_t			clk_grf;
 };
 
 static int rk_dw_hdmi_probe(device_t dev);
@@ -92,7 +88,8 @@ static void rk_dw_hdmi_encoder_mode_set(struct drm_encoder *encoder,
 	/*
 	 * Note: we are setting vpll, which should be the same as vop dclk.
 	 */
-	clk_set_freq(sc->clk[2], mode->crtc_clock * 1000, 0);
+	if (sc->clk_vpll)
+		clk_set_freq(sc->clk_vpll, mode->crtc_clock * 1000, 0);
 }
 
 static const struct drm_encoder_helper_funcs rk_dw_hdmi_encoder_helper_funcs = {
@@ -137,39 +134,26 @@ static int
 rk_hdmi_clk_enable(device_t dev)
 {
 	struct rk_dw_hdmi_softc *sc;
-	uint64_t rate;
 	int error;
-	int i;
 
 	sc = device_get_softc(dev);
 
-	for (i = 0; i < RK_CLK_NENTRIES; i++) {
-		error = clk_get_by_ofw_name(dev, 0, rk_clk_table[i],
-		    &sc->clk[i]);
+	error = clk_get_by_ofw_name(dev, 0, "vpll", &sc->clk_vpll);
+	if (error == 0) {
+		error = clk_enable(sc->clk_vpll);
 		if (error != 0) {
-			device_printf(dev, "cannot get '%s' clock\n",
-			    rk_clk_table[i]);
+			device_printf(dev, "cannot enable vpll\n");
 			return (ENXIO);
 		}
 	}
 
-	for (i = 0; i < RK_CLK_NENTRIES; i++) {
-		error = clk_enable(sc->clk[i]);
+	error = clk_get_by_ofw_name(dev, 0, "grf", &sc->clk_grf);
+	if (error == 0) {
+		error = clk_enable(sc->clk_grf);
 		if (error != 0) {
-			device_printf(dev, "cannot enable '%s' clock\n",
-			    rk_clk_table[i]);
+			device_printf(dev, "cannot enable grf\n");
 			return (ENXIO);
 		}
-
-		error = clk_get_freq(sc->clk[i], &rate);
-		if (error != 0) {
-			device_printf(dev, "cannot get '%s' clock frequency\n",
-			    rk_clk_table[i]);
-			return (ENXIO);
-		}
-
-		device_printf(dev, "%s rate is %ld Hz\n", rk_clk_table[i],
-		    rate);
 	}
 
 	return (0);
@@ -230,6 +214,14 @@ fail:
 static int
 rk_dw_hdmi_detach(device_t dev)
 {
+	struct rk_dw_hdmi_softc *sc;
+
+	sc = device_get_softc(dev);
+
+	if (sc->clk_vpll)
+		clk_disable(sc->clk_vpll);
+	if (sc->clk_grf)
+		clk_disable(sc->clk_grf);
 
 	dw_hdmi_detach(dev);
 	return (0);
