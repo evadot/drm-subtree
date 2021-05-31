@@ -367,24 +367,11 @@ aw_crtc_mode_set_nofb(struct drm_crtc *crtc)
 {
 	struct aw_de2_tcon_softc *sc;
 	struct drm_display_mode *mode;
-	clk_t parent;
 	uint64_t freq;
 	uint32_t reg;
 
 	sc = container_of(crtc, struct aw_de2_tcon_softc, crtc);
 	mode = &crtc->state->adjusted_mode;
-
-	clk_disable(sc->clk_tcon);
-	if (clk_get_by_name(sc->dev, sc->conf->clk_parent_name, &parent) != 0) {
-		DRM_ERROR("%s: Cannot get parent clock %s\n", __func__,
-		    sc->conf->clk_parent_name);
-		return;
-	}
-	if (clk_set_parent_by_clk(sc->clk_tcon, parent) != 0) {
-		DRM_ERROR("%s: Cannot set clock parent to %s\n", __func__,
-		    sc->conf->clk_parent_name);
-		return;
-	}
 
 	if (__drm_debug & DRM_UT_DRIVER)
 		aw_de2_tcon_dump_regs(sc);
@@ -394,7 +381,6 @@ aw_crtc_mode_set_nofb(struct drm_crtc *crtc)
 	clk_set_freq(sc->clk_tcon, mode->crtc_clock * 1000, CLK_SET_ROUND_ANY);
 	clk_get_freq(sc->clk_tcon, &freq);
 	DRM_DEBUG_DRIVER("%s: New freq: %ju\n", __func__, (uintmax_t)freq);
-	clk_enable(sc->clk_tcon);
 	AW_DE2_TCON_LOCK(sc);
 
 	/* Clock delay, writing what u-boot left, need to figure what it is */
