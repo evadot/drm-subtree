@@ -1,5 +1,7 @@
 # Synopsis DesignWare HDMI Controller
-dev/drm/bridges/dw_hdmi/aw_de2_dw_hdmi.c	optional drm fdt dw_hdmi compile-with "${DRM_C}"
+dev/drm/bridges/dw_hdmi/aw_de2_dw_hdmi.c	optional drm fdt dw_hdmi aw_de2_drm compile-with "${DRM_C}"
+dev/drm/bridges/dw_hdmi/rk_dw_hdmi.c		optional drm fdt dw_hdmi rk_drm compile-with "${DRM_C}"
+dev/drm/bridges/dw_hdmi/dw_hdmi.c		optional drm fdt dw_hdmi compile-with "${DRM_C}"
 dev/drm/bridges/dw_hdmi/dw_hdmi_if.m		optional drm fdt dw_hdmi
 dev/drm/bridges/dw_hdmi/dw_hdmi_phy_if.m	optional drm fdt dw_hdmi
 
