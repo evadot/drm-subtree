@@ -69,12 +69,6 @@ __FBSDID("$FreeBSD$");
 
 #define	DW_HDMI_MAX_PORTS	32
 
-/* /\* Redefine msleep because of drmkpi *\/ */
-/* #undef msleep */
-/* #define	msleep(chan, mtx, pri, wmesg, timo)				\ */
-/* 	_sleep((chan), &(mtx)->lock_object, (pri), (wmesg),		\ */
-/* 	    tick_sbt * (timo), 0, C_HARDCLOCK) */
-
 static struct resource_spec dw_hdmi_spec[] = {
 	{ SYS_RES_MEMORY,	0,	RF_ACTIVE },
 	{ SYS_RES_IRQ,		0,	RF_ACTIVE | RF_SHAREABLE },
