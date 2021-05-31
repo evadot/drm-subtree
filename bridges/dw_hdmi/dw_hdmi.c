@@ -812,6 +812,13 @@ dw_hdmi_attach(device_t dev)
 		device_printf(dev, "Cannot enable isfr clock\n");
 		goto fail;
 	}
+	if (clk_get_by_ofw_name(dev, node, "cec",
+	      &sc->clk_cec) == 0) {
+		error = clk_enable(sc->clk_cec);
+		if (error != 0)
+			device_printf(dev, "Cannot enable cec clock\n");
+		error = 0;
+	}
 
 	/* Get the res-io-width */
 	if (OF_getencprop(node, "reg-io-width", &sc->reg_width,

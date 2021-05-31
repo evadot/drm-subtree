@@ -42,6 +42,7 @@ struct dw_hdmi_softc {
 
 	clk_t		clk_iahb;
 	clk_t		clk_isfr;
+	clk_t		clk_cec;
 
 	device_t		iicbus;
 	struct i2c_adapter	*ddc;
