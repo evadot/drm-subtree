@@ -62,10 +62,12 @@ __FBSDID("$FreeBSD$");
 #define	 ANA_CFG1_BIASEN_TMDS1		(1 << 9)
 #define	 ANA_CFG1_BIASEN_TMDS2		(1 << 10)
 #define	 ANA_CFG1_BIASEN_TMDSCLK	(1 << 11)
+#define	 ANA_CFG1_BIASEN_ALL		(0xf << 8)
 #define	 ANA_CFG1_TXEN_TMDS0		(1 << 12)
 #define	 ANA_CFG1_TXEN_TMDS1		(1 << 13)
 #define	 ANA_CFG1_TXEN_TMDS2		(1 << 14)
 #define	 ANA_CFG1_TXEN_TMDSCLK		(1 << 15)
+#define	 ANA_CFG1_TXEN_ALL		(0xf << 12)
 #define	 ANA_CFG1_TMDSCLK_EN		(1 << 16)
 #define	 ANA_CFG1_SCLKTMDS		(1 << 17)
 #define	 ANA_CFG1_ENCALOG		(1 << 18)
@@ -76,6 +78,7 @@ __FBSDID("$FreeBSD$");
 #define	 ANA_CFG1_AMP_OPT		(1 << 23)
 #define	 ANA_CFG1_SVBH(x)		(x << 24)
 #define	 ANA_CFG1_SVRCAL(x)		(x << 26)
+#define	 ANA_CFG1_CALSW			(1 << 28)
 #define	 ANA_CFG1_PWENC			(1 << 29)
 #define	 ANA_CFG1_PWEND			(1 << 30)
 #define	 ANA_CFG1_SWI			(1 << 31)
@@ -120,6 +123,7 @@ __FBSDID("$FreeBSD$");
 #define	 PLL_CFG1_CP_S(x)	(x << 13)
 #define	 PLL_CFG1_CS		(1 << 18)
 #define	 PLL_CFG1_PLLDBEN	(1 << 19)
+#define	 PLL_CFG1_UNKNOWN	(1 << 20)
 #define	 PLL_CFG1_LDO_VSET(x)	(x << 22)
 #define	 PLL_CFG1_PLLEN		(1 << 25)
 #define	 PLL_CFG1_CKINSEL_SHIFT	26
@@ -349,64 +353,151 @@ aw_de2_hdmi_phy_init(device_t dev)
 }
 
 static int
+aw_de2_hdmi_phy_get_prediv(struct aw_de2_hdmi_phy_softc *sc, uint64_t pixel_clock)
+{
+	uint64_t pll_freq;
+	uint64_t cur, best;
+	int rv;
+	int m, best_m;
+
+	rv = clk_get_freq(sc->clk_pll, &pll_freq);
+
+	cur = best = 0;
+	for (m = 1; m < 16; m++) {
+		cur = pll_freq / m;
+		if (abs(pixel_clock - cur) < abs(pixel_clock - best)) {
+			best = cur;
+			best_m = m;
+		}
+	}
+
+	return (best_m);
+}
+
+static int
 aw_de2_hdmi_phy_config(device_t dev, struct drm_display_mode *mode)
 {
 	struct aw_de2_hdmi_phy_softc *sc;
 	uint32_t ana_cfg1, ana_cfg2, ana_cfg3;
-	uint32_t pll_cfg1, pll_cfg2, pll_cfg3;
+	uint32_t pll_cfg1, pll_cfg2;
 	uint32_t reg;
+	int pll2_prediv;
 
 	sc = device_get_softc(dev);
 
 	DRM_DEBUG_DRIVER("Pixel clock: %d\n", mode->crtc_clock);
 
+	pll2_prediv = aw_de2_hdmi_phy_get_prediv(sc, mode->crtc_clock* 1000);
+	DRM_DEBUG_DRIVER("Found a prediv of %d\n", pll2_prediv);
 	if (__drm_debug & DRM_UT_DRIVER)
 		aw_de2_hdmi_phy_dump_regs(sc);
 
+	/* Some magic value are from the datasheet */
+
+	/* Enable LDOs */
+	pll_cfg1 = PLL_CFG1_LDO2_EN | PLL_CFG1_LDO1_EN;
+	pll_cfg1 |= PLL_CFG1_LDO_VSET(7);
+
+	/* Enable PLLDB */
+	pll_cfg1 |= PLL_CFG1_PLLDBEN;
+
+	/* CS ? */
+	pll_cfg1 |= PLL_CFG1_CS | PLL_CFG1_CP_S(2);
+
+	/* Unknown bit */
+	pll_cfg1 |= PLL_CFG1_UNKNOWN;
+
+	/* BWS ? */
+	pll_cfg1 |= PLL_CFG1_BWS;
+
+	pll_cfg2 = PLL_CFG2_SV_H | PLL_CFG2_VCOGAIN_EN | PLL_CFG2_SDIV2;
+
+	ana_cfg1 = ANA_CFG1_SVBH(1) |
+		ANA_CFG1_AMP_OPT |
+		ANA_CFG1_EMP_OPT |
+		ANA_CFG1_AMPCK_OPT |
+		ANA_CFG1_EMPCK_OPT |
+		ANA_CFG1_ENRCAL |
+		ANA_CFG1_ENCALOG |
+		ANA_CFG1_SCLKTMDS |
+		ANA_CFG1_TMDSCLK_EN |
+		ANA_CFG1_TXEN_ALL |
+		ANA_CFG1_BIASEN_ALL |
+		ANA_CFG1_ENP2S_TMDS2 |
+		ANA_CFG1_ENP2S_TMDS1 |
+		ANA_CFG1_ENP2S_TMDS0 |
+		ANA_CFG1_CKEN |
+		ANA_CFG1_LDOEN |
+		ANA_CFG1_ENVBS |
+		ANA_CFG1_ENBI;
+
+	ana_cfg2 = ANA_CFG2_M_EN |
+		ANA_CFG2_DENCK |
+		ANA_CFG2_DEN |
+		ANA_CFG2_CKSS(1) |
+		ANA_CFG2_CSMPS(1);
+
+	ana_cfg3 = ANA_CFG3_WIRE(0x3e0) |
+		ANA_CFG3_SDAEN |
+		ANA_CFG3_SCLEN;
+
 	/* Pixel clock is in kHz */
-	/* Magic value from the datasheet */
 	if (mode->crtc_clock <= 27000) {
-		pll_cfg1 = 0x3DDC5040;
-		pll_cfg2 = 0x8008430A;
-		pll_cfg3 = 0x1;
-		ana_cfg1 = 0x11FFFF7F;
-		ana_cfg2 = 0x80623000 | (sc->rcal >> 2);
-		ana_cfg3 = 0x0F80C285;
-	}
-	else if (mode->crtc_clock <= 74250) {
-		pll_cfg1 = 0x3DDC5040;
-		pll_cfg2 = 0x80084342;
-		pll_cfg3 = 0x1;
-		ana_cfg1 = 0x11FFFF7F;
-		ana_cfg2 = 0x80623000 | (sc->rcal >> 2);
-		ana_cfg3 = 0x0F814385;
-	}
-	else if (mode->crtc_clock <= 148500) {
-		pll_cfg1 = 0x3DDC5040;
-		pll_cfg2 = 0x80084381;
-		pll_cfg3 = 0x1;
-		ana_cfg1 = 0x01FFFF7F;
-		ana_cfg2 = 0x8063a800;
-		ana_cfg3 = 0x0F81C485;
-	}
-	else {
+		pll_cfg1 |= PLL_CFG1_HV_IS_33 |
+			PLL_CFG1_CNT_INT(32);
+		pll_cfg2 |= PLL_CFG2_VCO_S(4) |
+			PLL_CFG2_S(4);
+		ana_cfg1 |= ANA_CFG1_CALSW;
+		ana_cfg2 |= ANA_CFG2_SLV(4) |
+			ANA_CFG2_RESDI(sc->rcal >> 2);
+		ana_cfg3 |= ANA_CFG3_AMPCK(3) |
+			ANA_CFG3_AMP(5);
+	} else if (mode->crtc_clock <= 74250) {
+		pll_cfg1 |= PLL_CFG1_HV_IS_33 |
+			PLL_CFG1_CNT_INT(32);
+		pll_cfg2 |= PLL_CFG2_VCO_S(4) |
+			PLL_CFG2_S(5);
+		ana_cfg1 |= ANA_CFG1_CALSW;
+		ana_cfg2 |= ANA_CFG2_SLV(4) |
+			ANA_CFG2_RESDI(sc->rcal >> 2);
+		ana_cfg3 |= ANA_CFG3_AMPCK(5) |
+			ANA_CFG3_AMP(7);
+	} else if (mode->crtc_clock <= 148500) {
+		pll_cfg1 |= PLL_CFG1_HV_IS_33 |
+			PLL_CFG1_CNT_INT(32);
+		pll_cfg2 |= PLL_CFG2_VCO_S(4) |
+			PLL_CFG2_S(6);
+		ana_cfg2 |= ANA_CFG2_BIGSWCK |
+			ANA_CFG2_BIGSW |
+			ANA_CFG2_SLV(2);
+		ana_cfg3 |= ANA_CFG3_AMPCK(7) |
+			ANA_CFG3_AMP(9);
+	} else {
 		/* mode->crtc_clock <= 297000 */
-		pll_cfg1 = 0x35DC5FC0;
-		pll_cfg2 = 0x800863C0;
-		pll_cfg3 = 0x1;
-		ana_cfg1 = 0x01FFFF7F;
-		ana_cfg2 = 0x8063B000;
-		ana_cfg3 = 0x0F8246B5;
+		pll_cfg1 |= PLL_CFG1_CNT_INT(63);
+		pll_cfg2 |= PLL_CFG2_VCO_S(6) |
+			PLL_CFG2_S(7);
+		ana_cfg2 |= ANA_CFG2_BIGSWCK |
+			ANA_CFG2_BIGSW |
+			ANA_CFG2_SLV(4);
+		ana_cfg3 |= ANA_CFG3_AMPCK(9) |
+			ANA_CFG3_AMP(13) |
+			ANA_CFG3_EMP(3);
 	}
+
+	PHY_UPDATE_BITS(sc, ANA_CFG1, ANA_CFG1_TXEN_ALL, 0);
 
 	/* We can only use pll-0 so select it */
-	AW_DE2_HDMI_PHY_WRITE_4(sc, PLL_CFG1, pll_cfg1 & ~PLL_CFG1_CKINSEL_SHIFT);
+	AW_DE2_HDMI_PHY_WRITE_4(sc, PLL_CFG1, pll_cfg1 & ~(1 << PLL_CFG1_CKINSEL_SHIFT));
+	reg = AW_DE2_HDMI_PHY_READ_4(sc, PLL_CFG2);
+	pll_cfg2 &= ~PLL_CFG2_PREDIV_MASK;
+	pll_cfg2 |= (pll2_prediv - 1);
 	AW_DE2_HDMI_PHY_WRITE_4(sc, PLL_CFG2, pll_cfg2);
 	DELAY(1000);
-	AW_DE2_HDMI_PHY_WRITE_4(sc, PLL_CFG3, pll_cfg3);
+	AW_DE2_HDMI_PHY_WRITE_4(sc, PLL_CFG3, PLL_CFG3_SOUT_DIV2);
 
 	PHY_UPDATE_BITS(sc, PLL_CFG1, PLL_CFG1_PLLEN, PLL_CFG1_PLLEN);
-	DELAY(1000);
+	DELAY(100000);
 
 	reg = (AW_DE2_HDMI_PHY_READ_4(sc, ANA_STS) & ANA_STS_B_OUT_MASK) >> ANA_STS_B_OUT_SHIFT;
 	DRM_DEBUG_DRIVER("B_OUT: %x\n", reg);
