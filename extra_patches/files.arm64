@@ -1,0 +1,5 @@
+dev/drm/panfrost/panfrost_drv.c		optional drm fdt panfrost compile-with "${DRM_C}"
+dev/drm/panfrost/panfrost_device.c	optional drm fdt panfrost compile-with "${DRM_C}"
+dev/drm/panfrost/panfrost_gem.c		optional drm fdt panfrost compile-with "${DRM_C}"
+dev/drm/panfrost/panfrost_mmu.c		optional drm fdt panfrost compile-with "${DRM_C}"
+dev/drm/panfrost/panfrost_job.c		optional drm fdt panfrost compile-with "${DRM_C}"
