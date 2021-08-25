@@ -51,9 +51,6 @@ struct work_struct;
 struct task_struct {
 	struct thread *task_thread;
 	atomic_t state;
-#define	TS_RCU_TYPE_MAX 2
-	TAILQ_ENTRY(task_struct) rcu_entry[TS_RCU_TYPE_MAX];
-	int rcu_recurse[TS_RCU_TYPE_MAX];
 	struct work_struct *work;	/* current work struct, if set */
 };
 
