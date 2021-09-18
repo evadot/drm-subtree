@@ -2,8 +2,10 @@
 dev/drm/bridges/dw_hdmi/aw_de2_dw_hdmi.c	optional drm fdt dw_hdmi aw_de2_drm compile-with "${DRM_C}"
 dev/drm/bridges/dw_hdmi/rk_dw_hdmi.c		optional drm fdt dw_hdmi rk_drm compile-with "${DRM_C}"
 dev/drm/bridges/dw_hdmi/dw_hdmi.c		optional drm fdt dw_hdmi compile-with "${DRM_C}"
-dev/drm/bridges/dw_hdmi/dw_hdmi_if.m		optional drm fdt dw_hdmi
-dev/drm/bridges/dw_hdmi/dw_hdmi_phy_if.m	optional drm fdt dw_hdmi
+dev/drm/bridges/dw_hdmi/dw_hdmi_if.m		optional drm fdt dw_hdmi | rk_edp
+dev/drm/bridges/dw_hdmi/dw_hdmi_phy_if.m	optional drm fdt dw_hdmi | rk_edp
 
 # ANX6345 RGB to eDP bridge
 dev/drm/bridges/anx6345/anx6345.c		optional fdt anx6345 compile-with "${DRM_C}"
+# ANXDP for pinebookpro
+dev/drm/bridges/anxdp/anx_dp.c			optional fdt rk_edp  compile-with "${DRM_C}"

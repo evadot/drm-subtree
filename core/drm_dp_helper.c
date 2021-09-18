@@ -678,11 +678,11 @@ static int drm_dp_i2c_do_msg(struct drm_dp_aux *aux, struct drm_dp_aux_msg *msg)
 			 * communicate with a non-existant DisplayPort device).
 			 * Avoid spamming the kernel log with timeout errors.
 			 */
-			if (ret == -ETIMEDOUT)
+			if (ret == -ETIMEDOUT) {
 				DRM_DEBUG_KMS_RATELIMITED("transaction timed out\n");
-			else
+			} else {
 				DRM_DEBUG_KMS("transaction failed: %d\n", ret);
-
+			}
 			return ret;
 		}
 
@@ -899,13 +899,13 @@ static void unlock_bus(struct i2c_adapter *i2c, unsigned int flags)
 {
 	mutex_unlock(&i2c_to_aux(i2c)->hw_mutex);
 }
-
+#ifndef __FreeBSD__
 static const struct i2c_lock_operations drm_dp_i2c_lock_ops = {
 	.lock_bus = lock_bus,
 	.trylock_bus = trylock_bus,
 	.unlock_bus = unlock_bus,
 };
-
+#endif
 static int drm_dp_aux_get_crc(struct drm_dp_aux *aux, u8 *crc)
 {
 	u8 buf, count;
@@ -1009,8 +1009,9 @@ void drm_dp_aux_init(struct drm_dp_aux *aux)
 	aux->ddc.algo = &drm_dp_i2c_algo;
 	aux->ddc.algo_data = aux;
 	aux->ddc.retries = 3;
-
+#ifndef __FreeBSD__
 	aux->ddc.lock_ops = &drm_dp_i2c_lock_ops;
+#endif
 }
 EXPORT_SYMBOL(drm_dp_aux_init);
 
