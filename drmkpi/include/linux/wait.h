@@ -140,6 +140,11 @@
 	    NULL);							\
 })
 
+#define	wait_event_killable(wqh, cond) ({				\
+	__wait_event_common(wqh, cond, MAX_SCHEDULE_TIMEOUT,		\
+	    TASK_INTERRUPTIBLE, NULL);					\
+})
+
 #define	wait_event_interruptible(wqh, cond) ({				\
 	__wait_event_common(wqh, cond, MAX_SCHEDULE_TIMEOUT,		\
 	    TASK_INTERRUPTIBLE, NULL);					\
