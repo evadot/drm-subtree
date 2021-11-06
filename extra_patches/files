@@ -49,6 +49,9 @@ dev/drm/core/drm_scdc_helper.c			optional compat_drmkpi drm compile-with "${DRM_
 dev/drm/core/drm_syncobj.c			optional compat_drmkpi drm compile-with "${DRM_C}"
 dev/drm/core/drm_vblank.c			optional compat_drmkpi drm compile-with "${DRM_C}"
 dev/drm/core/drm_vma_manager.c			optional compat_drmkpi drm compile-with "${DRM_C}"
+dev/drm/core/scheduler/sched_entity.c		optional compat_drmkpi drm compile-with "${DRM_C}"
+dev/drm/core/scheduler/sched_fence.c		optional compat_drmkpi drm compile-with "${DRM_C}"
+dev/drm/core/scheduler/sched_main.c		optional compat_drmkpi drm compile-with "${DRM_C}"
 
 # FreeBSD drm files
 dev/drm/freebsd/drm_gem_cma_helper.c		optional compat_drmkpi drm compile-with "${DRM_C}"
