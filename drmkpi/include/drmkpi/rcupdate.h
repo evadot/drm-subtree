@@ -37,16 +37,50 @@
 #define	LINUX_KFREE_RCU_OFFSET_MAX	4096	/* exclusive */
 
 struct rcu_head {
-	void *raw[2];
-} __aligned(sizeof(void *));
+};
 
 typedef void (*rcu_callback_t)(struct rcu_head *head);
 typedef void (*call_rcu_func_t)(struct rcu_head *head, rcu_callback_t func);
 
-void drmkpi_call_rcu(unsigned type, struct rcu_head *ptr, rcu_callback_t func);
-void drmkpi_rcu_barrier(unsigned type);
-void drmkpi_rcu_read_lock(unsigned type);
-void drmkpi_rcu_read_unlock(unsigned type);
-void drmkpi_synchronize_rcu(unsigned type);
+extern struct mtx drmkpi_global_rcu_lock;
+
+static inline void
+drmkpi_call_rcu(unsigned type, struct rcu_head *ptr, rcu_callback_t func)
+{
+
+	mtx_lock(&drmkpi_global_rcu_lock);
+	func(ptr);
+	mtx_unlock(&drmkpi_global_rcu_lock);
+}
+
+static inline void
+drmkpi_rcu_read_lock(unsigned type)
+{
+
+	mtx_lock(&drmkpi_global_rcu_lock);
+}
+
+static inline void
+drmkpi_rcu_read_unlock(unsigned type)
+{
+
+	mtx_unlock(&drmkpi_global_rcu_lock);
+}
+
+static inline void
+drmkpi_rcu_barrier(unsigned type)
+{
+
+	mtx_lock(&drmkpi_global_rcu_lock);
+	mtx_unlock(&drmkpi_global_rcu_lock);
+}
+
+static inline void
+drmkpi_synchronize_rcu(unsigned type)
+{
+
+	mtx_lock(&drmkpi_global_rcu_lock);
+	mtx_unlock(&drmkpi_global_rcu_lock);
+}
 
 #endif	/* __DRMKPI_RCUPDATE_H__ */
