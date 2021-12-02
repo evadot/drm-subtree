@@ -182,11 +182,10 @@ drm_fstub_kqfilter(struct file *file, struct knote *kn)
 }
 
 static int
-drm_fstub_stat(struct file *fp, struct stat *sb, struct ucred *cred,
-    struct thread *td)
+drm_fstub_stat(struct file *fp, struct stat *sb, struct ucred *cred)
 {
 
-	return (vnops.fo_stat(fp, sb, cred, td));
+	return (vnops.fo_stat(fp, sb, cred));
 }
 
 static int
