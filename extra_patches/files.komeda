@@ -1,0 +1,5 @@
+# ARM Komeda Display Subsystem
+dev/drm/komeda/komeda_drv.c		optional drm fdt komeda_drm compile-with "${DRM_C}"
+dev/drm/komeda/komeda_gem.c		optional drm fdt komeda_drm compile-with "${DRM_C}"
+dev/drm/komeda/komeda_pipeline.c	optional drm fdt komeda_drm compile-with "${DRM_C}"
+dev/drm/komeda/komeda_plane.c		optional drm fdt komeda_drm compile-with "${DRM_C}"
