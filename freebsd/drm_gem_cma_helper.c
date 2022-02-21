@@ -69,6 +69,7 @@ drm_gem_cma_destruct(struct drm_gem_cma_object *bo)
 		if (m == NULL)
 			break;
 		vm_page_lock(m);
+		m->oflags |= VPO_UNMANAGED;
 		m->flags &= ~PG_FICTITIOUS;
 		vm_page_unwire_noq(m);
 		vm_page_free(m);
@@ -87,11 +88,11 @@ drm_gem_cma_alloc_contig(size_t npages, u_long alignment, vm_memattr_t memattr,
 	low = 0;
 	high = -1UL;
 	boundary = 0;
-	pflags = VM_ALLOC_NORMAL  | VM_ALLOC_NOOBJ | VM_ALLOC_NOBUSY |
+	pflags = VM_ALLOC_NORMAL | VM_ALLOC_NOBUSY |
 	    VM_ALLOC_WIRED | VM_ALLOC_ZERO;
 	tries = 0;
 retry:
-	m = vm_page_alloc_contig(NULL, 0, pflags, npages, low, high, alignment,
+	m = vm_page_alloc_noobj_contig(pflags, npages, low, high, alignment,
 	    boundary, memattr);
 	if (m == NULL) {
 		if (tries < 3) {
@@ -187,7 +188,7 @@ drm_gem_cma_fault(struct vm_area_struct *dummy, struct vm_fault *vmf)
 			goto fail_unlock;
 		if (vm_page_insert(page, obj, i))
 			goto fail_unlock;
-		vm_page_xbusy(page);
+		vm_page_tryxbusy(page);
 		page->valid = VM_PAGE_BITS_ALL;
 	}
 	VM_OBJECT_WUNLOCK(obj);
