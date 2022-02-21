@@ -67,8 +67,7 @@ static fo_poll_t dmabuf_fop_poll;
 static fo_seek_t dmabuf_fop_seek;
 
 static int
-dmabuf_fop_stat(struct file *fp, struct stat *sb, struct ucred *cred,
-    struct thread *td)
+dmabuf_fop_stat(struct file *fp, struct stat *sb, struct ucred *cred)
 {
 
 	return (0);

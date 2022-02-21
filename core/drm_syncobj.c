@@ -512,7 +512,7 @@ static int drm_syncobj_file_close(struct file *file, struct thread *td)
 }
 static __inline int
 drm_syncobj_file_stat(struct file *fp, struct stat *sb,
-    struct ucred *active_cred, struct thread *td)
+    struct ucred *active_cred)
 {
 
 	return (0);
