@@ -1,7 +1,8 @@
-From cad0d55e8c7ebdbe2f5411495d3e524893769674 Mon Sep 17 00:00:00 2001
+From dd658f2aacc7b4bf7673b0945ccdc7ccbc5df20a Mon Sep 17 00:00:00 2001
 From: Emmanuel Vadot <manu@FreeBSD.org>
 Date: Sat, 10 Apr 2021 21:56:31 +0200
-Subject: [PATCH 1/2] Add GENERIC-DRM for armv7
+Subject: [PATCH 2/4] Add GENERIC-DRM for armv7
+Content-Type: text/plain; charset=UTF-8
 
 ---
  sys/arm/conf/GENERIC-DRM | 21 +++++++++++++++++++++
@@ -10,7 +11,7 @@ Subject: [PATCH 1/2] Add GENERIC-DRM for armv7
 
 diff --git a/sys/arm/conf/GENERIC-DRM b/sys/arm/conf/GENERIC-DRM
 new file mode 100644
-index 00000000000..df1fe081f26
+index 000000000000..df1fe081f26b
 --- /dev/null
 +++ b/sys/arm/conf/GENERIC-DRM
 @@ -0,0 +1,21 @@
@@ -36,5 +37,5 @@ index 00000000000..df1fe081f26
 +files		"../../dev/drm/extra_patches/files"
 +files		"../../dev/drm/extra_patches/files.aw"
 -- 
-2.31.1
+2.35.1
 

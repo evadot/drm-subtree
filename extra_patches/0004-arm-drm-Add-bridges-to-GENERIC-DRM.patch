@@ -1,7 +1,7 @@
-From e8864c3d7fe7d0ff52423b5f07c28d08b7c73312 Mon Sep 17 00:00:00 2001
+From ffafe87253f6d262cd477fc45f1cad91b76f6109 Mon Sep 17 00:00:00 2001
 From: Emmanuel Vadot <manu@FreeBSD.org>
 Date: Wed, 2 Jun 2021 10:12:57 +0200
-Subject: [PATCH] arm: drm: Add bridges to GENERIC-DRM
+Subject: [PATCH 4/4] arm: drm: Add bridges to GENERIC-DRM
 Content-Type: text/plain; charset=UTF-8
 
 ---
@@ -9,7 +9,7 @@ Content-Type: text/plain; charset=UTF-8
  1 file changed, 1 insertion(+)
 
 diff --git a/sys/arm/conf/GENERIC-DRM b/sys/arm/conf/GENERIC-DRM
-index df1fe081f26..658d5180fac 100644
+index df1fe081f26b..658d5180facb 100644
 --- a/sys/arm/conf/GENERIC-DRM
 +++ b/sys/arm/conf/GENERIC-DRM
 @@ -19,3 +19,4 @@ device		aw_de2_drm
@@ -18,5 +18,5 @@ index df1fe081f26..658d5180fac 100644
  files		"../../dev/drm/extra_patches/files.aw"
 +files		"../../dev/drm/extra_patches/files.bridges"
 -- 
-2.31.1
+2.35.1
 
