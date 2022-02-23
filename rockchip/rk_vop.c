@@ -391,12 +391,9 @@ rk_crtc_atomic_check(struct drm_crtc *crtc, struct drm_crtc_state *state)
 static void
 rk_crtc_atomic_begin(struct drm_crtc *crtc, struct drm_crtc_state *old_state)
 {
-	struct rk_vop_softc *sc;
 	unsigned long flags;
 
 	dprintf("%s\n", __func__);
-
-	sc = container_of(crtc, struct rk_vop_softc, crtc);
 
 	if (crtc->state->event == NULL)
 		return;
@@ -525,12 +522,9 @@ rk_crtc_atomic_enable(struct drm_crtc *crtc, struct drm_crtc_state *old_state)
 static void
 rk_crtc_atomic_disable(struct drm_crtc *crtc, struct drm_crtc_state *old_state)
 {
-	struct rk_vop_softc *sc;
 	uint32_t irqflags;
 
 	dprintf("%s\n", __func__);
-
-	sc = container_of(crtc, struct rk_vop_softc, crtc);
 
 	/* Disable VBLANK events */
 	drm_crtc_vblank_off(crtc);

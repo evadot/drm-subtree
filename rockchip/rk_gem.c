@@ -190,11 +190,10 @@ rockchip_drm_gem_object_mmap(struct drm_gem_object *obj,
     struct vm_area_struct *vma)
 {
 	struct drm_gem_cma_object *bo;
-	vm_page_t *m;
 	int npages;
 	int error;
 
-	m = drm_gem_cma_get_pages(obj, &npages);
+	drm_gem_cma_get_pages(obj, &npages);
 
 	bo = container_of(obj, struct drm_gem_cma_object, gem_obj);
 	if (bo->pbase == 0)
