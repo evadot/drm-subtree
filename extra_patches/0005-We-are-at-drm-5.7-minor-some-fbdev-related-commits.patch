@@ -1,0 +1,26 @@
+From 648b167222676a14154ca76c70e82bfac1b1f358 Mon Sep 17 00:00:00 2001
+From: Emmanuel Vadot <manu@FreeBSD.org>
+Date: Wed, 23 Feb 2022 14:59:28 +0100
+Subject: [PATCH] We are at drm 5.7 (minor some fbdev related commits
+Content-Type: text/plain; charset=UTF-8
+
+---
+ sys/conf/kern.pre.mk | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/sys/conf/kern.pre.mk b/sys/conf/kern.pre.mk
+index d7b041148e0e..d52f1d4da077 100644
+--- a/sys/conf/kern.pre.mk
++++ b/sys/conf/kern.pre.mk
+@@ -316,7 +316,7 @@ DRM_INCLUDES+=	-I${S}/dev/drm/drmkpi/include/
+ 
+ DRM_CFLAGS=	${CFLAGS} ${DRM_INCLUDES}
+ DRM_CFLAGS+=	-include ${S}/dev/drm/drmkpi/include/drm/drm_os_freebsd.h
+-DRM_CFLAGS+=	'-DKBUILD_MODNAME="DRMv5.6"'
++DRM_CFLAGS+=	'-DKBUILD_MODNAME="DRMv5.7"'
+ DRM_CFLAGS+=	-Wno-cast-qual -Wno-pointer-arith -Wno-missing-prototypes
+ # Complain about unsigned long long versus uint64_t, remove -Wformat for now
+ .if ${MACHINE_CPUARCH} == "aarch64"
+-- 
+2.35.1
+
