@@ -266,10 +266,7 @@ static void
 aw_crtc_atomic_begin(struct drm_crtc *crtc,
     struct drm_crtc_state *old_state)
 {
-	struct aw_de2_tcon_softc *sc;
 	unsigned long flags;
-
-	sc = container_of(crtc, struct aw_de2_tcon_softc, crtc);
 
 	if (crtc->state->event == NULL)
 		return;
@@ -652,10 +649,8 @@ static int
 aw_de2_tcon_detach(device_t dev)
 {
 	struct aw_de2_tcon_softc *sc;
-	phandle_t node;
 
 	sc = device_get_softc(dev);
-	node = ofw_bus_get_node(dev);
 
 	clk_release(sc->clk_tcon);
 	clk_release(sc->clk_ahb);
