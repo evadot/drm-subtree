@@ -267,10 +267,8 @@ static int
 aw_de2_mixer_detach(device_t dev)
 {
 	struct aw_de2_mixer_softc *sc;
-	phandle_t node;
 
 	sc = device_get_softc(dev);
-	node = ofw_bus_get_node(dev);
 
 	if (sc->vi_planes)
 		free(sc->vi_planes, DRM_MEM_DRIVER);
