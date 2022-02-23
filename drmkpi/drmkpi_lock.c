@@ -82,12 +82,9 @@ int
 drmkpi_ww_mutex_lock_sub(struct ww_mutex *lock,
     struct ww_acquire_ctx *ctx, int catch_signal)
 {
-	struct task_struct *task;
 	struct ww_mutex_thread entry;
 	struct ww_mutex_thread *other;
 	int retval = 0;
-
-	task = current;
 
 	drmkpi_ww_lock();
 	if (unlikely(sx_try_xlock(&lock->base.sx) == 0)) {

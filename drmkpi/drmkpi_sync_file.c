@@ -149,12 +149,8 @@ static int
 syncfile_fop_ioctl(struct file *file, u_long com, void *data,
 	      struct ucred *active_cred, struct thread *td)
 {
-	struct sync_file *sf;
-
 	if (!file_is_syncfile(file))
 		return (EINVAL);
-	sf = file->f_data;
-		
 	panic("Implement %s", __func__);
 
 	return (ENOTTY);

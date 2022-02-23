@@ -78,13 +78,10 @@ drmkpi_complete_common(struct completion *c, int all)
 int
 drmkpi_wait_for_common(struct completion *c, int flags)
 {
-	struct task_struct *task;
 	int error;
 
 	if (SCHEDULER_STOPPED())
 		return (0);
-
-	task = current;
 
 	if (flags != 0)
 		flags = SLEEPQ_INTERRUPTIBLE | SLEEPQ_SLEEP;
@@ -124,14 +121,11 @@ intr:
 int
 drmkpi_wait_for_timeout_common(struct completion *c, int timeout, int flags)
 {
-	struct task_struct *task;
 	int end = ticks + timeout;
 	int error;
 
 	if (SCHEDULER_STOPPED())
 		return (0);
-
-	task = current;
 
 	if (flags != 0)
 		flags = SLEEPQ_INTERRUPTIBLE | SLEEPQ_SLEEP;
