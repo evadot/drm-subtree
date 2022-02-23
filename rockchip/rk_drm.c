@@ -218,6 +218,7 @@ err_fini:
 	return (rv);
 }
 
+#ifdef NOTYET
 static void
 rk_drm_fb_destroy(struct drm_device *drm_dev)
 {
@@ -239,6 +240,7 @@ rk_drm_fb_destroy(struct drm_device *drm_dev)
 	free(fb, DRM_MEM_DRIVER);
 	sc->fb = NULL;
 }
+#endif
 
 static void
 rk_drm_irq_hook(void *arg)

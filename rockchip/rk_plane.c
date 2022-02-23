@@ -166,7 +166,6 @@ rk_vop_plane_atomic_update(struct drm_plane *plane,
 	dma_addr_t paddr;
 	uint32_t reg;
 	struct drm_crtc *crtc;
-	struct drm_rect *src;
 	struct drm_rect *dst;
 	uint32_t dsp_stx, dsp_sty;
 	int rgb_mode;
@@ -176,7 +175,6 @@ rk_vop_plane_atomic_update(struct drm_plane *plane,
 
 	state = plane->state;
 	dst = &state->dst;
-	src = &state->src;
 	crtc = state->crtc;
 	vop_plane = container_of(plane, struct rk_vop_plane, plane);
 	fb = container_of(plane->state->fb, struct drm_fb_cma, drm_fb);
