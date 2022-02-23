@@ -272,9 +272,6 @@ static enum drm_mode_status
 dw_hdmi_bridge_mode_valid(struct drm_bridge *bridge,
 			  const struct drm_display_mode *mode)
 {
-	struct dw_hdmi_softc *sc;
-
-	sc = container_of(bridge, struct dw_hdmi_softc, bridge);
 
 	return (MODE_OK);
 }
@@ -295,9 +292,6 @@ dw_hdmi_bridge_mode_set(struct drm_bridge *bridge,
 static void
 dw_hdmi_bridge_disable(struct drm_bridge *bridge)
 {
-	struct dw_hdmi_softc *sc;
-
-	sc = container_of(bridge, struct dw_hdmi_softc, bridge);
 }
 
 static inline void
