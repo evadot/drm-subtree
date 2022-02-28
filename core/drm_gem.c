@@ -77,6 +77,12 @@
  * up at a later date, and as our interface with shmfs for memory allocation.
  */
 
+static void
+drm_gem_init_release(struct drm_device *dev, void *ptr)
+{
+	drm_vma_offset_manager_destroy(dev->vma_offset_manager);
+}
+
 /**
  * drm_gem_init - Initialize the GEM device fields
  * @dev: drm_devic structure to initialize
@@ -774,7 +780,7 @@ EXPORT_SYMBOL(drm_gem_object_lookup);
  * Returns -ERESTARTSYS if interrupted, 0 if the wait timed out, or
  * greater than 0 on success.
  */
-long drm_gem_reservation_object_wait(struct drm_file *filep, u32 handle,
+long drm_gem_dma_resv_wait(struct drm_file *filep, u32 handle,
 				    bool wait_all, unsigned long timeout)
 {
 	long ret;
@@ -797,7 +803,7 @@ long drm_gem_reservation_object_wait(struct drm_file *filep, u32 handle,
 
 	return ret;
 }
-EXPORT_SYMBOL(drm_gem_reservation_object_wait);
+EXPORT_SYMBOL(drm_gem_dma_resv_wait);
 
 /**
  * drm_gem_close_ioctl - implementation of the GEM_CLOSE ioctl
