@@ -282,7 +282,11 @@ struct drm_gpu_scheduler {
 	atomic_t			hw_rq_count;
 	atomic64_t			job_id_count;
 	struct delayed_work		work_tdr;
+#ifdef __linux__
+	struct task_struct		*thread;
+#elif defined(__FreeBSD__)
 	struct thread			*thread;
+#endif
 	struct list_head		ring_mirror_list;
 	spinlock_t			job_list_lock;
 	int				hang_limit;
