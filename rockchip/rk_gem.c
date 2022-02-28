@@ -34,7 +34,7 @@ __FBSDID("$FreeBSD$");
 #include <drm/drm_file.h>
 
 #include <dev/drm/rockchip/rk_gem.h>
-#include <dev/drm/drmkpi/include/linux/dma-buf.h>
+#include <linux/dma-buf.h>
 
 struct rockchip_gem_object {
 	struct drm_gem_object	base;   /* Must go first */

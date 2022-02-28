@@ -61,7 +61,7 @@ __FBSDID("$FreeBSD$");
 
 #include <dev/drm/rockchip/rk_gem.h>
 
-#include <dev/drm/drmkpi/include/linux/dma-buf.h>
+#include <linux/dma-buf.h>
 
 #include "fb_if.h"
 #include "rk_vop_if.h"
