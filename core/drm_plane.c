@@ -305,10 +305,8 @@ int drm_plane_register_all(struct drm_device *dev)
 		num_planes++;
 	}
 
-#ifdef __linux__
 	drm_WARN(dev, num_zpos && num_planes != num_zpos,
 		 "Mixing planes with and without zpos property is invalid\n");
-#endif
 
 	return 0;
 }
