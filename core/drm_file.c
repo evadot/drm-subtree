@@ -56,6 +56,37 @@
 /* from BKL pushdown */
 DEFINE_MUTEX(drm_global_mutex);
 
+bool drm_dev_needs_global_mutex(struct drm_device *dev)
+{
+	/*
+	 * Legacy drivers rely on all kinds of BKL locking semantics, don't
+	 * bother. They also still need BKL locking for their ioctls, so better
+	 * safe than sorry.
+	 */
+	if (drm_core_check_feature(dev, DRIVER_LEGACY))
+		return true;
+
+	/*
+	 * The deprecated ->load callback must be called after the driver is
+	 * already registered. This means such drivers rely on the BKL to make
+	 * sure an open can't proceed until the driver is actually fully set up.
+	 * Similar hilarity holds for the unload callback.
+	 */
+	if (dev->driver->load || dev->driver->unload)
+		return true;
+
+	/*
+	 * Drivers with the lastclose callback assume that it's synchronized
+	 * against concurrent opens, which again needs the BKL. The proper fix
+	 * is to use the drm_client infrastructure with proper locking for each
+	 * client.
+	 */
+	if (dev->driver->lastclose)
+		return true;
+
+	return false;
+}
+
 /**
  * DOC: file operations
  *
@@ -230,7 +261,7 @@ void drm_file_free(struct drm_file *file)
 	DRM_DEBUG("pid = %d, device = 0x%lx, open_count = %d\n",
 		  task_pid_nr(current),
 		  (long)old_encode_dev(file->minor->kdev->devt),
-		  atomic_read(dev->open_count));
+		  atomic_read(&dev->open_count));
 #endif
 
 	if (drm_core_check_feature(dev, DRIVER_LEGACY) &&
@@ -586,7 +617,12 @@ put_back_event:
 				mtx_unlock(&file_priv->drm_mtx);
 
 				spin_unlock_irq(&dev->event_lock);
+#ifdef __linux__
+				wake_up_interruptible_poll(&file_priv->event_wait,
+					EPOLLIN | EPOLLRDNORM);
+#elif defined(__FreeBSD__)
 				wake_up_interruptible(&file_priv->event_wait);
+#endif
 				break;
 			}
 
