@@ -29,9 +29,11 @@
 #define	_DRM_GEM_CMA_H_
 
 #include <drm/drm_gem.h>
+#include <linux/scatterlist.h>
 
 struct drm_gem_cma_object {
 	struct drm_gem_object	gem_obj;
+	struct sg_table         *sgt;
 
 	/* mapped memory buffer */
 	vm_paddr_t		pbase;
@@ -43,6 +45,8 @@ struct drm_gem_cma_object {
 
 int drm_gem_cma_create(struct drm_device *drm, size_t size,
     struct drm_gem_cma_object **res_bo);
+int drm_gem_cma_create_nobufs(struct drm_device *drm, size_t size,
+    bool private, struct drm_gem_cma_object **res_bo);
 void drm_gem_cma_free_object(struct drm_gem_object *gem_obj);
 int drm_gem_cma_dumb_create(struct drm_file *file, struct drm_device *drm_dev,
     struct drm_mode_create_dumb *args);
