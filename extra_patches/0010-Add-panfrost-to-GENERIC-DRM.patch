@@ -1,0 +1,42 @@
+From e9f7744f11573cb1c87d35ccac88d2c53c8a3b6e Mon Sep 17 00:00:00 2001
+From: Emmanuel Vadot <manu@FreeBSD.org>
+Date: Wed, 2 Mar 2022 15:52:53 +0100
+Subject: [PATCH] Add panfrost to GENERIC-DRM
+Content-Type: text/plain; charset=UTF-8
+
+---
+ sys/arm64/conf/GENERIC-DRM | 2 ++
+ sys/conf/files.arm64       | 2 +-
+ 2 files changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/sys/arm64/conf/GENERIC-DRM b/sys/arm64/conf/GENERIC-DRM
+index 7243a4f35b94..2ca1b117bd50 100644
+--- a/sys/arm64/conf/GENERIC-DRM
++++ b/sys/arm64/conf/GENERIC-DRM
+@@ -18,8 +18,10 @@ device		drm
+ device		aw_de2_drm
+ device		rk_drm
+ device		dw_hdmi
++device		panfrost
+ 
+ files		"../../dev/drm/extra_patches/files"
++files		"../../dev/drm/extra_patches/files.arm64"
+ files		"../../dev/drm/extra_patches/files.aw"
+ files		"../../dev/drm/extra_patches/files.bridges"
+ files		"../../dev/drm/extra_patches/files.rk"
+diff --git a/sys/conf/files.arm64 b/sys/conf/files.arm64
+index ab7b5eb3a2d6..6d3baa41b6dd 100644
+--- a/sys/conf/files.arm64
++++ b/sys/conf/files.arm64
+@@ -104,7 +104,7 @@ arm64/coresight/coresight_tmc_fdt.c		optional fdt
+ 
+ arm64/iommu/iommu.c				optional iommu
+ arm64/iommu/iommu_if.m				optional iommu
+-arm64/iommu/iommu_pmap.c			optional iommu
++arm64/iommu/iommu_pmap.c			optional iommu | panfrost
+ arm64/iommu/smmu.c				optional iommu
+ arm64/iommu/smmu_acpi.c				optional acpi iommu
+ arm64/iommu/smmu_quirks.c			optional iommu
+-- 
+2.35.1
+
