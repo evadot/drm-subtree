@@ -32,7 +32,6 @@
 #include <linux/fs.h>
 #include <linux/wait.h>
 
-#include <linux/compat.h>
 #include <linux/ratelimit.h>
 #include <linux/export.h>
 

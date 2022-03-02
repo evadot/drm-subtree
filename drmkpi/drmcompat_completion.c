@@ -37,7 +37,6 @@ __FBSDID("$FreeBSD$");
 #include <sys/sleepqueue.h>
 #include <sys/proc.h>
 
-#include <linux/compat.h>	/* For linux_set_current */
 #include <linux/errno.h>	/* For ERESTARTSYS */
 
 #include <drmcompat/sched.h>

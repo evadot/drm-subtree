@@ -40,7 +40,6 @@
 #include <sys/time.h>
 
 #include <linux/bitmap.h>
-#include <linux/compat.h>
 #include <linux/completion.h>
 #include <linux/mm_types.h>
 #include <linux/pid.h>
@@ -52,18 +51,16 @@
 
 #include <drmcompat/sched.h>
 
-#define	task_pid_group_leader(task) (task)->task_thread->td_proc->p_pid
-#define	task_pid(task)		((task)->task_thread->td_tid)
-#define	task_pid_nr(task)	((task)->task_thread->td_tid)
-#define	task_pid_vnr(task)	((task)->task_thread->td_tid)
+#define	task_pid_group_leader(task) (task)->td_proc->p_pid
+#define	task_pid(task)		((task)->td_tid)
+#define	task_pid_nr(task)	((task)->td_tid)
+#define	task_pid_vnr(task)	((task)->td_tid)
 #define	get_pid(x)		(x)
 #define	put_pid(x)		do { } while (0)
 #define	current_euid()	(curthread->td_ucred->cr_uid)
 
-#define	set_task_state(task, x)		atomic_set(&(task)->state, (x))
-#define	__set_task_state(task, x)	((task)->state.counter = (x))
-#define	set_current_state(x)		set_task_state(current, x)
-#define	__set_current_state(x)		__set_task_state(current, x)
+#define	set_current_state(x)
+#define	__set_current_state(x)
 
 #define	cond_resched()	do { if (!cold) sched_relinquish(curthread); } while (0)
 

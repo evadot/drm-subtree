@@ -31,8 +31,6 @@ __FBSDID("$FreeBSD$");
 #include <sys/time.h>
 #include <sys/kernel.h>
 
-#include <linux/compat.h>	/* For linux_set_current */
-
 #include <drmcompat/timer.h>
 
 unsigned long drmcompat_timer_hz_mask;
@@ -79,8 +77,6 @@ static void
 drmcompat_timer_callback_wrapper(void *context)
 {
 	struct timer_list *timer;
-
-	linux_set_current(curthread);
 
 	timer = context;
 	timer->function(timer->data);

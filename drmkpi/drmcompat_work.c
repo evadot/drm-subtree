@@ -236,7 +236,7 @@ drmcompat_work_fn(void *context, int pending)
 	struct work_struct *work;
 	struct workqueue_struct *wq;
 	struct work_exec exec;
-	struct task_struct *task;
+	struct thread *task;
 
 	task = current;
 
