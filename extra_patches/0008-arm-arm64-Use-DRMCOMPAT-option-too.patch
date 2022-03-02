@@ -1,0 +1,38 @@
+From 8311db9d61b4f2688c0903bfe549a0799f7e7b39 Mon Sep 17 00:00:00 2001
+From: Emmanuel Vadot <manu@FreeBSD.org>
+Date: Wed, 2 Mar 2022 10:17:27 +0100
+Subject: [PATCH] arm: arm64: Use DRMCOMPAT option too
+Content-Type: text/plain; charset=UTF-8
+
+---
+ sys/arm/conf/GENERIC-DRM   | 1 +
+ sys/arm64/conf/GENERIC-DRM | 1 +
+ 2 files changed, 2 insertions(+)
+
+diff --git a/sys/arm/conf/GENERIC-DRM b/sys/arm/conf/GENERIC-DRM
+index 658d5180facb..97720c7ff5ac 100644
+--- a/sys/arm/conf/GENERIC-DRM
++++ b/sys/arm/conf/GENERIC-DRM
+@@ -12,6 +12,7 @@ ident		GENERIC-DRM
+ 
+ # DRM Support
+ options		COMPAT_DRMKPI
++options		COMPAT_DRMCOMPAT
+ options		COMPAT_LINUXKPI
+ 
+ device		drm
+diff --git a/sys/arm64/conf/GENERIC-DRM b/sys/arm64/conf/GENERIC-DRM
+index 1b7f9b0a5d7b..387cd2da1df8 100644
+--- a/sys/arm64/conf/GENERIC-DRM
++++ b/sys/arm64/conf/GENERIC-DRM
+@@ -12,6 +12,7 @@ ident		GENERIC-DRM
+ 
+ # DRM Support
+ options		COMPAT_DRMKPI
++options		COMPAT_DRMCOMPAT
+ options		COMPAT_LINUXKPI
+ 
+ device		drm
+-- 
+2.35.1
+
