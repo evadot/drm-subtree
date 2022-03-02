@@ -257,14 +257,12 @@ drmcompat_work_fn(void *context, int pending)
 		case WORK_ST_CANCEL:
 			WQ_EXEC_UNLOCK(wq);
 
-			/* set current work structure */
-			task->work = work;
+			/* TODO: set current work structure */
 
 			/* call work function */
 			work->func(work);
 
-			/* set current work structure */
-			task->work = NULL;
+			/* TODO: unset current work structure */
 
 			WQ_EXEC_LOCK(wq);
 			/* check if unblocked */
@@ -607,7 +605,10 @@ drmcompat_init_delayed_work(struct delayed_work *dwork, work_func_t func)
 struct work_struct *
 drmcompat_current_work(void)
 {
-	return (current->work);
+
+	panic("Implement me");
+
+	return (NULL);
 }
 
 static void
