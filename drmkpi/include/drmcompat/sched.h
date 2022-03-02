@@ -47,11 +47,9 @@
 
 #define	TASK_COMM_LEN		(MAXCOMLEN + 1)
 
-struct work_struct;
 struct task_struct {
 	struct thread *task_thread;
 	atomic_t state;
-	struct work_struct *work;	/* current work struct, if set */
 };
 
 #define	current	({ \
