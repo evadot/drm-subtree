@@ -2,8 +2,8 @@
  * Copyright (c) 2010 Isilon Systems, Inc.
  * Copyright (c) 2010 iX Systems, Inc.
  * Copyright (c) 2010 Panasas, Inc.
- * Copyright (c) 2013-2016 Mellanox Technologies, Ltd.
- * Copyright (c) 2015 François Tigeot
+ * Copyright (c) 2013, 2014 Mellanox Technologies, Ltd.
+ * Copyright (c) 2017 Mark Johnston <markj@FreeBSD.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,12 +30,48 @@
  * $FreeBSD$
  */
 
-#ifndef	__DRMKPI_UACCESS_H__
-#define	__DRMKPI_UACCESS_H__
+#ifndef __DRMCOMPAT_WAIT_H__
+#define	__DRMCOMPAT_WAIT_H__
 
-int drmkpi_copyin(const void *uaddr, void *kaddr, size_t len);
-int drmkpi_copyout(const void *kaddr, void *uaddr, size_t len);
-size_t drmkpi_clear_user(void *uaddr, size_t len);
-int drmkpi_access_ok(const void *uaddr, size_t len);
+struct wait_queue_entry;
+struct wait_queue_head;
 
-#endif	/* __DRMKPI_UACCESS_H__ */
+typedef struct wait_queue_entry wait_queue_entry_t;
+typedef struct wait_queue_head wait_queue_head_t;
+
+typedef int wait_queue_func_t(wait_queue_entry_t *, unsigned int, int, void *);
+
+/*
+ * Many API consumers directly reference these fields and those of
+ * wait_queue_head.
+ */
+struct wait_queue_entry {
+	unsigned int flags;	/* always 0 */
+	void *private;
+	wait_queue_func_t *func;
+	struct list_head entry;
+};
+
+struct wait_queue_head {
+	spinlock_t lock;
+	struct list_head head;
+};
+
+/*
+ * This function is referenced by at least one DRM driver, so it may not be
+ * renamed and furthermore must be the default wait queue callback.
+ */
+extern wait_queue_func_t drmcompat_autoremove_wake_function;
+
+void drmcompat_wake_up(wait_queue_head_t *, unsigned int, int, bool);
+
+int drmcompat_wait_event_common(wait_queue_head_t *, wait_queue_entry_t *, int,
+    unsigned int, spinlock_t *);
+
+void drmcompat_prepare_to_wait(wait_queue_head_t *, wait_queue_entry_t *, int);
+void drmcompat_finish_wait(wait_queue_head_t *, wait_queue_entry_t *);
+
+struct task_struct;
+bool drmcompat_wake_up_state(struct task_struct *, unsigned int);
+
+#endif	/* __DRMCOMPAT_WAIT_H__ */

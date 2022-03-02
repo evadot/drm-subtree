@@ -2,7 +2,7 @@
  * Copyright (c) 2010 Isilon Systems, Inc.
  * Copyright (c) 2010 iX Systems, Inc.
  * Copyright (c) 2010 Panasas, Inc.
- * Copyright (c) 2013-2017 Mellanox Technologies, Ltd.
+ * Copyright (c) 2013, 2014 Mellanox Technologies, Ltd.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,13 +29,17 @@
  * $FreeBSD$
  */
 
-#ifndef __DRMKPI_MUTEX_H__
-#define	__DRMKPI_MUTEX_H__
+#ifndef __DRMCOMPAT_COMPLETION_H__
+#define	__DRMCOMPAT_COMPLETION_H__
 
-typedef struct mutex {
-	struct sx sx;
-} mutex_t;
+struct completion {
+	unsigned int done;
+};
 
-int drmkpi_mutex_lock_interruptible(mutex_t *m);
+void drmcompat_complete_common(struct completion *, int);
+int drmcompat_wait_for_common(struct completion *, int);
+int drmcompat_wait_for_timeout_common(struct completion *, int, int);
+int drmcompat_try_wait_for_completion(struct completion *);
+int drmcompat_completion_done(struct completion *);
 
 #endif

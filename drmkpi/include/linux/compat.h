@@ -29,22 +29,22 @@
  * $FreeBSD$
  */
 
-#ifndef __DRMKPI_LINUX_COMPAT_H__
-#define	__DRMKPI_LINUX_COMPAT_H__
+#ifndef __DRMCOMPAT_LINUX_COMPAT_H__
+#define	__DRMCOMPAT_LINUX_COMPAT_H__
 
 #include <sys/param.h>
 #include <sys/proc.h>
 
-#include <drmkpi/sched.h>
+#include <drmcompat/sched.h>
 
-extern int drmkpi_alloc_current(struct thread *, int flags);
-extern void drmkpi_free_current(struct task_struct *);
+extern int drmcompat_alloc_current(struct thread *, int flags);
+extern void drmcompat_free_current(struct task_struct *);
 
 static inline void
 linux_set_current(struct thread *td)
 {
 	if (__predict_false(td->td_lkpi_task == NULL))
-		drmkpi_alloc_current(td, M_WAITOK);
+		drmcompat_alloc_current(td, M_WAITOK);
 }
 
-#endif	/* __DRMKPI_LINUX_COMPAT_H__ */
+#endif	/* __DRMCOMPAT_LINUX_COMPAT_H__ */

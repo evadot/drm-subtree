@@ -29,8 +29,8 @@
  * $FreeBSD$
  */
 
-#ifndef	_LINUX_KTHREAD_H_
-#define	_LINUX_KTHREAD_H_
+#ifndef	__DRMCOMPAT_LINUX_KTHREAD_H__
+#define	__DRMCOMPAT_LINUX_KTHREAD_H__
 
 #include <linux/sched.h>
 
@@ -50,31 +50,31 @@ struct kthr_wrap {
 	w->func = fn;							\
 	w->arg = data;							\
 									\
-	if (kthread_add(drmkpi_kthread_fn, w, NULL, &__td,		\
+	if (kthread_add(drmcompat_kthread_fn, w, NULL, &__td,		\
 	    RFSTOPPED, 0, fmt, ## __VA_ARGS__)) {			\
 		__td = NULL;						\
 		free(w, M_DRMKMALLOC);					\
 	} else								\
-		__td = drmkpi_kthread_setup_and_run(__td);		\
+		__td = drmcompat_kthread_setup_and_run(__td);		\
 	__td;								\
 })
 
-int drmkpi_kthread_stop(struct thread *);
-bool drmkpi_kthread_should_stop_task(struct thread *td);
-bool drmkpi_kthread_should_stop(void);
-int drmkpi_kthread_park(struct thread *);
-void drmkpi_kthread_parkme(void);
-bool drmkpi_kthread_should_park(void);
-void drmkpi_kthread_unpark(struct thread *);
-void drmkpi_kthread_fn(void *);
-struct thread *drmkpi_kthread_setup_and_run(struct thread *);
+int drmcompat_kthread_stop(struct thread *);
+bool drmcompat_kthread_should_stop_task(struct thread *td);
+bool drmcompat_kthread_should_stop(void);
+int drmcompat_kthread_park(struct thread *);
+void drmcompat_kthread_parkme(void);
+bool drmcompat_kthread_should_park(void);
+void drmcompat_kthread_unpark(struct thread *);
+void drmcompat_kthread_fn(void *);
+struct thread *drmcompat_kthread_setup_and_run(struct thread *);
 
-#define	kthread_stop(task)		drmkpi_kthread_stop(task)
-#define	kthread_should_stop()		drmkpi_kthread_should_stop()
-#define	kthread_should_stop_task(task)	drmkpi_kthread_should_stop_task(task)
-#define	kthread_park(task)		drmkpi_kthread_park(task)
-#define	kthread_parkme()		drmkpi_kthread_parkme()
-#define	kthread_should_park()		drmkpi_kthread_should_park()
-#define	kthread_unpark(task)		drmkpi_kthread_unpark(task)
+#define	kthread_stop(task)		drmcompat_kthread_stop(task)
+#define	kthread_should_stop()		drmcompat_kthread_should_stop()
+#define	kthread_should_stop_task(task)	drmcompat_kthread_should_stop_task(task)
+#define	kthread_park(task)		drmcompat_kthread_park(task)
+#define	kthread_parkme()		drmcompat_kthread_parkme()
+#define	kthread_should_park()		drmcompat_kthread_should_park()
+#define	kthread_unpark(task)		drmcompat_kthread_unpark(task)
 
-#endif /* _LINUX_KTHREAD_H_ */
+#endif /* __DRMCOMPAT_LINUX_KTHREAD_H__ */

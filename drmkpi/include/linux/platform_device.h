@@ -1,5 +1,5 @@
-#ifndef __DRMKPI_LINUX_PLATFORM_DEVICE_H__
-#define	__DRMKPI_LINUX_PLATFORM_DEVICE_H__
+#ifndef __DRMCOMPAT_LINUX_PLATFORM_DEVICE_H__
+#define	__DRMCOMPAT_LINUX_PLATFORM_DEVICE_H__
 
 #include <linux/device.h>
 
@@ -20,4 +20,4 @@ platform_device_register_simple(const char *name, int id,
 	panic("%s: unimplemented", __func__);
 }
 
-#endif /* __DRMKPI_LINUX_PLATFORM_DEVICE_H__ */
+#endif /* __DRMCOMPAT_LINUX_PLATFORM_DEVICE_H__ */

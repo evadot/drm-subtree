@@ -29,12 +29,12 @@
  * $FreeBSD$
  */
 
-#ifndef __LINUX_IDR_H__
-#define	__LINUX_IDR_H__
+#ifndef __DRMCOMPAT_LINUX_IDR_H__
+#define	__DRMCOMPAT_LINUX_IDR_H__
 
 #include <linux/types.h>
 
-#include <drmkpi/idr.h>
+#include <drmcompat/idr.h>
 
 /* NOTE: It is the applications responsibility to destroy the IDR */
 #define	DEFINE_IDR(name)						\
@@ -48,33 +48,33 @@
 	SYSINIT(name##_ida_sysinit, SI_SUB_DRIVERS, SI_ORDER_FIRST,	\
 	    ida_init, &(name))
 
-#define	idr_preload(gfp)			drmkpi_idr_preload(gfp)
-#define	idr_preload_end()			drmkpi_idr_preload_end()
-#define	idr_find(idr, id)			drmkpi_idr_find(idr, id)
-#define	idr_get_next(idr, id)			drmkpi_idr_get_next(idr, id)
-#define	idr_is_empty(idr)			drmkpi_idr_is_empty(idr)
-#define	idr_pre_get(idr, gfp)			drmkpi_idr_pre_get(idr, gfp)
-#define	idr_get_new(idr, ptr, id)		drmkpi_idr_get_new(idr, ptr, id)
-#define	idr_get_new_above(idr, ptr, s_id, id)	drmkpi_idr_get_new_above(idr, ptr, s_id, id)
-#define	idr_replace(idr, ptr, id)		drmkpi_idr_replace(idr, ptr, id)
-#define	idr_remove(idr, id)			drmkpi_idr_remove(idr, id)
-#define	idr_remove_all(idr)			drmkpi_idr_remove_all(idr)
-#define	idr_destroy(idr)			drmkpi_idr_destroy(idr)
-#define	idr_init(idr)				drmkpi_idr_init(idr)
-#define	idr_alloc(idr, ptr, s, e, gfp)		drmkpi_idr_alloc(idr, ptr, s, e, gfp)
-#define	idr_alloc_cyclic(idr, ptr, s, e, gfp)	drmkpi_idr_alloc_cyclic(idr, ptr, s, e, gfp)
-#define	idr_for_each(idr, fn, data)		drmkpi_idr_for_each(idr, fn, data)
+#define	idr_preload(gfp)			drmcompat_idr_preload(gfp)
+#define	idr_preload_end()			drmcompat_idr_preload_end()
+#define	idr_find(idr, id)			drmcompat_idr_find(idr, id)
+#define	idr_get_next(idr, id)			drmcompat_idr_get_next(idr, id)
+#define	idr_is_empty(idr)			drmcompat_idr_is_empty(idr)
+#define	idr_pre_get(idr, gfp)			drmcompat_idr_pre_get(idr, gfp)
+#define	idr_get_new(idr, ptr, id)		drmcompat_idr_get_new(idr, ptr, id)
+#define	idr_get_new_above(idr, ptr, s_id, id)	drmcompat_idr_get_new_above(idr, ptr, s_id, id)
+#define	idr_replace(idr, ptr, id)		drmcompat_idr_replace(idr, ptr, id)
+#define	idr_remove(idr, id)			drmcompat_idr_remove(idr, id)
+#define	idr_remove_all(idr)			drmcompat_idr_remove_all(idr)
+#define	idr_destroy(idr)			drmcompat_idr_destroy(idr)
+#define	idr_init(idr)				drmcompat_idr_init(idr)
+#define	idr_alloc(idr, ptr, s, e, gfp)		drmcompat_idr_alloc(idr, ptr, s, e, gfp)
+#define	idr_alloc_cyclic(idr, ptr, s, e, gfp)	drmcompat_idr_alloc_cyclic(idr, ptr, s, e, gfp)
+#define	idr_for_each(idr, fn, data)		drmcompat_idr_for_each(idr, fn, data)
 
 #define	idr_for_each_entry(idp, entry, id)	\
 	for ((id) = 0; ((entry) = idr_get_next(idp, &(id))) != NULL; ++(id))
 
-#define	ida_pre_get(ida, id)			drmkpi_ida_pre_get(ida, id)
-#define	ida_pre_get_new_above(ida, s_id, p_id)	drmkpi_ida_get_new_above(ida, s_id, p_id)
-#define	ida_remove(ida, id)			drmkpi_ida_remove(ida, id)
-#define	ida_destroy(ida)			drmkpi_ida_destroy(ida)
-#define	ida_init(ida)				drmkpi_ida_init(ida)
-#define	ida_simple_get(ida, s, e, gfp)		drmkpi_ida_simple_get(ida, s, e, gfp)
-#define	ida_simple_remove(ida, id)		drmkpi_ida_simple_remove(ida, id)
-#define	ida_get_new(ida, id)			drmkpi_ida_get_new_above(ida, 0, id)
+#define	ida_pre_get(ida, id)			drmcompat_ida_pre_get(ida, id)
+#define	ida_pre_get_new_above(ida, s_id, p_id)	drmcompat_ida_get_new_above(ida, s_id, p_id)
+#define	ida_remove(ida, id)			drmcompat_ida_remove(ida, id)
+#define	ida_destroy(ida)			drmcompat_ida_destroy(ida)
+#define	ida_init(ida)				drmcompat_ida_init(ida)
+#define	ida_simple_get(ida, s, e, gfp)		drmcompat_ida_simple_get(ida, s, e, gfp)
+#define	ida_simple_remove(ida, id)		drmcompat_ida_simple_remove(ida, id)
+#define	ida_get_new(ida, id)			drmcompat_ida_get_new_above(ida, 0, id)
 
-#endif	/* __LINUX_IDR_H__ */
+#endif	/* __DRMCOMPAT_LINUX_IDR_H__ */

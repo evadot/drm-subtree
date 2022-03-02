@@ -1,7 +1,7 @@
-#ifndef __DRMKPI_LINUX_MEM_ENCRYPT_H__
-#define	__DRMKPI_LINUX_MEM_ENCRYPT_H__
+#ifndef __DRMCOMPAT_LINUX_MEM_ENCRYPT_H__
+#define	__DRMCOMPAT_LINUX_MEM_ENCRYPT_H__
 
 #define pgprot_encrypted(prot)	(prot)
 #define pgprot_decrypted(prot)	(prot)
 
-#endif /* __DRMKPI_LINUX_MEM_ENCRYPT_H__ */
+#endif /* __DRMCOMPAT_LINUX_MEM_ENCRYPT_H__ */

@@ -29,8 +29,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef __DRMKPI_LINUX_RESERVATION_H__
-#define	__DRMKPI_LINUX_RESERVATION_H__
+#ifndef __DRMCOMPAT_LINUX_RESERVATION_H__
+#define	__DRMCOMPAT_LINUX_RESERVATION_H__
 
 #include <linux/dma-fence.h>
 #include <linux/rcupdate.h>
@@ -135,4 +135,4 @@ reservation_object_has_excl_fence(const struct reservation_object *robj)
 	return robj->fence_excl != NULL;
 }
 
-#endif	/* __DRMKPI_LINUX_RESERVATION_H__ */
+#endif	/* __DRMCOMPAT_LINUX_RESERVATION_H__ */

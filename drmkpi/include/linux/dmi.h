@@ -28,8 +28,8 @@
  * $FreeBSD$
  */
 
-#ifndef __DRMKPI_LINUX_DMI_H__
-#define	__DRMKPI_LINUX_DMI_H__
+#ifndef __DRMCOMPAT_LINUX_DMI_H__
+#define	__DRMCOMPAT_LINUX_DMI_H__
 
 #include <linux/mod_devicetable.h>
 
@@ -43,4 +43,4 @@ const char *linux_dmi_get_system_info(int);
 #define	dmi_first_match(sysid)	linux_dmi_first_match(sysid)
 #define	dmi_get_system_info(sysid)	linux_dmi_get_system_info(sysid)
 
-#endif	/* __DRMKPI_LINUX_DMI_H__ */
+#endif	/* __DRMCOMPAT_LINUX_DMI_H__ */

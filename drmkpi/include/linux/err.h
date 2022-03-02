@@ -29,8 +29,8 @@
  * $FreeBSD$
  */
 
-#ifndef __DRMKPI_LINUX_ERR_H__
-#define	__DRMKPI_LINUX_ERR_H__
+#ifndef __DRMCOMPAT_LINUX_ERR_H__
+#define	__DRMCOMPAT_LINUX_ERR_H__
 
 #include <sys/types.h>
 
@@ -81,4 +81,4 @@ PTR_ERR_OR_ZERO(const void *ptr)
 
 #define PTR_RET(p) PTR_ERR_OR_ZERO(p)
 
-#endif	/* __DRMKPI_LINUX_ERR_H__ */
+#endif	/* __DRMCOMPAT_LINUX_ERR_H__ */

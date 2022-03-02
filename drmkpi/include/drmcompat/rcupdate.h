@@ -1,8 +1,5 @@
 /*-
- * Copyright (c) 2010 Isilon Systems, Inc.
- * Copyright (c) 2010 iX Systems, Inc.
- * Copyright (c) 2010 Panasas, Inc.
- * Copyright (c) 2013-2018 Mellanox Technologies, Ltd.
+ * Copyright (c) 2016-2017 Mellanox Technologies, Ltd.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,39 +26,61 @@
  * $FreeBSD$
  */
 
-#ifndef __DRMKPI_SCHED_H__
-#define	__DRMKPI_SCHED_H__
+#ifndef __DRMCOMPAT_RCUPDATE_H__
+#define	__DRMCOMPAT_RCUPDATE_H__
 
-#include <linux/atomic.h>
-#include <linux/types.h>
-#include <drmkpi/completion.h>
+/* BSD specific defines */
+#define	RCU_TYPE_REGULAR 0
+#define	RCU_TYPE_SLEEPABLE 1
+#define	RCU_TYPE_MAX 2
 
-#define	MAX_SCHEDULE_TIMEOUT	INT_MAX
+#define	LINUX_KFREE_RCU_OFFSET_MAX	4096	/* exclusive */
 
-#define	TASK_RUNNING		0x0000
-#define	TASK_INTERRUPTIBLE	0x0001
-#define	TASK_UNINTERRUPTIBLE	0x0002
-#define	TASK_NORMAL		(TASK_INTERRUPTIBLE | TASK_UNINTERRUPTIBLE)
-#define	TASK_WAKING		0x0100
-#define	TASK_PARKED		0x0200
-
-#define	TASK_COMM_LEN		(MAXCOMLEN + 1)
-
-struct work_struct;
-struct task_struct {
-	struct thread *task_thread;
-	atomic_t state;
-	struct work_struct *work;	/* current work struct, if set */
+struct rcu_head {
 };
 
-#define	current	({ \
-	struct thread *__td = curthread; \
-	linux_set_current(__td); \
-	((struct task_struct *)__td->td_lkpi_task); \
-})
+typedef void (*rcu_callback_t)(struct rcu_head *head);
+typedef void (*call_rcu_func_t)(struct rcu_head *head, rcu_callback_t func);
 
-bool drmkpi_signal_pending(struct task_struct *task);
+extern struct mtx drmcompat_global_rcu_lock;
 
-int drmkpi_schedule_timeout(int timeout);
+static inline void
+drmcompat_call_rcu(unsigned type, struct rcu_head *ptr, rcu_callback_t func)
+{
 
-#endif	/* __DRMKPI_SCHED_H__ */
+	mtx_lock(&drmcompat_global_rcu_lock);
+	func(ptr);
+	mtx_unlock(&drmcompat_global_rcu_lock);
+}
+
+static inline void
+drmcompat_rcu_read_lock(unsigned type)
+{
+
+	mtx_lock(&drmcompat_global_rcu_lock);
+}
+
+static inline void
+drmcompat_rcu_read_unlock(unsigned type)
+{
+
+	mtx_unlock(&drmcompat_global_rcu_lock);
+}
+
+static inline void
+drmcompat_rcu_barrier(unsigned type)
+{
+
+	mtx_lock(&drmcompat_global_rcu_lock);
+	mtx_unlock(&drmcompat_global_rcu_lock);
+}
+
+static inline void
+drmcompat_synchronize_rcu(unsigned type)
+{
+
+	mtx_lock(&drmcompat_global_rcu_lock);
+	mtx_unlock(&drmcompat_global_rcu_lock);
+}
+
+#endif	/* __DRMCOMPAT_RCUPDATE_H__ */

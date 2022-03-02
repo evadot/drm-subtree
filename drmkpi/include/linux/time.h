@@ -26,8 +26,8 @@
  * $FreeBSD$
  */
 
-#ifndef __DRMKPI_LINUX_TIME_H__
-#define	__DRMKPI_LINUX_TIME_H__
+#ifndef __DRMCOMPAT_LINUX_TIME_H__
+#define	__DRMCOMPAT_LINUX_TIME_H__
 
 #define	NSEC_PER_USEC	1000L
 #define	NSEC_PER_MSEC	1000000L
@@ -133,4 +133,4 @@ get_seconds(void)
 	return time_uptime;
 }
 
-#endif /* __DRMKPI_LINUX_TIME_H__ */
+#endif /* __DRMCOMPAT_LINUX_TIME_H__ */

@@ -1,5 +1,8 @@
 /*-
- * Copyright (c) 2015-2017 Mellanox Technologies, Ltd.
+ * Copyright (c) 2010 Isilon Systems, Inc.
+ * Copyright (c) 2010 iX Systems, Inc.
+ * Copyright (c) 2010 Panasas, Inc.
+ * Copyright (c) 2013-2017 Mellanox Technologies, Ltd.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,17 +29,13 @@
  * $FreeBSD$
  */
 
-#ifndef __DRMKPI_SRCU_H__
-#define	__DRMKPI_SRCU_H__
+#ifndef __DRMCOMPAT_MUTEX_H__
+#define	__DRMCOMPAT_MUTEX_H__
 
-struct srcu_struct {
-};
+typedef struct mutex {
+	struct sx sx;
+} mutex_t;
 
-int drmkpi_srcu_read_lock(struct srcu_struct *);
-void drmkpi_srcu_read_unlock(struct srcu_struct *, int index);
-void drmkpi_synchronize_srcu(struct srcu_struct *);
-void drmkpi_srcu_barrier(struct srcu_struct *);
-int drmkpi_init_srcu_struct(struct srcu_struct *);
-void drmkpi_cleanup_srcu_struct(struct srcu_struct *);
+int drmcompat_mutex_lock_interruptible(mutex_t *m);
 
-#endif	/* __DRMKPI_SRCU_H__ */
+#endif

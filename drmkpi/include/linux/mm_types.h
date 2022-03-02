@@ -26,8 +26,8 @@
  * $FreeBSD$
  */
 
-#ifndef __DRMKPI_LINUX_MM_TYPES_H__
-#define	__DRMKPI_LINUX_MM_TYPES_H__
+#ifndef __DRMCOMPAT_LINUX_MM_TYPES_H__
+#define	__DRMCOMPAT_LINUX_MM_TYPES_H__
 
 #include <linux/types.h>
 #include <linux/page.h>
@@ -47,4 +47,4 @@ struct mm_struct {
 	size_t pinned_vm;
 };
 
-#endif	/* __DRMKPI_LINUX_MM_TYPES_H__ */
+#endif	/* __DRMCOMPAT_LINUX_MM_TYPES_H__ */

@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2016-2017 Mellanox Technologies, Ltd.
+ * Copyright (c) 2015-2017 Mellanox Technologies, Ltd.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,61 +26,17 @@
  * $FreeBSD$
  */
 
-#ifndef __DRMKPI_RCUPDATE_H__
-#define	__DRMKPI_RCUPDATE_H__
+#ifndef __DRMCOMPAT_SRCU_H__
+#define	__DRMCOMPAT_SRCU_H__
 
-/* BSD specific defines */
-#define	RCU_TYPE_REGULAR 0
-#define	RCU_TYPE_SLEEPABLE 1
-#define	RCU_TYPE_MAX 2
-
-#define	LINUX_KFREE_RCU_OFFSET_MAX	4096	/* exclusive */
-
-struct rcu_head {
+struct srcu_struct {
 };
 
-typedef void (*rcu_callback_t)(struct rcu_head *head);
-typedef void (*call_rcu_func_t)(struct rcu_head *head, rcu_callback_t func);
+int drmcompat_srcu_read_lock(struct srcu_struct *);
+void drmcompat_srcu_read_unlock(struct srcu_struct *, int index);
+void drmcompat_synchronize_srcu(struct srcu_struct *);
+void drmcompat_srcu_barrier(struct srcu_struct *);
+int drmcompat_init_srcu_struct(struct srcu_struct *);
+void drmcompat_cleanup_srcu_struct(struct srcu_struct *);
 
-extern struct mtx drmkpi_global_rcu_lock;
-
-static inline void
-drmkpi_call_rcu(unsigned type, struct rcu_head *ptr, rcu_callback_t func)
-{
-
-	mtx_lock(&drmkpi_global_rcu_lock);
-	func(ptr);
-	mtx_unlock(&drmkpi_global_rcu_lock);
-}
-
-static inline void
-drmkpi_rcu_read_lock(unsigned type)
-{
-
-	mtx_lock(&drmkpi_global_rcu_lock);
-}
-
-static inline void
-drmkpi_rcu_read_unlock(unsigned type)
-{
-
-	mtx_unlock(&drmkpi_global_rcu_lock);
-}
-
-static inline void
-drmkpi_rcu_barrier(unsigned type)
-{
-
-	mtx_lock(&drmkpi_global_rcu_lock);
-	mtx_unlock(&drmkpi_global_rcu_lock);
-}
-
-static inline void
-drmkpi_synchronize_rcu(unsigned type)
-{
-
-	mtx_lock(&drmkpi_global_rcu_lock);
-	mtx_unlock(&drmkpi_global_rcu_lock);
-}
-
-#endif	/* __DRMKPI_RCUPDATE_H__ */
+#endif	/* __DRMCOMPAT_SRCU_H__ */

@@ -33,7 +33,7 @@ __FBSDID("$FreeBSD$");
 #include <sys/param.h>
 #include <sys/libkern.h>
 
-#include <drmkpi/sort.h>
+#include <drmcompat/sort.h>
 
 typedef int		cmp_t(const void *, const void *);
 static __inline char	*med3(char *, char *, char *, cmp_t *, void *);
@@ -175,7 +175,7 @@ loop:	SWAPINIT(a, es);
 }
 
 void
-drmkpi_sort(void *base, size_t num, size_t size,
+drmcompat_sort(void *base, size_t num, size_t size,
 	  int (*cmp)(const void *, const void *),
 	  void (*swap)(void *, void *, int))
 {

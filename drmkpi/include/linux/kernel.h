@@ -30,8 +30,8 @@
  * $FreeBSD$
  */
 
-#ifndef __DRMKPI_LINUX_KERNEL_H__
-#define	__DRMKPI_LINUX_KERNEL_H__
+#ifndef __DRMCOMPAT_LINUX_KERNEL_H__
+#define	__DRMCOMPAT_LINUX_KERNEL_H__
 
 #include <sys/cdefs.h>
 #include <sys/types.h>
@@ -542,4 +542,4 @@ linux_ratelimited(linux_ratelimit_t *rl)
 
 struct device_node;
 
-#endif	/* __DRMKPI_LINUX_KERNEL_H__ */
+#endif	/* __DRMCOMPAT_LINUX_KERNEL_H__ */

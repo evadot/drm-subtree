@@ -29,8 +29,8 @@
  * $FreeBSD$
  */
 
-#ifndef __DRMKPI_LINUX_PRINTK_H__
-#define	__DRMKPI_LINUX_PRINTK_H__
+#ifndef __DRMCOMPAT_LINUX_PRINTK_H__
+#define	__DRMCOMPAT_LINUX_PRINTK_H__
 
 #include <linux/kernel.h>
 
@@ -128,4 +128,4 @@ print_hex_dump_bytes(const char *prefix_str, const int prefix_type,
 #define	pr_info_ratelimited(fmt, ...) \
 	printk_ratelimited(KERN_INFO pr_fmt(fmt), ##__VA_ARGS__)
 
-#endif	/* __DRMKPI_LINUX_PRINTK_H__ */
+#endif	/* __DRMCOMPAT_LINUX_PRINTK_H__ */

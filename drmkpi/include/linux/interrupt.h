@@ -29,8 +29,8 @@
  * $FreeBSD$
  */
 
-#ifndef __DRMKPI_LINUX_INTERRUPT_H__
-#define	__DRMKPI_LINUX_INTERRUPT_H__
+#ifndef __DRMCOMPAT_LINUX_INTERRUPT_H__
+#define	__DRMCOMPAT_LINUX_INTERRUPT_H__
 
 #include <linux/device.h>
 #include <linux/pci.h>
@@ -40,4 +40,4 @@ typedef	irqreturn_t	(*irq_handler_t)(int, void *);
 
 #define	IRQF_SHARED	RF_SHAREABLE
 
-#endif	/* __DRMKPI_LINUX_INTERRUPT_H__ */
+#endif	/* __DRMCOMPAT_LINUX_INTERRUPT_H__ */

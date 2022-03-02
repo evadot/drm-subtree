@@ -35,68 +35,68 @@ __FBSDID("$FreeBSD$");
 #include <sys/lock.h>
 #include <sys/mutex.h>
 
-#include <drmkpi/rcupdate.h>
-#include <drmkpi/srcu.h>
+#include <drmcompat/rcupdate.h>
+#include <drmcompat/srcu.h>
 
-struct mtx drmkpi_global_rcu_lock;
+struct mtx drmcompat_global_rcu_lock;
 
 int
-drmkpi_init_srcu_struct(struct srcu_struct *srcu)
+drmcompat_init_srcu_struct(struct srcu_struct *srcu)
 {
 
 	return (0);
 }
 
 void
-drmkpi_cleanup_srcu_struct(struct srcu_struct *srcu)
+drmcompat_cleanup_srcu_struct(struct srcu_struct *srcu)
 {
 
 }
 
 int
-drmkpi_srcu_read_lock(struct srcu_struct *srcu)
+drmcompat_srcu_read_lock(struct srcu_struct *srcu)
 {
 
-	drmkpi_rcu_read_lock(RCU_TYPE_SLEEPABLE);
+	drmcompat_rcu_read_lock(RCU_TYPE_SLEEPABLE);
 
 	return (0);
 }
 
 void
-drmkpi_srcu_read_unlock(struct srcu_struct *srcu, int key __unused)
+drmcompat_srcu_read_unlock(struct srcu_struct *srcu, int key __unused)
 {
 
-	drmkpi_rcu_read_unlock(RCU_TYPE_SLEEPABLE);
+	drmcompat_rcu_read_unlock(RCU_TYPE_SLEEPABLE);
 }
 
 void
-drmkpi_synchronize_srcu(struct srcu_struct *srcu)
+drmcompat_synchronize_srcu(struct srcu_struct *srcu)
 {
 
-	drmkpi_synchronize_rcu(RCU_TYPE_SLEEPABLE);
+	drmcompat_synchronize_rcu(RCU_TYPE_SLEEPABLE);
 }
 
 void
-drmkpi_srcu_barrier(struct srcu_struct *srcu)
+drmcompat_srcu_barrier(struct srcu_struct *srcu)
 {
 
-	drmkpi_rcu_barrier(RCU_TYPE_SLEEPABLE);
+	drmcompat_rcu_barrier(RCU_TYPE_SLEEPABLE);
 }
 
 static void
-drmkpi_rcu_runtime_init(void *arg __unused)
+drmcompat_rcu_runtime_init(void *arg __unused)
 {
 
-	mtx_init(&drmkpi_global_rcu_lock, "global rcu", NULL, MTX_DEF);
+	mtx_init(&drmcompat_global_rcu_lock, "global rcu", NULL, MTX_DEF);
 }
-SYSINIT(drmkpi_rcu_runtime, SI_SUB_CPU, SI_ORDER_ANY,
-    drmkpi_rcu_runtime_init, NULL);
+SYSINIT(drmcompat_rcu_runtime, SI_SUB_CPU, SI_ORDER_ANY,
+    drmcompat_rcu_runtime_init, NULL);
 
 static void
-drmkpi_rcu_runtime_uninit(void *arg __unused)
+drmcompat_rcu_runtime_uninit(void *arg __unused)
 {
 
-	mtx_destroy(&drmkpi_global_rcu_lock);
+	mtx_destroy(&drmcompat_global_rcu_lock);
 }
-SYSUNINIT(drmkpi_rcu_runtime, SI_SUB_LOCK, SI_ORDER_SECOND,
-    drmkpi_rcu_runtime_uninit, NULL);
+SYSUNINIT(drmcompat_rcu_runtime, SI_SUB_LOCK, SI_ORDER_SECOND,
+    drmcompat_rcu_runtime_uninit, NULL);

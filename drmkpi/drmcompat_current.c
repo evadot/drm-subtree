@@ -33,10 +33,10 @@ __FBSDID("$FreeBSD$");
 
 #include <linux/compat.h>
 
-static MALLOC_DEFINE(M_DRMKPI_CURRENT, "drmkpicurrent", "DRMKPI task structure");
+static MALLOC_DEFINE(M_DRMCOMPAT_CURRENT, "drmcompatcurrent", "DRMCOMPAT task structure");
 
 int
-drmkpi_alloc_current(struct thread *td, int flags)
+drmcompat_alloc_current(struct thread *td, int flags)
 {
 	struct proc *proc;
 	struct task_struct *ts;
@@ -44,7 +44,7 @@ drmkpi_alloc_current(struct thread *td, int flags)
 	MPASS(td->td_lkpi_task == NULL);
 
 	flags &= ~M_WAITOK;
-	ts = malloc(sizeof(*ts), M_DRMKPI_CURRENT, flags | M_ZERO | M_NOWAIT);
+	ts = malloc(sizeof(*ts), M_DRMCOMPAT_CURRENT, flags | M_ZERO | M_NOWAIT);
 	if (ts == NULL)
 		return (ENOMEM);
 

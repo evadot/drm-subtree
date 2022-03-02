@@ -52,10 +52,10 @@ __FBSDID("$FreeBSD$");
 #include <linux/gfp.h>
 #include <linux/slab.h>	/* For kzalloc */
 
-#include <drmkpi/fs.h>
+#include <drmcompat/fs.h>
 
 vm_offset_t
-drmkpi_alloc_kmem(gfp_t flags, unsigned int order)
+drmcompat_alloc_kmem(gfp_t flags, unsigned int order)
 {
 	size_t size = ((size_t)PAGE_SIZE) << order;
 	vm_offset_t addr;
@@ -70,7 +70,7 @@ drmkpi_alloc_kmem(gfp_t flags, unsigned int order)
 }
 
 void
-drmkpi_free_kmem(vm_offset_t addr, unsigned int order)
+drmcompat_free_kmem(vm_offset_t addr, unsigned int order)
 {
 	size_t size = ((size_t)PAGE_SIZE) << order;
 
@@ -78,7 +78,7 @@ drmkpi_free_kmem(vm_offset_t addr, unsigned int order)
 }
 
 struct file *
-drmkpi_shmem_file_setup(const char *name, loff_t size, unsigned long flags)
+drmcompat_shmem_file_setup(const char *name, loff_t size, unsigned long flags)
 {
 	struct fileobj {
 		struct file file __aligned(sizeof(void *));

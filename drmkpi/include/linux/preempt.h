@@ -26,8 +26,8 @@
  * $FreeBSD$
  */
 
-#ifndef __DRMKPI_LINUX_PREEMPT_H__
-#define	__DRMKPI_LINUX_PREEMPT_H__
+#ifndef __DRMCOMPAT_LINUX_PREEMPT_H__
+#define	__DRMCOMPAT_LINUX_PREEMPT_H__
 
 #include <linux/hardirq.h>
 #include <linux/list.h>
@@ -42,4 +42,4 @@
 #define	preempt_disable()	critical_enter()
 #define	preempt_enable()	critical_exit()
 
-#endif	/* __DRMKPI_LINUX_PREEMPT_H__ */
+#endif	/* __DRMCOMPAT_LINUX_PREEMPT_H__ */

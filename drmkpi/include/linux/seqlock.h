@@ -29,8 +29,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef __DRMKPI_LINUX_SEQLOCK_H__
-#define	__DRMKPI_LINUX_SEQLOCK_H__
+#ifndef __DRMCOMPAT_LINUX_SEQLOCK_H__
+#define	__DRMCOMPAT_LINUX_SEQLOCK_H__
 
 #include <sys/param.h>
 #include <sys/types.h>
@@ -195,4 +195,4 @@ read_seqretry(const struct seqlock *seqlock, unsigned gen)
 	return read_seqcount_retry(&seqlock->sql_count, gen);
 }
 
-#endif	/* __DRMKPI_LINUX_SEQLOCK_H__ */
+#endif	/* __DRMCOMPAT_LINUX_SEQLOCK_H__ */

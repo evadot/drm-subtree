@@ -49,15 +49,15 @@
 #include <linux/vmalloc.h>
 
 #if defined(__amd64__) || defined(__aarch64__) || defined(__riscv__)
-#define	DRMKPI_HAVE_DMAP
+#define	DRMCOMPAT_HAVE_DMAP
 #else
-#undef	DRMKPI_HAVE_DMAP
+#undef	DRMCOMPAT_HAVE_DMAP
 #endif
 
 void *
 kmap(vm_page_t page)
 {
-#ifdef DRMKPI_HAVE_DMAP
+#ifdef DRMCOMPAT_HAVE_DMAP
 	vm_offset_t daddr;
 
 	daddr = PHYS_TO_DMAP(VM_PAGE_TO_PHYS(page));
@@ -99,7 +99,7 @@ kmap_atomic(vm_page_t page)
 void
 kunmap(vm_page_t page)
 {
-#ifdef DRMKPI_HAVE_DMAP
+#ifdef DRMCOMPAT_HAVE_DMAP
 	/* NOP */
 #else
 	struct sf_buf *sf;
@@ -118,7 +118,7 @@ kunmap(vm_page_t page)
 void
 kunmap_atomic(void *vaddr)
 {
-#ifdef DRMKPI_HAVE_DMAP
+#ifdef DRMCOMPAT_HAVE_DMAP
 	/* NOP */
 #else
 	struct sf_buf *sf;

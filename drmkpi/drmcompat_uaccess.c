@@ -36,12 +36,12 @@ __FBSDID("$FreeBSD$");
 
 #include <machine/vmparam.h>
 
-#include <drmkpi/fs.h>
-#include <drmkpi/uaccess.h>
+#include <drmcompat/fs.h>
+#include <drmcompat/uaccess.h>
 
-SYSCTL_NODE(_compat, OID_AUTO, drmkpi, CTLFLAG_RW, 0, "DRMKPI parameters");
+SYSCTL_NODE(_compat, OID_AUTO, drmcompat, CTLFLAG_RW, 0, "DRMCOMPAT parameters");
 
-MALLOC_DEFINE(M_DRMKMALLOC, "drmkpi", "DRM kmalloc compat");
+MALLOC_DEFINE(M_DRMKMALLOC, "drmcompat", "DRM kmalloc compat");
 
 #include <linux/rbtree.h>
 /* Undo Linux compat changes. */
@@ -49,29 +49,29 @@ MALLOC_DEFINE(M_DRMKMALLOC, "drmkpi", "DRM kmalloc compat");
 #define	RB_ROOT(head)	(head)->rbh_root
 
 int
-drmkpi_panic_cmp(struct rb_node *one, struct rb_node *two)
+drmcompat_panic_cmp(struct rb_node *one, struct rb_node *two)
 {
 	panic("no cmp");
 }
 
-RB_GENERATE(drmkpi_root, rb_node, __entry, drmkpi_panic_cmp);
+RB_GENERATE(drmcompat_root, rb_node, __entry, drmcompat_panic_cmp);
 
 int
-drmkpi_copyin(const void *uaddr, void *kaddr, size_t len)
+drmcompat_copyin(const void *uaddr, void *kaddr, size_t len)
 {
 
 	return (-copyin(uaddr, kaddr, len));
 }
 
 int
-drmkpi_copyout(const void *kaddr, void *uaddr, size_t len)
+drmcompat_copyout(const void *kaddr, void *uaddr, size_t len)
 {
 
 	return (-copyout(kaddr, uaddr, len));
 }
 
 size_t
-drmkpi_clear_user(void *_uaddr, size_t _len)
+drmcompat_clear_user(void *_uaddr, size_t _len)
 {
 	uint8_t *uaddr = _uaddr;
 	size_t len = _len;
@@ -110,7 +110,7 @@ drmkpi_clear_user(void *_uaddr, size_t _len)
 }
 
 int
-drmkpi_access_ok(const void *uaddr, size_t len)
+drmcompat_access_ok(const void *uaddr, size_t len)
 {
 	uintptr_t saddr;
 	uintptr_t eaddr;
@@ -125,7 +125,7 @@ drmkpi_access_ok(const void *uaddr, size_t len)
 }
 
 unsigned int
-drmkpi_iminor(struct inode *inode)
+drmcompat_iminor(struct inode *inode)
 {
 	struct vnode *vnode;
 
@@ -140,6 +140,6 @@ drmkpi_iminor(struct inode *inode)
  * NOTE: Linux frequently uses "unsigned long" for pointer to integer
  * conversion and vice versa, where in FreeBSD "uintptr_t" would be
  * used. Assert these types have the same size, else some parts of the
- * DRMKPI may not work like expected:
+ * DRMCOMPAT may not work like expected:
  */
 CTASSERT(sizeof(unsigned long) == sizeof(uintptr_t));

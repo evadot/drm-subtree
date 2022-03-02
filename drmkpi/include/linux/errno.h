@@ -29,8 +29,8 @@
  * $FreeBSD$
  */
 
-#ifndef __DRMKPI_LINUX_ERRNO_H__
-#define	__DRMKPI_LINUX_ERRNO_H__
+#ifndef __DRMCOMPAT_LINUX_ERRNO_H__
+#define	__DRMCOMPAT_LINUX_ERRNO_H__
 
 #include <sys/errno.h>
 
@@ -60,4 +60,4 @@
 #define	EJUKEBOX	528
 #define	EIOCBQUEUED	529
 
-#endif	/* __DRMKPI_LINUX_ERRNO_H__ */
+#endif	/* __DRMCOMPAT_LINUX_ERRNO_H__ */

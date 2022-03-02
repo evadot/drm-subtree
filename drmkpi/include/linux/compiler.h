@@ -30,8 +30,8 @@
  * $FreeBSD$
  */
 
-#ifndef __DRMKPI_LINUX_COMPILER_H__
-#define	__DRMKPI_LINUX_COMPILER_H__
+#ifndef __DRMCOMPAT_LINUX_COMPILER_H__
+#define	__DRMCOMPAT_LINUX_COMPILER_H__
 
 #include <sys/cdefs.h>
 #include <linux/bitops.h>
@@ -168,4 +168,4 @@ static inline uint64_t mul_u64_u32_div(uint64_t a, uint32_t mul, uint32_t diviso
 	return rl.ll;
 }
 
-#endif	/* __DRMKPI_LINUX_COMPILER_H__ */
+#endif	/* __DRMCOMPAT_LINUX_COMPILER_H__ */

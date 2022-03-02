@@ -29,8 +29,8 @@
  * $FreeBSD$
  */
 
-#ifndef __DRMKPI_IDR_H__
-#define	__DRMKPI_IDR_H__
+#ifndef __DRMCOMPAT_IDR_H__
+#define	__DRMCOMPAT_IDR_H__
 
 /* IDR Implementation */
 #define	IDR_BITS	5
@@ -65,29 +65,29 @@ struct ida {
 	struct ida_bitmap	*free_bitmap;
 };
 
-void	drmkpi_idr_preload(gfp_t gfp_mask);
-void	drmkpi_idr_preload_end(void);
-void	*drmkpi_idr_find(struct idr *idp, int id);
-void	*drmkpi_idr_get_next(struct idr *idp, int *nextid);
-bool	drmkpi_idr_is_empty(struct idr *idp);
-int	drmkpi_idr_pre_get(struct idr *idp, gfp_t gfp_mask);
-int	drmkpi_idr_get_new(struct idr *idp, void *ptr, int *id);
-int	drmkpi_idr_get_new_above(struct idr *idp, void *ptr, int starting_id, int *id);
-void	*drmkpi_idr_replace(struct idr *idp, void *ptr, int id);
-void	*drmkpi_idr_remove(struct idr *idp, int id);
-void	drmkpi_idr_remove_all(struct idr *idp);
-void	drmkpi_idr_destroy(struct idr *idp);
-void	drmkpi_idr_init(struct idr *idp);
-int	drmkpi_idr_alloc(struct idr *idp, void *ptr, int start, int end, gfp_t);
-int	drmkpi_idr_alloc_cyclic(struct idr *idp, void *ptr, int start, int end, gfp_t);
-int	drmkpi_idr_for_each(struct idr *idp, int (*fn)(int id, void *p, void *data), void *data);
+void	drmcompat_idr_preload(gfp_t gfp_mask);
+void	drmcompat_idr_preload_end(void);
+void	*drmcompat_idr_find(struct idr *idp, int id);
+void	*drmcompat_idr_get_next(struct idr *idp, int *nextid);
+bool	drmcompat_idr_is_empty(struct idr *idp);
+int	drmcompat_idr_pre_get(struct idr *idp, gfp_t gfp_mask);
+int	drmcompat_idr_get_new(struct idr *idp, void *ptr, int *id);
+int	drmcompat_idr_get_new_above(struct idr *idp, void *ptr, int starting_id, int *id);
+void	*drmcompat_idr_replace(struct idr *idp, void *ptr, int id);
+void	*drmcompat_idr_remove(struct idr *idp, int id);
+void	drmcompat_idr_remove_all(struct idr *idp);
+void	drmcompat_idr_destroy(struct idr *idp);
+void	drmcompat_idr_init(struct idr *idp);
+int	drmcompat_idr_alloc(struct idr *idp, void *ptr, int start, int end, gfp_t);
+int	drmcompat_idr_alloc_cyclic(struct idr *idp, void *ptr, int start, int end, gfp_t);
+int	drmcompat_idr_for_each(struct idr *idp, int (*fn)(int id, void *p, void *data), void *data);
 
-int	drmkpi_ida_pre_get(struct ida *ida, gfp_t gfp_mask);
-int	drmkpi_ida_get_new_above(struct ida *ida, int starting_id, int *p_id);
-void	drmkpi_ida_remove(struct ida *ida, int id);
-void	drmkpi_ida_destroy(struct ida *ida);
-void	drmkpi_ida_init(struct ida *ida);
-int	drmkpi_ida_simple_get(struct ida *ida, unsigned int start, unsigned int end, gfp_t gfp_mask);
-void	drmkpi_ida_simple_remove(struct ida *ida, unsigned int id);
+int	drmcompat_ida_pre_get(struct ida *ida, gfp_t gfp_mask);
+int	drmcompat_ida_get_new_above(struct ida *ida, int starting_id, int *p_id);
+void	drmcompat_ida_remove(struct ida *ida, int id);
+void	drmcompat_ida_destroy(struct ida *ida);
+void	drmcompat_ida_init(struct ida *ida);
+int	drmcompat_ida_simple_get(struct ida *ida, unsigned int start, unsigned int end, gfp_t gfp_mask);
+void	drmcompat_ida_simple_remove(struct ida *ida, unsigned int id);
 
-#endif /* __DRMKPI_IDR_H__ */
+#endif /* __DRMCOMPAT_IDR_H__ */

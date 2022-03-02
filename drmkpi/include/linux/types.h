@@ -29,8 +29,8 @@
  * $FreeBSD$
  */
 
-#ifndef __DRMKPI_LINUX_TYPES_H__
-#define	__DRMKPI_LINUX_TYPES_H__
+#ifndef __DRMCOMPAT_LINUX_TYPES_H__
+#define	__DRMCOMPAT_LINUX_TYPES_H__
 
 #include <sys/cdefs.h>
 #include <sys/types.h>
@@ -79,4 +79,4 @@ typedef unsigned long irq_hw_number_t;
 
 typedef int linux_task_fn_t(void *data);
 
-#endif	/* __DRMKPI_LINUX_TYPES_H__ */
+#endif	/* __DRMCOMPAT_LINUX_TYPES_H__ */

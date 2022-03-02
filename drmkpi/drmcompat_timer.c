@@ -33,21 +33,21 @@ __FBSDID("$FreeBSD$");
 
 #include <linux/compat.h>	/* For linux_set_current */
 
-#include <drmkpi/timer.h>
+#include <drmcompat/timer.h>
 
-unsigned long drmkpi_timer_hz_mask;
+unsigned long drmcompat_timer_hz_mask;
 
-uint64_t drmkpi_nsec2hz_rem;
-uint64_t drmkpi_nsec2hz_div = 1000000000ULL;
-uint64_t drmkpi_nsec2hz_max;
+uint64_t drmcompat_nsec2hz_rem;
+uint64_t drmcompat_nsec2hz_div = 1000000000ULL;
+uint64_t drmcompat_nsec2hz_max;
 
-uint64_t drmkpi_usec2hz_rem;
-uint64_t drmkpi_usec2hz_div = 1000000ULL;
-uint64_t drmkpi_usec2hz_max;
+uint64_t drmcompat_usec2hz_rem;
+uint64_t drmcompat_usec2hz_div = 1000000ULL;
+uint64_t drmcompat_usec2hz_max;
 
-uint64_t drmkpi_msec2hz_rem;
-uint64_t drmkpi_msec2hz_div = 1000ULL;
-uint64_t drmkpi_msec2hz_max;
+uint64_t drmcompat_msec2hz_rem;
+uint64_t drmcompat_msec2hz_div = 1000ULL;
+uint64_t drmcompat_msec2hz_max;
 
 static inline int
 timer_jiffies_until(int expires)
@@ -61,7 +61,7 @@ timer_jiffies_until(int expires)
 
 /* greatest common divisor, Euclid equation */
 static uint64_t
-drmkpi_gcd_64(uint64_t a, uint64_t b)
+drmcompat_gcd_64(uint64_t a, uint64_t b)
 {
 	uint64_t an;
 	uint64_t bn;
@@ -76,7 +76,7 @@ drmkpi_gcd_64(uint64_t a, uint64_t b)
 }
 
 static void
-drmkpi_timer_callback_wrapper(void *context)
+drmcompat_timer_callback_wrapper(void *context)
 {
 	struct timer_list *timer;
 
@@ -87,14 +87,14 @@ drmkpi_timer_callback_wrapper(void *context)
 }
 
 int
-drmkpi_mod_timer(struct timer_list *timer, int expires)
+drmcompat_mod_timer(struct timer_list *timer, int expires)
 {
 	int ret;
 
 	timer->expires = expires;
 	ret = callout_reset(&timer->callout,
 	    timer_jiffies_until(expires),
-	    &drmkpi_timer_callback_wrapper, timer);
+	    &drmcompat_timer_callback_wrapper, timer);
 
 	MPASS(ret == 0 || ret == 1);
 
@@ -102,25 +102,25 @@ drmkpi_mod_timer(struct timer_list *timer, int expires)
 }
 
 void
-drmkpi_add_timer(struct timer_list *timer)
+drmcompat_add_timer(struct timer_list *timer)
 {
 
 	callout_reset(&timer->callout,
 	    timer_jiffies_until(timer->expires),
-	    &drmkpi_timer_callback_wrapper, timer);
+	    &drmcompat_timer_callback_wrapper, timer);
 }
 
 void
-drmkpi_add_timer_on(struct timer_list *timer, int cpu)
+drmcompat_add_timer_on(struct timer_list *timer, int cpu)
 {
 
 	callout_reset_on(&timer->callout,
 	    timer_jiffies_until(timer->expires),
-	    &drmkpi_timer_callback_wrapper, timer, cpu);
+	    &drmcompat_timer_callback_wrapper, timer, cpu);
 }
 
 int
-drmkpi_del_timer(struct timer_list *timer)
+drmcompat_del_timer(struct timer_list *timer)
 {
 
 	if (callout_stop(&(timer)->callout) == -1)
@@ -129,7 +129,7 @@ drmkpi_del_timer(struct timer_list *timer)
 }
 
 int
-drmkpi_del_timer_sync(struct timer_list *timer)
+drmcompat_del_timer_sync(struct timer_list *timer)
 {
 
 	if (callout_drain(&(timer)->callout) == -1)
@@ -138,7 +138,7 @@ drmkpi_del_timer_sync(struct timer_list *timer)
 }
 
 static void
-drmkpi_timer_init(void *arg)
+drmcompat_timer_init(void *arg)
 {
 	uint64_t gcd;
 
@@ -147,30 +147,30 @@ drmkpi_timer_init(void *arg)
 	 * avoid timer rounding problems when the tick value wraps
 	 * around 2**32:
 	 */
-	drmkpi_timer_hz_mask = 1;
-	while (drmkpi_timer_hz_mask < (unsigned long)hz)
-		drmkpi_timer_hz_mask *= 2;
-	drmkpi_timer_hz_mask--;
+	drmcompat_timer_hz_mask = 1;
+	while (drmcompat_timer_hz_mask < (unsigned long)hz)
+		drmcompat_timer_hz_mask *= 2;
+	drmcompat_timer_hz_mask--;
 
 	/* compute some internal constants */
 
-	drmkpi_nsec2hz_rem = hz;
-	drmkpi_usec2hz_rem = hz;
-	drmkpi_msec2hz_rem = hz;
+	drmcompat_nsec2hz_rem = hz;
+	drmcompat_usec2hz_rem = hz;
+	drmcompat_msec2hz_rem = hz;
 
-	gcd = drmkpi_gcd_64(drmkpi_nsec2hz_rem, drmkpi_nsec2hz_div);
-	drmkpi_nsec2hz_rem /= gcd;
-	drmkpi_nsec2hz_div /= gcd;
-	drmkpi_nsec2hz_max = -1ULL / drmkpi_nsec2hz_rem;
+	gcd = drmcompat_gcd_64(drmcompat_nsec2hz_rem, drmcompat_nsec2hz_div);
+	drmcompat_nsec2hz_rem /= gcd;
+	drmcompat_nsec2hz_div /= gcd;
+	drmcompat_nsec2hz_max = -1ULL / drmcompat_nsec2hz_rem;
 
-	gcd = drmkpi_gcd_64(drmkpi_usec2hz_rem, drmkpi_usec2hz_div);
-	drmkpi_usec2hz_rem /= gcd;
-	drmkpi_usec2hz_div /= gcd;
-	drmkpi_usec2hz_max = -1ULL / drmkpi_usec2hz_rem;
+	gcd = drmcompat_gcd_64(drmcompat_usec2hz_rem, drmcompat_usec2hz_div);
+	drmcompat_usec2hz_rem /= gcd;
+	drmcompat_usec2hz_div /= gcd;
+	drmcompat_usec2hz_max = -1ULL / drmcompat_usec2hz_rem;
 
-	gcd = drmkpi_gcd_64(drmkpi_msec2hz_rem, drmkpi_msec2hz_div);
-	drmkpi_msec2hz_rem /= gcd;
-	drmkpi_msec2hz_div /= gcd;
-	drmkpi_msec2hz_max = -1ULL / drmkpi_msec2hz_rem;
+	gcd = drmcompat_gcd_64(drmcompat_msec2hz_rem, drmcompat_msec2hz_div);
+	drmcompat_msec2hz_rem /= gcd;
+	drmcompat_msec2hz_div /= gcd;
+	drmcompat_msec2hz_max = -1ULL / drmcompat_msec2hz_rem;
 }
-SYSINIT(drmkpi_timer, SI_SUB_DRIVERS, SI_ORDER_FIRST, drmkpi_timer_init, NULL);
+SYSINIT(drmcompat_timer, SI_SUB_DRIVERS, SI_ORDER_FIRST, drmcompat_timer_init, NULL);

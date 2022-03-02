@@ -36,8 +36,8 @@
 
 #include <linux/compat.h>
 
-#include <drmkpi/mutex.h>
-#include <drmkpi/ww_mutex.h>
+#include <drmcompat/mutex.h>
+#include <drmcompat/ww_mutex.h>
 
 struct ww_mutex_thread {
 	TAILQ_ENTRY(ww_mutex_thread) entry;
@@ -49,44 +49,44 @@ static TAILQ_HEAD(, ww_mutex_thread) ww_mutex_head;
 static struct mtx ww_mutex_global;
 
 static void
-drmkpi_ww_init(void *arg)
+drmcompat_ww_init(void *arg)
 {
 	TAILQ_INIT(&ww_mutex_head);
 	mtx_init(&ww_mutex_global, "dkpi-ww-mtx", NULL, MTX_DEF);
 }
 
-SYSINIT(ww_init, SI_SUB_LOCK, SI_ORDER_SECOND, drmkpi_ww_init, NULL);
+SYSINIT(ww_init, SI_SUB_LOCK, SI_ORDER_SECOND, drmcompat_ww_init, NULL);
 
 static void
-drmkpi_ww_uninit(void *arg)
+drmcompat_ww_uninit(void *arg)
 {
 	mtx_destroy(&ww_mutex_global);
 }
 
-SYSUNINIT(ww_uninit, SI_SUB_LOCK, SI_ORDER_SECOND, drmkpi_ww_uninit, NULL);
+SYSUNINIT(ww_uninit, SI_SUB_LOCK, SI_ORDER_SECOND, drmcompat_ww_uninit, NULL);
 
 static inline void
-drmkpi_ww_lock(void)
+drmcompat_ww_lock(void)
 {
 	mtx_lock(&ww_mutex_global);
 }
 
 static inline void
-drmkpi_ww_unlock(void)
+drmcompat_ww_unlock(void)
 {
 	mtx_unlock(&ww_mutex_global);
 }
 
 /* lock a mutex with deadlock avoidance */
 int
-drmkpi_ww_mutex_lock_sub(struct ww_mutex *lock,
+drmcompat_ww_mutex_lock_sub(struct ww_mutex *lock,
     struct ww_acquire_ctx *ctx, int catch_signal)
 {
 	struct ww_mutex_thread entry;
 	struct ww_mutex_thread *other;
 	int retval = 0;
 
-	drmkpi_ww_lock();
+	drmcompat_ww_lock();
 	if (unlikely(sx_try_xlock(&lock->base.sx) == 0)) {
 		entry.thread = curthread;
 		entry.lock = lock;
@@ -134,24 +134,24 @@ done:
 
 	if (retval == 0)
 		lock->ctx = ctx;
-	drmkpi_ww_unlock();
+	drmcompat_ww_unlock();
 	return (retval);
 }
 
 void
-drmkpi_ww_mutex_unlock_sub(struct ww_mutex *lock)
+drmcompat_ww_mutex_unlock_sub(struct ww_mutex *lock)
 {
 	/* protect ww_mutex ownership change */
-	drmkpi_ww_lock();
+	drmcompat_ww_lock();
 	lock->ctx = NULL;
 	sx_xunlock(&lock->base.sx);
 	/* wakeup a lock waiter, if any */
 	cv_signal(&lock->condvar);
-	drmkpi_ww_unlock();
+	drmcompat_ww_unlock();
 }
 
 int
-drmkpi_mutex_lock_interruptible(mutex_t *m)
+drmcompat_mutex_lock_interruptible(mutex_t *m)
 {
 	int error;
 

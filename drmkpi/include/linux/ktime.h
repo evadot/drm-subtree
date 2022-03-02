@@ -28,8 +28,8 @@
  * $FreeBSD$
  */
 
-#ifndef __DRMKPI_LINUX_KTIME_H__
-#define	__DRMKPI_LINUX_KTIME_H__
+#ifndef __DRMCOMPAT_LINUX_KTIME_H__
+#define	__DRMCOMPAT_LINUX_KTIME_H__
 
 #include <linux/types.h>
 #include <linux/time.h>
@@ -256,4 +256,4 @@ ktime_get_raw_ns(void)
 	return (ktime_to_ns(timespec_to_ktime(ts)));
 }
 
-#endif /* __DRMKPI_LINUX_KTIME_H__ */
+#endif /* __DRMCOMPAT_LINUX_KTIME_H__ */

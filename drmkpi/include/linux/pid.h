@@ -26,8 +26,8 @@
  * $FreeBSD$
  */
 
-#ifndef	__DRMKPI_LINUX_PID_H__
-#define	__DRMKPI_LINUX_PID_H__
+#ifndef	__DRMCOMPAT_LINUX_PID_H__
+#define	__DRMCOMPAT_LINUX_PID_H__
 
 #include <sys/param.h>
 #include <sys/systm.h>
@@ -56,7 +56,7 @@ enum pid_type {
 #define	get_pid_task(pid, type) ({		\
 	struct task_struct *__ts;		\
 	CTASSERT((type) == PIDTYPE_PID);	\
-	__ts = drmkpi_get_pid_task(pid);	\
+	__ts = drmcompat_get_pid_task(pid);	\
 	__ts;					\
 })
 
@@ -66,7 +66,7 @@ enum pid_type {
 })
 
 struct task_struct;
-extern struct task_struct *drmkpi_pid_task(pid_t);
-extern struct task_struct *drmkpi_get_pid_task(pid_t);
+extern struct task_struct *drmcompat_pid_task(pid_t);
+extern struct task_struct *drmcompat_get_pid_task(pid_t);
 
-#endif	/* __DRMKPI_LINUX_PID_H__ */
+#endif	/* __DRMCOMPAT_LINUX_PID_H__ */

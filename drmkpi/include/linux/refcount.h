@@ -28,8 +28,8 @@
  * $FreeBSD$
  */
 
-#ifndef __DRMKPI_LINUX_REFCOUNT_H__
-#define __DRMKPI_LINUX_REFCOUNT_H__
+#ifndef __DRMCOMPAT_LINUX_REFCOUNT_H__
+#define __DRMCOMPAT_LINUX_REFCOUNT_H__
 
 #include <linux/atomic.h>
 #include <linux/spinlock.h>
@@ -87,4 +87,4 @@ refcount_dec_and_lock_irqsave(refcount_t *ref, spinlock_t *lock,
 	return (false);
 }
 
-#endif /* __DRMKPI_LINUX_REFCOUNT_H__ */
+#endif /* __DRMCOMPAT_LINUX_REFCOUNT_H__ */

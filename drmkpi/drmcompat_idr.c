@@ -40,7 +40,7 @@ __FBSDID("$FreeBSD$");
 #include <linux/err.h>		/* For ERR_PTR */
 #include <linux/spinlock.h>
 
-#include <drmkpi/idr.h>
+#include <drmcompat/idr.h>
 
 #define	MAX_IDR_LEVEL	((MAX_IDR_SHIFT + IDR_BITS - 1) / IDR_BITS)
 #define	MAX_IDR_FREE	(MAX_IDR_LEVEL * 2)
@@ -54,13 +54,13 @@ __FBSDID("$FreeBSD$");
 #define	MAX_IDR_BIT (1U << MAX_IDR_SHIFT)
 #define	MAX_IDR_MASK (MAX_IDR_BIT - 1)
 
-struct drmkpi_idr_cache {
+struct drmcompat_idr_cache {
 	spinlock_t lock;
 	struct idr_layer *head;
 	unsigned count;
 };
 
-DPCPU_DEFINE_STATIC(struct drmkpi_idr_cache, drmkpi_idr_cache);
+DPCPU_DEFINE_STATIC(struct drmcompat_idr_cache, drmcompat_idr_cache);
 
 /*
  * IDR Implementation.
@@ -72,7 +72,7 @@ DPCPU_DEFINE_STATIC(struct drmkpi_idr_cache, drmkpi_idr_cache);
 static MALLOC_DEFINE(M_IDR, "idr", "Linux IDR compat");
 
 static struct idr_layer *
-idr_preload_dequeue_locked(struct drmkpi_idr_cache *lic)
+idr_preload_dequeue_locked(struct drmcompat_idr_cache *lic)
 {
 	struct idr_layer *retval;
 
@@ -95,8 +95,8 @@ idr_preload_init(void *arg)
 	int cpu;
 
 	CPU_FOREACH(cpu) {
-		struct drmkpi_idr_cache *lic =
-		    DPCPU_ID_PTR(cpu, drmkpi_idr_cache);
+		struct drmcompat_idr_cache *lic =
+		    DPCPU_ID_PTR(cpu, drmcompat_idr_cache);
 
 		spin_lock_init(&lic->lock);
 	}
@@ -110,8 +110,8 @@ idr_preload_uninit(void *arg)
 
 	CPU_FOREACH(cpu) {
 		struct idr_layer *cacheval;
-		struct drmkpi_idr_cache *lic =
-		    DPCPU_ID_PTR(cpu, drmkpi_idr_cache);
+		struct drmcompat_idr_cache *lic =
+		    DPCPU_ID_PTR(cpu, drmcompat_idr_cache);
 
 		while (1) {
 			spin_lock(&lic->lock);
@@ -128,14 +128,14 @@ idr_preload_uninit(void *arg)
 SYSUNINIT(idr_preload_uninit, SI_SUB_LOCK, SI_ORDER_FIRST, idr_preload_uninit, NULL);
 
 void
-drmkpi_idr_preload(gfp_t gfp_mask)
+drmcompat_idr_preload(gfp_t gfp_mask)
 {
-	struct drmkpi_idr_cache *lic;
+	struct drmcompat_idr_cache *lic;
 	struct idr_layer *cacheval;
 
 	sched_pin();
 
-	lic = &DPCPU_GET(drmkpi_idr_cache);
+	lic = &DPCPU_GET(drmcompat_idr_cache);
 
 	/* fill up cache */
 	spin_lock(&lic->lock);
@@ -152,11 +152,11 @@ drmkpi_idr_preload(gfp_t gfp_mask)
 }
 
 void
-drmkpi_idr_preload_end(void)
+drmcompat_idr_preload_end(void)
 {
-	struct drmkpi_idr_cache *lic;
+	struct drmcompat_idr_cache *lic;
 
-	lic = &DPCPU_GET(drmkpi_idr_cache);
+	lic = &DPCPU_GET(drmcompat_idr_cache);
 	spin_unlock(&lic->lock);
 	sched_unpin();
 }
@@ -174,7 +174,7 @@ idr_pos(int id, int layer)
 }
 
 void
-drmkpi_idr_init(struct idr *idr)
+drmcompat_idr_init(struct idr *idr)
 {
 	bzero(idr, sizeof(*idr));
 	mtx_init(&idr->lock, "idr", NULL, MTX_DEF);
@@ -182,11 +182,11 @@ drmkpi_idr_init(struct idr *idr)
 
 /* Only frees cached pages. */
 void
-drmkpi_idr_destroy(struct idr *idr)
+drmcompat_idr_destroy(struct idr *idr)
 {
 	struct idr_layer *il, *iln;
 
-	drmkpi_idr_remove_all(idr);
+	drmcompat_idr_remove_all(idr);
 	mtx_lock(&idr->lock);
 	for (il = idr->free; il != NULL; il = iln) {
 		iln = il->ary[0];
@@ -213,7 +213,7 @@ idr_remove_layer(struct idr_layer *il, int layer)
 }
 
 void
-drmkpi_idr_remove_all(struct idr *idr)
+drmcompat_idr_remove_all(struct idr *idr)
 {
 
 	mtx_lock(&idr->lock);
@@ -263,7 +263,7 @@ idr_remove_locked(struct idr *idr, int id)
 }
 
 void *
-drmkpi_idr_remove(struct idr *idr, int id)
+drmcompat_idr_remove(struct idr *idr, int id)
 {
 	void *res;
 
@@ -293,7 +293,7 @@ idr_find_layer_locked(struct idr *idr, int id)
 }
 
 void *
-drmkpi_idr_replace(struct idr *idr, void *ptr, int id)
+drmcompat_idr_replace(struct idr *idr, void *ptr, int id)
 {
 	struct idr_layer *il;
 	void *res;
@@ -330,7 +330,7 @@ idr_find_locked(struct idr *idr, int id)
 }
 
 void *
-drmkpi_idr_find(struct idr *idr, int id)
+drmcompat_idr_find(struct idr *idr, int id)
 {
 	void *res;
 
@@ -341,7 +341,7 @@ drmkpi_idr_find(struct idr *idr, int id)
 }
 
 void *
-drmkpi_idr_get_next(struct idr *idr, int *nextidp)
+drmcompat_idr_get_next(struct idr *idr, int *nextidp)
 {
 	void *res = NULL;
 	int id = *nextidp;
@@ -359,7 +359,7 @@ drmkpi_idr_get_next(struct idr *idr, int *nextidp)
 }
 
 int
-drmkpi_idr_pre_get(struct idr *idr, gfp_t gfp_mask)
+drmcompat_idr_pre_get(struct idr *idr, gfp_t gfp_mask)
 {
 	struct idr_layer *il, *iln;
 	struct idr_layer *head;
@@ -414,7 +414,7 @@ idr_get(struct idr *idp)
 		MPASS(il->bitmap != 0);
 	} else if ((il = malloc(sizeof(*il), M_IDR, M_ZERO | M_NOWAIT)) != NULL) {
 		bitmap_fill(&il->bitmap, IDR_SIZE);
-	} else if ((il = idr_preload_dequeue_locked(&DPCPU_GET(drmkpi_idr_cache))) != NULL) {
+	} else if ((il = idr_preload_dequeue_locked(&DPCPU_GET(drmcompat_idr_cache))) != NULL) {
 		bitmap_fill(&il->bitmap, IDR_SIZE);
 	} else {
 		return (NULL);
@@ -503,7 +503,7 @@ out:
 }
 
 int
-drmkpi_idr_get_new(struct idr *idr, void *ptr, int *idp)
+drmcompat_idr_get_new(struct idr *idr, void *ptr, int *idp)
 {
 	int retval;
 
@@ -621,7 +621,7 @@ out:
 }
 
 int
-drmkpi_idr_get_new_above(struct idr *idr, void *ptr, int starting_id, int *idp)
+drmcompat_idr_get_new_above(struct idr *idr, void *ptr, int starting_id, int *idp)
 {
 	int retval;
 
@@ -632,9 +632,9 @@ drmkpi_idr_get_new_above(struct idr *idr, void *ptr, int starting_id, int *idp)
 }
 
 int
-drmkpi_ida_get_new_above(struct ida *ida, int starting_id, int *p_id)
+drmcompat_ida_get_new_above(struct ida *ida, int starting_id, int *p_id)
 {
-	return (drmkpi_idr_get_new_above(&ida->idr, NULL, starting_id, p_id));
+	return (drmcompat_idr_get_new_above(&ida->idr, NULL, starting_id, p_id));
 }
 
 static int
@@ -666,7 +666,7 @@ idr_alloc_locked(struct idr *idr, void *ptr, int start, int end)
 }
 
 int
-drmkpi_idr_alloc(struct idr *idr, void *ptr, int start, int end, gfp_t gfp_mask)
+drmcompat_idr_alloc(struct idr *idr, void *ptr, int start, int end, gfp_t gfp_mask)
 {
 	int retval;
 
@@ -677,7 +677,7 @@ drmkpi_idr_alloc(struct idr *idr, void *ptr, int start, int end, gfp_t gfp_mask)
 }
 
 int
-drmkpi_idr_alloc_cyclic(struct idr *idr, void *ptr, int start, int end, gfp_t gfp_mask)
+drmcompat_idr_alloc_cyclic(struct idr *idr, void *ptr, int start, int end, gfp_t gfp_mask)
 {
 	int retval;
 
@@ -722,7 +722,7 @@ idr_for_each_layer(struct idr_layer *il, int offset, int layer,
 
 /* NOTE: It is not allowed to modify the IDR tree while it is being iterated */
 int
-drmkpi_idr_for_each(struct idr *idp, int (*f)(int id, void *p, void *data), void *data)
+drmcompat_idr_for_each(struct idr *idp, int (*f)(int id, void *p, void *data), void *data)
 {
 	return (idr_for_each_layer(idp->top, 0, idp->layers - 1, f, data));
 }
@@ -735,16 +735,16 @@ idr_has_entry(int id, void *p, void *data)
 }
 
 bool
-drmkpi_idr_is_empty(struct idr *idp)
+drmcompat_idr_is_empty(struct idr *idp)
 {
 
-	return (drmkpi_idr_for_each(idp, idr_has_entry, NULL) == 0);
+	return (drmcompat_idr_for_each(idp, idr_has_entry, NULL) == 0);
 }
 
 int
-drmkpi_ida_pre_get(struct ida *ida, gfp_t flags)
+drmcompat_ida_pre_get(struct ida *ida, gfp_t flags)
 {
-	if (drmkpi_idr_pre_get(&ida->idr, flags) == 0)
+	if (drmcompat_idr_pre_get(&ida->idr, flags) == 0)
 		return (0);
 
 	if (ida->free_bitmap == NULL) {
@@ -755,7 +755,7 @@ drmkpi_ida_pre_get(struct ida *ida, gfp_t flags)
 }
 
 int
-drmkpi_ida_simple_get(struct ida *ida, unsigned int start, unsigned int end,
+drmcompat_ida_simple_get(struct ida *ida, unsigned int start, unsigned int end,
     gfp_t flags)
 {
 	int ret, id;
@@ -771,12 +771,12 @@ drmkpi_ida_simple_get(struct ida *ida, unsigned int start, unsigned int end,
 		max = end - 1;
 	}
 again:
-	if (!drmkpi_ida_pre_get(ida, flags))
+	if (!drmcompat_ida_pre_get(ida, flags))
 		return (-ENOMEM);
 
-	if ((ret = drmkpi_ida_get_new_above(ida, start, &id)) == 0) {
+	if ((ret = drmcompat_ida_get_new_above(ida, start, &id)) == 0) {
 		if (id > max) {
-			drmkpi_ida_remove(ida, id);
+			drmcompat_ida_remove(ida, id);
 			ret = -ENOSPC;
 		} else {
 			ret = id;
@@ -789,26 +789,26 @@ again:
 }
 
 void
-drmkpi_ida_simple_remove(struct ida *ida, unsigned int id)
+drmcompat_ida_simple_remove(struct ida *ida, unsigned int id)
 {
-	drmkpi_idr_remove(&ida->idr, id);
+	drmcompat_idr_remove(&ida->idr, id);
 }
 
 void
-drmkpi_ida_remove(struct ida *ida, int id)
+drmcompat_ida_remove(struct ida *ida, int id)
 {
-	drmkpi_idr_remove(&ida->idr, id);
+	drmcompat_idr_remove(&ida->idr, id);
 }
 
 void
-drmkpi_ida_init(struct ida *ida)
+drmcompat_ida_init(struct ida *ida)
 {
-	drmkpi_idr_init(&ida->idr);
+	drmcompat_idr_init(&ida->idr);
 }
 
 void
-drmkpi_ida_destroy(struct ida *ida)
+drmcompat_ida_destroy(struct ida *ida)
 {
-	drmkpi_idr_destroy(&ida->idr);
+	drmcompat_idr_destroy(&ida->idr);
 	free(ida->free_bitmap, M_IDR);
 }

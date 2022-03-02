@@ -26,8 +26,8 @@
  * $FreeBSD$
  */
 
-#ifndef	__DRMKPI_LINUX_WW_MUTEX_H__
-#define	__DRMKPI_LINUX_WW_MUTEX_H__
+#ifndef	__DRMCOMPAT_LINUX_WW_MUTEX_H__
+#define	__DRMCOMPAT_LINUX_WW_MUTEX_H__
 
 #include <sys/param.h>
 #include <sys/proc.h>
@@ -35,7 +35,7 @@
 #include <sys/kernel.h>
 
 #include <linux/mutex.h>
-#include <drmkpi/ww_mutex.h>
+#include <drmcompat/ww_mutex.h>
 
 struct ww_class {
 	const char *mutex_name;
@@ -80,7 +80,7 @@ ww_mutex_lock(struct ww_mutex *lock, struct ww_acquire_ctx *ctx)
 	else if ((struct thread *)SX_OWNER(lock->base.sx.sx_lock) == curthread)
 		return (-EALREADY);
 	else
-		return (drmkpi_ww_mutex_lock_sub(lock, ctx, 0));
+		return (drmcompat_ww_mutex_lock_sub(lock, ctx, 0));
 }
 
 static inline int
@@ -91,7 +91,7 @@ ww_mutex_lock_interruptible(struct ww_mutex *lock, struct ww_acquire_ctx *ctx)
 	else if ((struct thread *)SX_OWNER(lock->base.sx.sx_lock) == curthread)
 		return (-EALREADY);
 	else
-		return (drmkpi_ww_mutex_lock_sub(lock, ctx, 1));
+		return (drmcompat_ww_mutex_lock_sub(lock, ctx, 1));
 }
 
 static inline void
@@ -100,7 +100,7 @@ ww_mutex_unlock(struct ww_mutex *lock)
 	if (MUTEX_SKIP())
 		return;
 	else
-		drmkpi_ww_mutex_unlock_sub(lock);
+		drmcompat_ww_mutex_unlock_sub(lock);
 }
 
 static inline void
@@ -132,4 +132,4 @@ ww_acquire_done(struct ww_acquire_ctx *ctx)
 {
 }
 
-#endif	/* __DRMKPI_LINUX_WW_MUTEX_H__ */
+#endif	/* __DRMCOMPAT_LINUX_WW_MUTEX_H__ */

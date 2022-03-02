@@ -40,11 +40,11 @@ __FBSDID("$FreeBSD$");
 #include <linux/compat.h>	/* For linux_set_current */
 #include <linux/errno.h>	/* For ERESTARTSYS */
 
-#include <drmkpi/sched.h>
-#include <drmkpi/completion.h>
+#include <drmcompat/sched.h>
+#include <drmcompat/completion.h>
 
 static inline int
-drmkpi_timer_jiffies_until(int expires)
+drmcompat_timer_jiffies_until(int expires)
 {
 	int delta = expires - ticks;
 	/* guard against already expired values */
@@ -54,7 +54,7 @@ drmkpi_timer_jiffies_until(int expires)
 }
 
 void
-drmkpi_complete_common(struct completion *c, int all)
+drmcompat_complete_common(struct completion *c, int all)
 {
 	int wakeup_swapper;
 
@@ -76,7 +76,7 @@ drmkpi_complete_common(struct completion *c, int all)
  * Indefinite wait for done != 0 with or without signals.
  */
 int
-drmkpi_wait_for_common(struct completion *c, int flags)
+drmcompat_wait_for_common(struct completion *c, int flags)
 {
 	int error;
 
@@ -119,7 +119,7 @@ intr:
  * Time limited wait for done != 0 with or without signals.
  */
 int
-drmkpi_wait_for_timeout_common(struct completion *c, int timeout, int flags)
+drmcompat_wait_for_timeout_common(struct completion *c, int timeout, int flags)
 {
 	int end = ticks + timeout;
 	int error;
@@ -137,7 +137,7 @@ drmkpi_wait_for_timeout_common(struct completion *c, int timeout, int flags)
 		if (c->done)
 			break;
 		sleepq_add(c, NULL, "completion", flags, 0);
-		sleepq_set_timeout(c, drmkpi_timer_jiffies_until(end));
+		sleepq_set_timeout(c, drmcompat_timer_jiffies_until(end));
 
 		DROP_GIANT();
 		if (flags & SLEEPQ_INTERRUPTIBLE)
@@ -162,13 +162,13 @@ drmkpi_wait_for_timeout_common(struct completion *c, int timeout, int flags)
 	sleepq_release(c);
 
 	/* return how many jiffies are left */
-	error = drmkpi_timer_jiffies_until(end);
+	error = drmcompat_timer_jiffies_until(end);
 done:
 	return (error);
 }
 
 int
-drmkpi_try_wait_for_completion(struct completion *c)
+drmcompat_try_wait_for_completion(struct completion *c)
 {
 	int isdone;
 
@@ -181,7 +181,7 @@ drmkpi_try_wait_for_completion(struct completion *c)
 }
 
 int
-drmkpi_completion_done(struct completion *c)
+drmcompat_completion_done(struct completion *c)
 {
 	int isdone;
 

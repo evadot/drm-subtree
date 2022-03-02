@@ -1,8 +1,8 @@
 /* Public Domain */
 
-#ifndef _DRMKPI_LINUX_KCONFIG_H_
-#define	_DRMKPI_LINUX_KCONFIG_H_
+#ifndef __DRMCOMPAT_LINUX_KCONFIG_H__
+#define	__DRMCOMPAT_LINUX_KCONFIG_H__
 
 #define IS_ENABLED(x) x
 
-#endif /* _DRMKPI_LINUX_KCONFIG_H_ */
+#endif /* __DRMCOMPAT_LINUX_KCONFIG_H__ */

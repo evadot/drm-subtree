@@ -29,8 +29,8 @@
  * $FreeBSD$
  */
 
-#ifndef __DRMKPI_LINUX_KDEV_T_H__
-#define	__DRMKPI_LINUX_KDEV_T_H__
+#ifndef __DRMCOMPAT_LINUX_KDEV_T_H__
+#define	__DRMCOMPAT_LINUX_KDEV_T_H__
 
 #include <sys/types.h>
 
@@ -44,4 +44,4 @@ old_encode_dev(dev_t dev)
 	return ((MAJOR(dev) << 8) | MINOR(dev));
 }
 
-#endif	/* __DRMKPI_LINUX_KDEV_T_H__ */
+#endif	/* __DRMCOMPAT_LINUX_KDEV_T_H__ */

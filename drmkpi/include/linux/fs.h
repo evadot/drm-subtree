@@ -29,13 +29,13 @@
  * $FreeBSD$
  */
 
-#ifndef	__DRMKPI_LINUX_FS_H__
-#define	__DRMKPI_LINUX_FS_H__
+#ifndef	__DRMCOMPAT_LINUX_FS_H__
+#define	__DRMCOMPAT_LINUX_FS_H__
 
 #include <linux/types.h>
 #include <linux/wait.h>
 
-#include <drmkpi/fs.h>
+#include <drmcompat/fs.h>
 
 #define	S_IRUGO	(S_IRUSR | S_IRGRP | S_IROTH)
 #define	S_IWUGO	(S_IWUSR | S_IWGRP | S_IWOTH)
@@ -52,8 +52,8 @@
 #define	EPOLLRDNORM	POLLRDNORM
 
 #define  shmem_file_setup(...) \
-  drmkpi_shmem_file_setup(__VA_ARGS__)
+  drmcompat_shmem_file_setup(__VA_ARGS__)
 
-#define	iminor(inode)	drmkpi_iminor(inode)
+#define	iminor(inode)	drmcompat_iminor(inode)
 
-#endif /* __DRMKPI_LINUX_FS_H__ */
+#endif /* __DRMCOMPAT_LINUX_FS_H__ */

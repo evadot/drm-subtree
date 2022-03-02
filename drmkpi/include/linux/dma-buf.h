@@ -29,8 +29,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef __DRMKPI_LINUX_DMA_BUF_H__
-#define __DRMKPI_LINUX_DMA_BUF_H__
+#ifndef __DRMCOMPAT_LINUX_DMA_BUF_H__
+#define __DRMCOMPAT_LINUX_DMA_BUF_H__
 
 #include <sys/types.h>
 #include <sys/mutex.h>
@@ -121,4 +121,4 @@ void dma_buf_unmap_attachment(struct dma_buf_attachment *,
     struct sg_table *, enum dma_data_direction);
 void get_dma_buf(struct dma_buf *);
 
-#endif  /* __DRMKPI_LINUX_DMA_BUF_H__ */
+#endif  /* __DRMCOMPAT_LINUX_DMA_BUF_H__ */

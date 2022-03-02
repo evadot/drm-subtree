@@ -29,8 +29,8 @@
  * $FreeBSD$
  */
 
-#ifndef __DRMKPI_LINUX_HARDIRQ_H__
-#define	__DRMKPI_LINUX_HARDIRQ_H__
+#ifndef __DRMCOMPAT_LINUX_HARDIRQ_H__
+#define	__DRMCOMPAT_LINUX_HARDIRQ_H__
 
 #include <linux/types.h>
 #include <linux/lockdep.h>
@@ -41,4 +41,4 @@
 
 #define	synchronize_irq(irq)	_intr_drain((irq))
 
-#endif	/* __DRMKPI_LINUX_HARDIRQ_H__ */
+#endif	/* __DRMCOMPAT_LINUX_HARDIRQ_H__ */

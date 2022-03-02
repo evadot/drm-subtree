@@ -24,8 +24,8 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef __DRMKPI_LINUX_HASH_H__
-#define __DRMKPI_LINUX_HASH_H__
+#ifndef __DRMCOMPAT_LINUX_HASH_H__
+#define __DRMCOMPAT_LINUX_HASH_H__
 
 #include <asm/types.h>
 #include <sys/hash.h>
@@ -55,4 +55,4 @@ static inline u32 hash_32(u32 val, unsigned int bits)
 #define hash_long(val, bits) hash_32(val, bits)
 #endif
 
-#endif	/* __DRMKPI_LINUX_HASH_H__ */
+#endif	/* __DRMCOMPAT_LINUX_HASH_H__ */

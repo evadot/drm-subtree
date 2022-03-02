@@ -29,8 +29,8 @@
  * $FreeBSD$
  */
 
-#ifndef __DRMKPI_LINUX_LOG2_H__
-#define	__DRMKPI_LINUX_LOG2_H__
+#ifndef __DRMCOMPAT_LINUX_LOG2_H__
+#define	__DRMCOMPAT_LINUX_LOG2_H__
 
 #include <linux/types.h>
 
@@ -129,4 +129,4 @@ rounddown_pow_of_two(unsigned long x)
 
 #define	order_base_2(x) ilog2(roundup_pow_of_two(x))
 
-#endif	/* __DRMKPI_LINUX_LOG2_H__ */
+#endif	/* __DRMCOMPAT_LINUX_LOG2_H__ */

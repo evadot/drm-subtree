@@ -29,7 +29,7 @@ __FBSDID("$FreeBSD$");
 
 #include <linux/list.h>
 
-#include <drmkpi/list_sort.h>
+#include <drmcompat/list_sort.h>
 
 MALLOC_DECLARE(M_DRMKMALLOC);
 
@@ -51,7 +51,7 @@ linux_le_cmp(void *priv, const void *d1, const void *d2)
 }
 
 void
-drmkpi_list_sort(void *priv, struct list_head *head, int (*cmp)(void *priv,
+drmcompat_list_sort(void *priv, struct list_head *head, int (*cmp)(void *priv,
     struct list_head *a, struct list_head *b))
 {
 	struct list_sort_thunk thunk;

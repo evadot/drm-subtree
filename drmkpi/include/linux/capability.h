@@ -1,7 +1,7 @@
 /* Public domain. */
 
-#ifndef __DRMKPI_LINUX_CAPABILITY_H__
-#define	__DRMKPI_LINUX_CAPABILITY_H__
+#ifndef __DRMCOMPAT_LINUX_CAPABILITY_H__
+#define	__DRMCOMPAT_LINUX_CAPABILITY_H__
 
 #include <sys/param.h>
 #include <sys/systm.h>
@@ -19,4 +19,4 @@ capable(enum linux_capabilities cap)
 	return (priv_check(curthread, PRIV_DRIVER) == 0);
 }
 
-#endif	/* __DRMKPI_LINUX_CAPABILITY_H__ */
+#endif	/* __DRMCOMPAT_LINUX_CAPABILITY_H__ */

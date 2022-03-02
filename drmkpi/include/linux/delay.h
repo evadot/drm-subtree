@@ -30,8 +30,8 @@
  * $FreeBSD$
  */
 
-#ifndef __DRMKPI_LINUX_DELAY_H__
-#define	__DRMKPI_LINUX_DELAY_H__
+#ifndef __DRMCOMPAT_LINUX_DELAY_H__
+#define	__DRMCOMPAT_LINUX_DELAY_H__
 
 #include <linux/jiffies.h>
 #include <sys/systm.h>
@@ -56,4 +56,4 @@ usleep_range(unsigned long min, unsigned long max)
 	DELAY(min);
 }
 
-#endif	/* __DRMKPI_LINUX_DELAY_H__ */
+#endif	/* __DRMCOMPAT_LINUX_DELAY_H__ */

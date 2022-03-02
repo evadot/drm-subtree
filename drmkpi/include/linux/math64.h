@@ -27,8 +27,8 @@
  * $FreeBSD$
  */
 
-#ifndef __DRMKPI_LINUX_MATH64_H__
-#define	__DRMKPI_LINUX_MATH64_H__
+#ifndef __DRMCOMPAT_LINUX_MATH64_H__
+#define	__DRMCOMPAT_LINUX_MATH64_H__
 
 #include <sys/stdint.h>
 
@@ -100,4 +100,4 @@ div64_u64_round_up(uint64_t dividend, uint64_t divisor)
 #define	DIV64_U64_ROUND_UP(...) \
 	div64_u64_round_up(__VA_ARGS__)
 
-#endif /* __DRMKPI_LINUX_MATH64_H__ */
+#endif /* __DRMCOMPAT_LINUX_MATH64_H__ */

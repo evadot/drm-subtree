@@ -29,8 +29,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef	__DRMKPI_LINUX_DMA_FENCE_ARRAY_H__
-#define	__DRMKPI_LINUX_DMA_FENCE_ARRAY_H__
+#ifndef	__DRMCOMPAT_LINUX_DMA_FENCE_ARRAY_H__
+#define	__DRMCOMPAT_LINUX_DMA_FENCE_ARRAY_H__
 
 #include <sys/types.h>
 
@@ -46,4 +46,4 @@ bool	dma_fence_is_array(struct dma_fence *);
 struct dma_fence_array *
 	to_dma_fence_array(struct dma_fence *);
 
-#endif	/* __DRMKPI_LINUX_DMA_FENCE_ARRAY_H__ */
+#endif	/* __DRMCOMPAT_LINUX_DMA_FENCE_ARRAY_H__ */

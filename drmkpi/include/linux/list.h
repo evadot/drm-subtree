@@ -29,8 +29,8 @@
  * $FreeBSD$
  */
 
-#ifndef __DRMKPI_LINUX_LIST_H__
-#define	__DRMKPI_LINUX_LIST_H__
+#ifndef __DRMCOMPAT_LINUX_LIST_H__
+#define	__DRMCOMPAT_LINUX_LIST_H__
 
 /*
  * Since LIST_HEAD conflicts with the linux definition we must include any
@@ -474,4 +474,4 @@ static inline int list_is_last(const struct list_head *list,
 	     (pos) && ({ n = (pos)->member.next; 1; });			\
 	     pos = hlist_entry_safe(n, typeof(*(pos)), member))
 
-#endif /* __DRMKPI_LINUX_LIST_H__ */
+#endif /* __DRMCOMPAT_LINUX_LIST_H__ */

@@ -29,8 +29,8 @@
  * $FreeBSD$
  */
 
-#ifndef __DRMKPI_LINUX_SCHED_H__
-#define	__DRMKPI_LINUX_SCHED_H__
+#ifndef __DRMCOMPAT_LINUX_SCHED_H__
+#define	__DRMCOMPAT_LINUX_SCHED_H__
 
 #include <sys/param.h>
 #include <sys/systm.h>
@@ -50,7 +50,7 @@
 
 #include <asm/atomic.h>
 
-#include <drmkpi/sched.h>
+#include <drmcompat/sched.h>
 
 #define	task_pid_group_leader(task) (task)->task_thread->td_proc->p_pid
 #define	task_pid(task)		((task)->task_thread->td_tid)
@@ -72,12 +72,12 @@
 
 #define	need_resched() (curthread->td_flags & TDF_NEEDRESCHED)
 
-#define	signal_pending(task)		drmkpi_signal_pending(task)
+#define	signal_pending(task)		drmcompat_signal_pending(task)
 
 #define	schedule()					\
-	(void)drmkpi_schedule_timeout(MAX_SCHEDULE_TIMEOUT)
+	(void)drmcompat_schedule_timeout(MAX_SCHEDULE_TIMEOUT)
 #define	schedule_timeout(timeout)			\
-	drmkpi_schedule_timeout(timeout)
+	drmcompat_schedule_timeout(timeout)
 #define	schedule_timeout_killable(timeout)		\
 	schedule_timeout_interruptible(timeout)
 #define	schedule_timeout_interruptible(timeout) ({	\
@@ -101,4 +101,4 @@ local_clock(void)
 	return ((uint64_t)ts.tv_sec * NSEC_PER_SEC + ts.tv_nsec);
 }
 
-#endif	/* __DRMKPI_LINUX_SCHED_H__ */
+#endif	/* __DRMCOMPAT_LINUX_SCHED_H__ */

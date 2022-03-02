@@ -30,8 +30,8 @@
  * $FreeBSD$
  */
 
-#ifndef __DRMKPI_LINUX_SCATTERLIST_H__
-#define	__DRMKPI_LINUX_SCATTERLIST_H__
+#ifndef __DRMCOMPAT_LINUX_SCATTERLIST_H__
+#define	__DRMCOMPAT_LINUX_SCATTERLIST_H__
 
 #include <linux/page.h>
 #include <linux/slab.h>
@@ -383,4 +383,4 @@ sg_page_iter_page(struct sg_page_iter *piter)
 }
 
 
-#endif	/* __DRMKPI_LINUX_SCATTERLIST_H__ */
+#endif	/* __DRMCOMPAT_LINUX_SCATTERLIST_H__ */

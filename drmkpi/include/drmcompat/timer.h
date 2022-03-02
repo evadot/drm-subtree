@@ -29,8 +29,8 @@
  * $FreeBSD$
  */
 
-#ifndef __DRMKPI_TIMER_H__
-#define	__DRMKPI_TIMER_H__
+#ifndef __DRMCOMPAT_TIMER_H__
+#define	__DRMCOMPAT_TIMER_H__
 
 struct timer_list {
 	struct callout callout;
@@ -42,10 +42,10 @@ struct timer_list {
 	int expires;
 };
 
-int drmkpi_mod_timer(struct timer_list *timer, int expires);
-void drmkpi_add_timer(struct timer_list *timer);
-void drmkpi_add_timer_on(struct timer_list *timer, int cpu);
-int drmkpi_del_timer(struct timer_list *timer);
-int drmkpi_del_timer_sync(struct timer_list *timer);
+int drmcompat_mod_timer(struct timer_list *timer, int expires);
+void drmcompat_add_timer(struct timer_list *timer);
+void drmcompat_add_timer_on(struct timer_list *timer, int cpu);
+int drmcompat_del_timer(struct timer_list *timer);
+int drmcompat_del_timer_sync(struct timer_list *timer);
 
-#endif /* __DRMKPI_TIMER_H__ */
+#endif /* __DRMCOMPAT_TIMER_H__ */

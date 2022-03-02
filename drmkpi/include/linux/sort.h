@@ -29,8 +29,8 @@
 #define	__LINUX_SORT_H__
 
 #include <linux/types.h>
-#include <drmkpi/sort.h>
+#include <drmcompat/sort.h>
 
-#define	sort(b, n, s, cmp, swap)	drmkpi_sort(b, n, s, cmp, swap)
+#define	sort(b, n, s, cmp, swap)	drmcompat_sort(b, n, s, cmp, swap)
 
 #endif	/* __LINUX_SORT_H__ */

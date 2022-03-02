@@ -29,8 +29,8 @@
  * $FreeBSD$
  */
 
-#ifndef __DRMKPI_LINUX_STRING_H__
-#define	__DRMKPI_LINUX_STRING_H__
+#ifndef __DRMCOMPAT_LINUX_STRING_H__
+#define	__DRMCOMPAT_LINUX_STRING_H__
 
 #include <sys/ctype.h>
 
@@ -124,4 +124,4 @@ strscpy(char* dst, const char* src, size_t len)
 	return (-E2BIG);
 }
 
-#endif	/* __DRMKPI_LINUX_STRING_H__ */
+#endif	/* __DRMCOMPAT_LINUX_STRING_H__ */

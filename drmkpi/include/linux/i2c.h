@@ -29,8 +29,8 @@
  *
  */
 
-#ifndef __DRMKPI_LINUX_I2C_H__
-#define	__DRMKPI_LINUX_I2C_H__
+#ifndef __DRMCOMPAT_LINUX_I2C_H__
+#define	__DRMCOMPAT_LINUX_I2C_H__
 
 #include <sys/param.h>
 #include <sys/malloc.h>
@@ -89,4 +89,4 @@ i2c_transfer (struct i2c_adapter *adap, struct i2c_msg *msgs, int num)
 	return (num);
 }
  	
-#endif	/* __DRMKPI_LINUX_I2C_H__ */
+#endif	/* __DRMCOMPAT_LINUX_I2C_H__ */
