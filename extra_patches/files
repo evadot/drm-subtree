@@ -68,7 +68,6 @@ dev/drm/bridges/drm_bridge_if.m			optional compat_drmcompat drm
 # DRMKPI files
 dev/drm/drmkpi/drmcompat_compat.c		optional compat_drmcompat compile-with "${DRM_C}"
 dev/drm/drmkpi/drmcompat_completion.c		optional compat_drmcompat compile-with "${DRM_C}"
-dev/drm/drmkpi/drmcompat_current.c		optional compat_drmcompat compile-with "${DRM_C}"
 dev/drm/drmkpi/drmcompat_dma_buf.c		optional compat_drmcompat compile-with "${DRM_C}"
 dev/drm/drmkpi/drmcompat_dma_fence.c		optional compat_drmcompat compile-with "${DRM_C}"
 dev/drm/drmkpi/drmcompat_dma_fence_chain.c	optional compat_drmcompat compile-with "${DRM_C}"

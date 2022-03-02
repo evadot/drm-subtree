@@ -43,7 +43,7 @@ __FBSDID("$FreeBSD$");
 #include <drmcompat/ww_mutex.h>
 
 static int
-drmcompat_add_to_sleepqueue(void *wchan, struct task_struct *task,
+drmcompat_add_to_sleepqueue(void *wchan, struct thread *task,
     const char *wmesg, int timeout, int state)
 {
 	int flags, ret;
@@ -80,14 +80,30 @@ drmcompat_add_to_sleepqueue(void *wchan, struct task_struct *task,
 }
 
 static int
-wake_up_task(struct task_struct *task, unsigned int state)
+wake_up_task(struct thread *task, unsigned int state)
+{
+	int wakeup_swapper;
+
+	sleepq_lock(task);
+	wakeup_swapper = sleepq_signal(task, SLEEPQ_SLEEP, 0, 0);
+	sleepq_release(task);
+	if (wakeup_swapper)
+		kick_proc0();
+	return (1);
+}
+
+static int
+wake_up_task_by_wq(wait_queue_entry_t *wq, unsigned int state)
 {
 	int ret, wakeup_swapper;
+	struct thread *task;
+
+	task = wq->private;
 
 	ret = wakeup_swapper = 0;
 	sleepq_lock(task);
-	if ((atomic_read(&task->state) & state) != 0) {
-		set_task_state(task, TASK_WAKING);
+	if ((atomic_read(&wq->state) & state) != 0) {
+		atomic_store_int(&wq->state, TASK_WAKING);
 		wakeup_swapper = sleepq_signal(task, SLEEPQ_SLEEP, 0, 0);
 		ret = 1;
 	}
@@ -98,12 +114,10 @@ wake_up_task(struct task_struct *task, unsigned int state)
 }
 
 bool
-drmcompat_signal_pending(struct task_struct *task)
+drmcompat_signal_pending(struct thread *td)
 {
-	struct thread *td;
 	sigset_t pending;
 
-	td = task->task_thread;
 	PROC_LOCK(td->td_proc);
 	pending = td->td_siglist;
 	SIGSETOR(pending, td->td_proc->p_siglist);
@@ -113,14 +127,14 @@ drmcompat_signal_pending(struct task_struct *task)
 }
 
 int
-drmcompat_autoremove_wake_function(wait_queue_entry_t *wq, unsigned int state, int flags,
-    void *key __unused)
+drmcompat_autoremove_wake_function(wait_queue_entry_t *wq, unsigned int state,
+    int flags, void *key __unused)
 {
-	struct task_struct *task;
+	struct thread *task;
 	int ret;
 
 	task = wq->private;
-	if ((ret = wake_up_task(task, state)) != 0)
+	if ((ret = wake_up_task_by_wq(wq, state)) != 0)
 		list_del_init(&wq->entry);
 	return (ret);
 }
@@ -134,7 +148,7 @@ drmcompat_wake_up(wait_queue_head_t *wqh, unsigned int state, int nr, bool locke
 		spin_lock(&wqh->lock);
 	list_for_each_entry_safe(pos, next, &wqh->head, entry) {
 		if (pos->func == NULL) {
-			if (wake_up_task(pos->private, state) != 0 && --nr == 0)
+			if (wake_up_task_by_wq(pos, state) != 0 && --nr == 0)
 				break;
 		} else {
 			if (pos->func(pos, state, 0, NULL) != 0 && --nr == 0)
@@ -146,13 +160,14 @@ drmcompat_wake_up(wait_queue_head_t *wqh, unsigned int state, int nr, bool locke
 }
 
 void
-drmcompat_prepare_to_wait(wait_queue_head_t *wqh, wait_queue_entry_t *wq, int state)
+drmcompat_prepare_to_wait(wait_queue_head_t *wqh, wait_queue_entry_t *wq,
+    int state)
 {
 
 	spin_lock(&wqh->lock);
 	if (list_empty(&wq->entry))
 		list_add(&wqh->head, &wq->entry);
-	set_task_state(current, state);
+	atomic_store_int(&wq->state, state);
 	spin_unlock(&wqh->lock);
 }
 
@@ -161,7 +176,7 @@ drmcompat_finish_wait(wait_queue_head_t *wqh, wait_queue_entry_t *wq)
 {
 
 	spin_lock(&wqh->lock);
-	set_task_state(current, TASK_RUNNING);
+	atomic_store_int(&wq->state, TASK_RUNNING);
 	if (!list_empty(&wq->entry)) {
 		list_del(&wq->entry);
 		INIT_LIST_HEAD(&wq->entry);
@@ -170,10 +185,10 @@ drmcompat_finish_wait(wait_queue_head_t *wqh, wait_queue_entry_t *wq)
 }
 
 int
-drmcompat_wait_event_common(wait_queue_head_t *wqh, wait_queue_entry_t *wq, int timeout,
-    unsigned int state, spinlock_t *lock)
+drmcompat_wait_event_common(wait_queue_head_t *wqh, wait_queue_entry_t *wq,
+    int timeout, unsigned int state, spinlock_t *lock)
 {
-	struct task_struct *task;
+	struct thread *task;
 	int ret;
 
 	if (lock != NULL)
@@ -191,29 +206,31 @@ drmcompat_wait_event_common(wait_queue_head_t *wqh, wait_queue_entry_t *wq, int 
 	 * Our wait queue entry is on the stack - make sure it doesn't
 	 * get swapped out while we sleep.
 	 */
-	PHOLD(task->task_thread->td_proc);
+	PHOLD(task->td_proc);
 	sleepq_lock(task);
-	if (atomic_read(&task->state) != TASK_WAKING) {
+	if (atomic_read(&wq->state) != TASK_WAKING) {
 		ret = drmcompat_add_to_sleepqueue(task, task, "wevent", timeout,
 		    state);
 	} else {
 		sleepq_release(task);
 		ret = 0;
 	}
-	PRELE(task->task_thread->td_proc);
+	PRELE(task->td_proc);
 
 	if (lock != NULL)
 		spin_lock_irq(lock);
 	return (ret);
 }
 
+/*
+ * Use sleepq_lock(current) before entering this function.
+ */
 int
-drmcompat_schedule_timeout(int timeout)
+drmcompat_schedule_timeout_interruptible(int timeout)
 {
-	struct task_struct *task;
-	int ret;
-	int state;
+	struct thread *task;
 	int remainder;
+	int ret;
 
 	task = current;
 
@@ -225,16 +242,8 @@ drmcompat_schedule_timeout(int timeout)
 
 	remainder = ticks + timeout;
 
-	sleepq_lock(task);
-	state = atomic_read(&task->state);
-	if (state != TASK_WAKING) {
-		ret = drmcompat_add_to_sleepqueue(task, task, "sched", timeout,
-		    state);
-	} else {
-		sleepq_release(task);
-		ret = 0;
-	}
-	set_task_state(task, TASK_RUNNING);
+	ret = drmcompat_add_to_sleepqueue(task, task, "sched", timeout,
+	    TASK_INTERRUPTIBLE);
 
 	if (timeout == 0)
 		return (MAX_SCHEDULE_TIMEOUT);
@@ -253,7 +262,7 @@ drmcompat_schedule_timeout(int timeout)
 }
 
 bool
-drmcompat_wake_up_state(struct task_struct *task, unsigned int state)
+drmcompat_wake_up_state(struct thread *task, unsigned int state)
 {
 
 	return (wake_up_task(task, state) != 0);

@@ -202,7 +202,12 @@
 
 struct syncobj_wait_entry {
 	struct list_head node;
+#ifdef __linux__
 	struct task_struct *task;
+#else
+	struct thread *task;
+	bool   *signalledp;
+#endif
 	struct dma_fence *fence;
 	struct dma_fence_cb fence_cb;
 	u64    point;
@@ -382,6 +387,9 @@ int drm_syncobj_find_fence(struct drm_file *file_private,
 	struct drm_syncobj *syncobj = drm_syncobj_find(file_private, handle);
 	struct syncobj_wait_entry wait;
 	u64 timeout = nsecs_to_jiffies64(DRM_SYNCOBJ_WAIT_FOR_SUBMIT_TIMEOUT);
+#ifdef __FreeBSD__
+	bool signalled;
+#endif
 	int ret;
 
 	if (!syncobj)
@@ -404,6 +412,10 @@ int drm_syncobj_find_fence(struct drm_file *file_private,
 
 	memset(&wait, 0, sizeof(wait));
 	wait.task = current;
+#ifdef __FreeBSD__
+	signalled = false;
+	wait.signalledp = &signalled;
+#endif
 	wait.point = point;
 	drm_syncobj_fence_add_wait(syncobj, &wait);
 
@@ -423,7 +435,16 @@ int drm_syncobj_find_fence(struct drm_file *file_private,
 			break;
 		}
 
+#ifdef __linux__
                 timeout = schedule_timeout(timeout);
+#else
+		sleepq_lock(wait.task);
+		if (signalled)
+			sleepq_release(wait.task);
+		else
+			timeout =
+			    drmcompat_schedule_timeout_interruptible(timeout);
+#endif
 	} while (1);
 
 	__set_current_state(TASK_RUNNING);
@@ -980,6 +1001,12 @@ static void syncobj_wait_fence_func(struct dma_fence *fence,
 	struct syncobj_wait_entry *wait =
 		container_of(cb, struct syncobj_wait_entry, fence_cb);
 
+#ifdef __FreeBSD__
+	sleepq_lock(wait->task);
+	*wait->signalledp = true;
+	sleepq_release(wait->task);
+#endif
+
 	wake_up_process(wait->task);
 }
 
@@ -1016,6 +1043,11 @@ static signed long drm_syncobj_array_wait_timeout(struct drm_syncobj **syncobjs,
 	struct dma_fence *fence;
 	uint64_t *points;
 	uint32_t signaled_count, i;
+#ifdef __FreeBSD__
+	bool signalled;
+
+	signalled = false;
+#endif
 
 	points = kmalloc_array(count, sizeof(*points), GFP_KERNEL);
 	if (points == NULL)
@@ -1044,6 +1076,9 @@ static signed long drm_syncobj_array_wait_timeout(struct drm_syncobj **syncobjs,
 	for (i = 0; i < count; ++i) {
 		struct dma_fence *fence;
 
+#ifdef __FreeBSD__
+		entries[i].signalledp = &signalled;
+#endif
 		entries[i].task = current;
 		entries[i].point = points[i];
 		fence = drm_syncobj_fence_get(syncobjs[i]);
@@ -1126,7 +1161,16 @@ static signed long drm_syncobj_array_wait_timeout(struct drm_syncobj **syncobjs,
 			goto done_waiting;
 		}
 
+#ifdef __linux__
 		timeout = schedule_timeout(timeout);
+#else
+		sleepq_lock(current);
+		if (signalled)
+			sleepq_release(current);
+		else
+			timeout =
+			    drmcompat_schedule_timeout_interruptible(timeout);
+#endif
 	} while (1);
 
 done_waiting:

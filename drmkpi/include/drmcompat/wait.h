@@ -48,6 +48,7 @@ typedef int wait_queue_func_t(wait_queue_entry_t *, unsigned int, int, void *);
 struct wait_queue_entry {
 	unsigned int flags;	/* always 0 */
 	void *private;
+	atomic_t state;
 	wait_queue_func_t *func;
 	struct list_head entry;
 };
@@ -71,7 +72,6 @@ int drmcompat_wait_event_common(wait_queue_head_t *, wait_queue_entry_t *, int,
 void drmcompat_prepare_to_wait(wait_queue_head_t *, wait_queue_entry_t *, int);
 void drmcompat_finish_wait(wait_queue_head_t *, wait_queue_entry_t *);
 
-struct task_struct;
-bool drmcompat_wake_up_state(struct task_struct *, unsigned int);
+bool drmcompat_wake_up_state(struct thread *, unsigned int);
 
 #endif	/* __DRMCOMPAT_WAIT_H__ */

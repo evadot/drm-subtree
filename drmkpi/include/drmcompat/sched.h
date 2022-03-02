@@ -47,19 +47,11 @@
 
 #define	TASK_COMM_LEN		(MAXCOMLEN + 1)
 
-struct task_struct {
-	struct thread *task_thread;
-	atomic_t state;
-};
+#define	current	curthread
 
-#define	current	({ \
-	struct thread *__td = curthread; \
-	linux_set_current(__td); \
-	((struct task_struct *)__td->td_lkpi_task); \
-})
-
-bool drmcompat_signal_pending(struct task_struct *task);
+bool drmcompat_signal_pending(struct thread *task);
 
 int drmcompat_schedule_timeout(int timeout);
+int drmcompat_schedule_timeout_interruptible(int timeout);
 
 #endif	/* __DRMCOMPAT_SCHED_H__ */
