@@ -1,0 +1,51 @@
+From 552935f34f6e351345858c242970a7f6c2c335bb Mon Sep 17 00:00:00 2001
+From: Emmanuel Vadot <manu@FreeBSD.org>
+Date: Wed, 2 Mar 2022 10:29:55 +0100
+Subject: [PATCH] Remove reference to drmkpi
+Content-Type: text/plain; charset=UTF-8
+
+---
+ sys/arm/conf/GENERIC-DRM   | 1 -
+ sys/arm64/conf/GENERIC-DRM | 1 -
+ sys/conf/options           | 1 -
+ 3 files changed, 3 deletions(-)
+
+diff --git a/sys/arm/conf/GENERIC-DRM b/sys/arm/conf/GENERIC-DRM
+index 97720c7ff5ac..1f86f3630a6f 100644
+--- a/sys/arm/conf/GENERIC-DRM
++++ b/sys/arm/conf/GENERIC-DRM
+@@ -11,7 +11,6 @@ include		GENERIC
+ ident		GENERIC-DRM
+ 
+ # DRM Support
+-options		COMPAT_DRMKPI
+ options		COMPAT_DRMCOMPAT
+ options		COMPAT_LINUXKPI
+ 
+diff --git a/sys/arm64/conf/GENERIC-DRM b/sys/arm64/conf/GENERIC-DRM
+index 387cd2da1df8..7243a4f35b94 100644
+--- a/sys/arm64/conf/GENERIC-DRM
++++ b/sys/arm64/conf/GENERIC-DRM
+@@ -11,7 +11,6 @@ include		GENERIC
+ ident		GENERIC-DRM
+ 
+ # DRM Support
+-options		COMPAT_DRMKPI
+ options		COMPAT_DRMCOMPAT
+ options		COMPAT_LINUXKPI
+ 
+diff --git a/sys/conf/options b/sys/conf/options
+index 8e91d4166f0f..a95869336548 100644
+--- a/sys/conf/options
++++ b/sys/conf/options
+@@ -101,7 +101,6 @@ COMPAT_FREEBSD12	opt_global.h
+ COMPAT_FREEBSD13	opt_global.h
+ COMPAT_LINUXKPI	opt_dontuse.h
+ _COMPAT_LINUX32	opt_compat.h	# XXX: make sure opt_compat.h exists
+-COMPAT_DRMKPI	opt_global.h
+ COMPAT_DRMCOMPAT	opt_global.h
+ COMPILING_LINT	opt_global.h
+ CY_PCI_FASTINTR
+-- 
+2.35.1
+
