@@ -111,4 +111,11 @@ dma_resv_has_excl_fence(const struct dma_resv *robj)
 	return robj->fence_excl != NULL;
 }
 
+static inline int
+dma_resv_lock_slow_interruptible(struct dma_resv *obj,
+    struct ww_acquire_ctx *ctx)
+{
+	return (ww_mutex_lock_slow_interruptible(&obj->lock, ctx));
+}
+
 #endif	/* __DRMCOMPAT_LINUX_DMA_RESV_H__ */

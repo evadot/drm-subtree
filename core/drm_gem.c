@@ -1315,8 +1315,8 @@ retry:
 	if (contended != -1) {
 		struct drm_gem_object *obj = objs[contended];
 
-		ret = ww_mutex_lock_slow_interruptible(&obj->resv->lock,
-						       acquire_ctx);
+		ret = dma_resv_lock_slow_interruptible(obj->resv,
+								 acquire_ctx);
 		if (ret) {
 			ww_acquire_done(acquire_ctx);
 			return ret;
@@ -1327,16 +1327,16 @@ retry:
 		if (i == contended)
 			continue;
 
-		ret = ww_mutex_lock_interruptible(&objs[i]->resv->lock,
-						  acquire_ctx);
+		ret = dma_resv_lock_interruptible(objs[i]->resv,
+							    acquire_ctx);
 		if (ret) {
 			int j;
 
 			for (j = 0; j < i; j++)
-				ww_mutex_unlock(&objs[j]->resv->lock);
+				dma_resv_unlock(objs[j]->resv);
 
 			if (contended != -1 && contended >= i)
-				ww_mutex_unlock(&objs[contended]->resv->lock);
+				dma_resv_unlock(objs[contended]->resv);
 
 			if (ret == -EDEADLK) {
 				contended = i;
@@ -1361,7 +1361,7 @@ drm_gem_unlock_reservations(struct drm_gem_object **objs, int count,
 	int i;
 
 	for (i = 0; i < count; i++)
-		ww_mutex_unlock(&objs[i]->resv->lock);
+		dma_resv_unlock(objs[i]->resv);
 
 	ww_acquire_fini(acquire_ctx);
 }
