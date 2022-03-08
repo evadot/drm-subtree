@@ -303,6 +303,14 @@ struct drm_device {
 	 */
 	enum switch_power_state switch_power_state;
 
+#ifdef __FreeBSD__
+	struct drm_sysctl_info *sysctl;
+	int  sysctl_node_idx;
+	void *sysctl_private;
+	char busid_str[128];
+	int modesetting;
+#define	MAX_ORDER 11
+#endif
 	/**
 	 * @fb_helper:
 	 *
@@ -310,26 +318,6 @@ struct drm_device {
 	 * Set by drm_fb_helper_init() and cleared by drm_fb_helper_fini().
 	 */
 	struct drm_fb_helper *fb_helper;
-#ifdef __FreeBSD__
-	struct drm_sysctl_info *sysctl;
-	int		  sysctl_node_idx;
-
-	void		  *drm_ttm_bdev;
-
-	void *sysctl_private;
-	char busid_str[128];
-	int modesetting;
-
-	/* const drm_pci_id_list_t *id_entry;	/\* PCI ID, name, and chipset private *\/ */
-
-#define	DRM_PCI_RESOURCE_MAX	7
-#define	MAX_ORDER 11
-
-	struct drm_pci_resource {
-		struct resource *res;
-		int rid;
-	} drm_pcir[DRM_PCI_RESOURCE_MAX];
-#endif
 
 	/* Everything below here is for legacy driver, never use! */
 	/* private: */
