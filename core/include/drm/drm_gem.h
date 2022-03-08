@@ -35,7 +35,7 @@
  */
 
 #include <linux/kref.h>
-#include <linux/reservation.h>
+#include <linux/dma-resv.h>
 
 #include <drm/drm_vma_manager.h>
 
@@ -289,7 +289,7 @@ struct drm_gem_object {
 	 *
 	 * Normally (@resv == &@_resv) except for imported GEM objects.
 	 */
-	struct reservation_object *resv;
+	struct dma_resv *resv;
 
 	/**
 	 * @_resv:
@@ -298,7 +298,7 @@ struct drm_gem_object {
 	 *
 	 * This is unused for imported GEM objects.
 	 */
-	struct reservation_object _resv;
+	struct dma_resv _resv;
 
 	/**
 	 * @funcs:

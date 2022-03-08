@@ -48,7 +48,7 @@ __FBSDID("$FreeBSD$");
 
 #include <linux/dma-buf.h>
 #include <linux/err.h>
-#include <linux/reservation.h>
+#include <linux/dma-resv.h>
 
 #include <uapi/linux/dma-buf.h>
 
@@ -114,11 +114,11 @@ linux_dma_buf_export(struct dma_buf_export_info *info)
 	dmabuf->resv = info->resv;
 
 	sx_init(&dmabuf->db_sx, "dma-buf");
-	reservation_poll_init(&dmabuf->db_resv_poll);
+	dma_resv_poll_init(&dmabuf->db_resv_poll);
 
 	if (dmabuf->resv == NULL) {
 		dmabuf->resv = &dmabuf->db_resv_int[0];
-		reservation_object_init(dmabuf->resv);
+		dma_resv_init(dmabuf->resv);
 	}
 
 	rv = falloc_noinstall(curthread, &dmabuf->db_file);
@@ -280,10 +280,10 @@ dmabuf_fop_close(struct file *file, struct thread *td)
 	dmabuf = file->f_data;
 
 	dmabuf->ops->release(dmabuf);
-	reservation_poll_fini(&dmabuf->db_resv_poll);
+	dma_resv_poll_fini(&dmabuf->db_resv_poll);
 
 	if (dmabuf->resv == &dmabuf->db_resv_int[0])
-		reservation_object_fini(dmabuf->resv);
+		dma_resv_fini(dmabuf->resv);
 
 	sx_destroy(&dmabuf->db_sx);
 	free(dmabuf, M_DMABUF);
@@ -295,7 +295,7 @@ dmabuf_fop_poll(struct file *file, int events, struct ucred *active_cred,
     struct thread *td)
 {
 	struct dma_buf *dmabuf;
-	struct reservation_poll *rpoll;
+	struct dma_resv_poll *rpoll;
 
 	if (!file_is_dmabuf(file))
 		return (EINVAL);
@@ -304,14 +304,14 @@ dmabuf_fop_poll(struct file *file, int events, struct ucred *active_cred,
 
 	rpoll = &dmabuf->db_resv_poll;
 
-	return (reservation_object_poll(dmabuf->resv, events, rpoll));
+	return (dma_resv_poll(dmabuf->resv, events, rpoll));
 }
 
 static int
 dmabuf_fop_kqfilter(struct file *file, struct knote *kn)
 {
 	struct dma_buf *dmabuf;
-	struct reservation_poll *rpoll;
+	struct dma_resv_poll *rpoll;
 
 	if (!file_is_dmabuf(file))
 		return (EINVAL);
@@ -320,7 +320,7 @@ dmabuf_fop_kqfilter(struct file *file, struct knote *kn)
 
 	rpoll = &dmabuf->db_resv_poll;
 
-	return (reservation_object_kqfilter(dmabuf->resv, kn, rpoll));
+	return (dma_resv_kqfilter(dmabuf->resv, kn, rpoll));
 }
 
 static int

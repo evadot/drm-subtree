@@ -257,7 +257,7 @@ panfrost_acquire_object_fences(struct drm_gem_object **bos,
 
 	for (i = 0; i < bo_count; i++)
 		implicit_fences[i] =
-		    reservation_object_get_excl_rcu(bos[i]->resv);
+		    dma_resv_get_excl_rcu(bos[i]->resv);
 }
 
 static void
@@ -267,7 +267,7 @@ panfrost_attach_object_fences(struct drm_gem_object **bos,
 	int i;
 
 	for (i = 0; i < bo_count; i++)
-		reservation_object_add_excl_fence(bos[i]->resv, fence);
+		dma_resv_add_excl_fence(bos[i]->resv, fence);
 }
 
 int

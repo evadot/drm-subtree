@@ -445,7 +445,7 @@ struct drm_driver {
 	 * Deprecated hook in favour of &drm_gem_object_funcs.unpin.
 	 */
 	void (*gem_prime_unpin)(struct drm_gem_object *obj);
-	struct reservation_object * (*gem_prime_res_obj)(
+	struct dma_resv * (*gem_prime_res_obj)(
 				struct drm_gem_object *obj);
 
 

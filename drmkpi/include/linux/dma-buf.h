@@ -36,7 +36,7 @@
 #include <sys/mutex.h>
 
 #include <linux/dma-mapping.h>
-#include <linux/reservation.h>
+#include <linux/dma-resv.h>
 
 struct device;
 struct dma_buf;
@@ -45,7 +45,7 @@ struct dma_buf_export_info;
 struct dma_buf_ops;
 struct file;
 struct module;
-struct reservation_object;
+struct dma_resv;
 struct sg_table;
 struct uvm_object;
 
@@ -72,12 +72,12 @@ struct dma_buf {
 	size_t				size;
 	const struct dma_buf_ops	*ops;
 	void				*priv;
-	struct reservation_object	*resv;
+	struct dma_resv			*resv;
 
 	struct file 			*db_file;
 	struct sx			db_sx;
-	struct reservation_poll		db_resv_poll;
-	struct reservation_object	db_resv_int[];
+	struct dma_resv_poll		db_resv_poll;
+	struct dma_resv			db_resv_int[];
 };
 
 struct dma_buf_attachment {
@@ -92,7 +92,7 @@ struct dma_buf_export_info {
 	const struct dma_buf_ops	*ops;
 	size_t				size;
 	int				flags;
-	struct reservation_object	*resv;
+	struct dma_resv			*resv;
 	void				*priv;
 };
 
