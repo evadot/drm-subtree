@@ -420,8 +420,8 @@ struct drm_driver {
 	 * Export hook for GEM drivers. Deprecated in favour of
 	 * &drm_gem_object_funcs.export.
 	 */
-	struct dma_buf * (*gem_prime_export)(struct drm_device *dev,
-				struct drm_gem_object *obj, int flags);
+	struct dma_buf * (*gem_prime_export)(struct drm_gem_object *obj,
+					     int flags);
 	/**
 	 * @gem_prime_import:
 	 *
@@ -445,8 +445,6 @@ struct drm_driver {
 	 * Deprecated hook in favour of &drm_gem_object_funcs.unpin.
 	 */
 	void (*gem_prime_unpin)(struct drm_gem_object *obj);
-	struct dma_resv * (*gem_prime_res_obj)(
-				struct drm_gem_object *obj);
 
 
 	/**
