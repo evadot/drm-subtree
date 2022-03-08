@@ -504,7 +504,7 @@ static const struct file_operations host1x_drm_fops = {
 };
 
 struct drm_driver tegra_drm_driver = {
-	.driver_features = DRIVER_MODESET | DRIVER_GEM | DRIVER_PRIME |
+	.driver_features = DRIVER_MODESET | DRIVER_GEM |
 	    DRIVER_ATOMIC | DRIVER_RENDER,
 	.unload = host1x_drm_unload,
 	.open = host1x_drm_open,

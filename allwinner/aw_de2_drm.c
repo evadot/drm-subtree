@@ -94,7 +94,7 @@ static const struct file_operations aw_de2_drm_drv_fops = {
 };
 
 static struct drm_driver aw_de2_drm_driver = {
-	.driver_features = DRIVER_GEM | DRIVER_MODESET | DRIVER_ATOMIC | DRIVER_PRIME,
+	.driver_features = DRIVER_GEM | DRIVER_MODESET | DRIVER_ATOMIC,
 
 	/* Generic Operations */
 	.lastclose = drm_fb_helper_lastclose,
