@@ -159,7 +159,7 @@ static int drm_set_busid(struct drm_device *dev, struct drm_file *file_priv)
 #if defined(__linux__) || defined(CONFIG_PCI)
 #ifdef __linux__
 	if (dev->dev && dev_is_pci(dev->dev)) {
-#else
+#elif defined(__FreeBSD__)
 	// BSDFIXME: Assume it's PCI for now
 	if (dev->dev) {
 #endif
