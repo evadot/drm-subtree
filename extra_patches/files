@@ -64,6 +64,7 @@ dev/drm/freebsd/drm_os_freebsd.c		optional compat_drmcompat drm compile-with "${
 dev/drm/freebsd/drm_sysctl.c			optional compat_drmcompat drm compile-with "${DRM_C}"
 dev/drm/freebsd/drm_sysfs.c			optional compat_drmcompat drm compile-with "${DRM_C}"
 dev/drm/bridges/drm_bridge_if.m			optional compat_drmcompat drm
+dev/drm/bridges/drm_encoder_if.m		optional compat_drmcompat drm
 
 # DRMKPI files
 dev/drm/drmkpi/drmcompat_compat.c		optional compat_drmcompat compile-with "${DRM_C}"
