@@ -844,9 +844,11 @@ long drm_ioctl(struct file *filp,
 	drm_ioctl_t *func;
 	unsigned int nr = DRM_IOCTL_NR(cmd);
 	int retcode = -EINVAL;
+#ifdef __linux__
 	char stack_kdata[128];
 	char *kdata = NULL;
 	unsigned int in_size, out_size, drv_size, ksize;
+#endif
 	bool is_driver_ioctl;
 
 	dev = file_priv->minor->dev;
@@ -872,6 +874,7 @@ long drm_ioctl(struct file *filp,
 		ioctl = &drm_ioctls[nr];
 	}
 
+#ifdef __linux__
 	drv_size = _IOC_SIZE(ioctl->cmd);
 	out_size = in_size = _IOC_SIZE(cmd);
 	if ((cmd & ioctl->cmd & IOC_IN) == 0)
@@ -880,7 +883,6 @@ long drm_ioctl(struct file *filp,
 		out_size = 0;
 	ksize = max(max(in_size, out_size), drv_size);
 
-#ifdef __linux__
 	DRM_DEBUG("pid=%d, dev=0x%lx, auth=%d, %s\n",
 		  task_pid_nr(current),
 		  (long)old_encode_dev(file_priv->minor->kdev->devt),
@@ -899,6 +901,7 @@ long drm_ioctl(struct file *filp,
 		goto err_i1;
 	}
 
+#ifdef __linux__
 	if (ksize <= sizeof(stack_kdata)) {
 		kdata = stack_kdata;
 	} else {
@@ -909,25 +912,19 @@ long drm_ioctl(struct file *filp,
 		}
 	}
 
-// Some weird stuff is happening in copy_from_user
-#ifdef __linux__
 	if (copy_from_user(kdata, (void __user *)arg, in_size) != 0) {
 		retcode = -EFAULT;
 		goto err_i1;
 	}
-#else
-	memcpy(kdata, (void __user *)arg, in_size);
-#endif
 
 	if (ksize > in_size)
 		memset(kdata + in_size, 0, ksize - in_size);
 
 	retcode = drm_ioctl_kernel(filp, func, kdata, ioctl->flags);
-#ifdef __linux__
 	if (copy_to_user((void __user *)arg, kdata, out_size) != 0)
 		retcode = -EFAULT;
 #else
-	memcpy((void __user *)arg, kdata, out_size);
+	retcode = drm_ioctl_kernel(filp, func, (void *)arg, ioctl->flags);
 #endif
 
       err_i1:
@@ -937,10 +934,10 @@ long drm_ioctl(struct file *filp,
 			  task_pid_nr(current),
 			  (long)old_encode_dev(file_priv->minor->kdev->devt),
 			  file_priv->authenticated, cmd, nr);
-#endif
 
 	if (kdata != stack_kdata)
 		kfree(kdata);
+#endif
 	if (retcode)
 		DRM_DEBUG("pid=%d, ret = %d\n", task_pid_nr(current), retcode);
 	return retcode;
