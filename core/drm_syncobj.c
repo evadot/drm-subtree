@@ -1004,10 +1004,10 @@ static void syncobj_wait_fence_func(struct dma_fence *fence,
 #ifdef __FreeBSD__
 	sleepq_lock(wait->task);
 	*wait->signalledp = true;
-	sleepq_release(wait->task);
-#endif
-
+	wake_up_process_locked(wait->task);
+#else
 	wake_up_process(wait->task);
+#endif
 }
 
 static void syncobj_wait_syncobj_func(struct drm_syncobj *syncobj,
@@ -1028,7 +1028,13 @@ static void syncobj_wait_syncobj_func(struct drm_syncobj *syncobj,
 		wait->fence = fence;
 	}
 
+#ifdef __FreeBSD__
+	sleepq_lock(wait->task);
+	*wait->signalledp = true;
+	wake_up_process_locked(wait->task);
+#else
 	wake_up_process(wait->task);
+#endif
 	list_del_init(&wait->node);
 }
 

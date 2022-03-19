@@ -79,17 +79,15 @@ drmcompat_add_to_sleepqueue(void *wchan, struct thread *task,
 	return (ret);
 }
 
-static int
-wake_up_task(struct thread *task, unsigned int state)
+void
+drmcompat_wake_up_task_locked(struct thread *task)
 {
 	int wakeup_swapper;
 
-	sleepq_lock(task);
 	wakeup_swapper = sleepq_signal(task, SLEEPQ_SLEEP, 0, 0);
 	sleepq_release(task);
 	if (wakeup_swapper)
 		kick_proc0();
-	return (1);
 }
 
 static int
@@ -259,11 +257,4 @@ drmcompat_schedule_timeout_interruptible(int timeout)
 	else if (remainder > timeout)
 		remainder = timeout;
 	return (remainder);
-}
-
-bool
-drmcompat_wake_up_state(struct thread *task, unsigned int state)
-{
-
-	return (wake_up_task(task, state) != 0);
 }

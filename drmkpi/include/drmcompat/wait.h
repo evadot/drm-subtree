@@ -72,6 +72,6 @@ int drmcompat_wait_event_common(wait_queue_head_t *, wait_queue_entry_t *, int,
 void drmcompat_prepare_to_wait(wait_queue_head_t *, wait_queue_entry_t *, int);
 void drmcompat_finish_wait(wait_queue_head_t *, wait_queue_entry_t *);
 
-bool drmcompat_wake_up_state(struct thread *, unsigned int);
+void drmcompat_wake_up_task_locked(struct thread *task);
 
 #endif	/* __DRMCOMPAT_WAIT_H__ */

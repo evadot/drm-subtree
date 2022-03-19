@@ -165,7 +165,6 @@
  * schedule() will require special treatment.
  */
 
-#define	wake_up_process(task)		drmcompat_wake_up_state(task, TASK_NORMAL)
-#define	wake_up_state(task, state)	drmcompat_wake_up_state(task, state)
+#define	wake_up_process_locked(task)	drmcompat_wake_up_task_locked(task)
 
 #endif /* __DRMCOMPAT_LINUX_WAIT_H__ */
