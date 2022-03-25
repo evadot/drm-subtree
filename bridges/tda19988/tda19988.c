@@ -217,6 +217,8 @@ __FBSDID("$FreeBSD$");
 
 #define	TDA_CURPAGE_ADDR	0xff
 
+#define	TDA_CEC_RXSHPDLEV	0xfe
+#define		RXSHPDLEV_HPD	(1 << 1)
 #define	TDA_CEC_ENAMODS		0xff
 #define		ENAMODS_RXSENS		(1 << 2)
 #define		ENAMODS_HDMI		(1 << 1)
@@ -776,8 +778,16 @@ tda19988_detach(device_t dev)
 static enum drm_connector_status
 tda19988_connector_detect(struct drm_connector *connector, bool force)
 {
+	struct tda19988_softc *sc;
+	uint8_t data;
 
-	return (connector_status_connected);
+	sc = container_of(connector, struct tda19988_softc, connector);
+
+	tda19988_cec_read(sc, TDA_CEC_RXSHPDLEV, &data);
+	if (data & RXSHPDLEV_HPD)
+		return (connector_status_connected);
+
+	return (connector_status_disconnected);
 }
 
 static const struct drm_connector_funcs tda19988_connector_funcs = {
@@ -833,7 +843,8 @@ tda19988_bridge_attach(struct drm_bridge *bridge,
 
 	sc = container_of(bridge, struct tda19988_softc, bridge);
 
-	sc->connector.polled = DRM_CONNECTOR_POLL_HPD;
+	sc->connector.polled = DRM_CONNECTOR_POLL_CONNECT | \
+	    DRM_CONNECTOR_POLL_DISCONNECT;
 	drm_connector_helper_add(&sc->connector,
 	    &tda19988_connector_helper_funcs);
 
