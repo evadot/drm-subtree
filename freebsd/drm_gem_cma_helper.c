@@ -47,6 +47,7 @@ __FBSDID("$FreeBSD$");
 
 #include <drm/drm_crtc_helper.h>
 #include <drm/drm_gem.h>
+#include <drm/drm_prime.h>
 #include <drm/drm_gem_cma_helper.h>
 
 static int
@@ -69,11 +70,11 @@ drm_gem_cma_destruct(struct drm_gem_cma_object *bo)
 		if (m == NULL)
 			break;
 		vm_page_lock(m);
+		m->oflags |= VPO_UNMANAGED;
 		m->flags &= ~PG_FICTITIOUS;
 		vm_page_unwire_noq(m);
 		vm_page_free(m);
 		vm_page_unlock(m);
-
 	}
 }
 
@@ -88,7 +89,8 @@ drm_gem_cma_alloc_contig(size_t npages, u_long alignment, vm_memattr_t memattr,
 	low = 0;
 	high = -1UL;
 	boundary = 0;
-	pflags = VM_ALLOC_WIRED | VM_ALLOC_ZERO;
+	pflags = VM_ALLOC_NORMAL | VM_ALLOC_NOBUSY | VM_ALLOC_WIRED |
+	    VM_ALLOC_ZERO;
 	tries = 0;
 retry:
 	m = vm_page_alloc_noobj_contig(pflags, npages, low, high, alignment,
@@ -159,7 +161,6 @@ drm_gem_cma_alloc(struct drm_device *drm, struct drm_gem_cma_object *bo)
 static int
 drm_gem_cma_fault(struct vm_area_struct *dummy, struct vm_fault *vmf)
 {
-
 	struct vm_area_struct *vma;
 	struct drm_gem_object *gem_obj;
 	struct drm_gem_cma_object *bo;
@@ -257,6 +258,10 @@ drm_gem_cma_free_object(struct drm_gem_object *gem_obj)
 
 	bo = container_of(gem_obj, struct drm_gem_cma_object, gem_obj);
 	drm_gem_free_mmap_offset(gem_obj);
+
+	if (gem_obj->import_attach)
+		drm_prime_gem_destroy(gem_obj, bo->sgt);
+
 	drm_gem_object_release(gem_obj);
 
 	drm_gem_cma_destruct(bo);
@@ -303,7 +308,8 @@ drm_gem_cma_mmap(struct file *file, struct vm_area_struct *vma)
 }
 
 int
-drm_gem_cma_create(struct drm_device *drm, size_t size, struct drm_gem_cma_object **res_bo)
+drm_gem_cma_create_nobufs(struct drm_device *drm, size_t size, bool private,
+    struct drm_gem_cma_object **res_bo)
 {
 	struct drm_gem_cma_object *bo;
 	int rv;
@@ -314,17 +320,40 @@ drm_gem_cma_create(struct drm_device *drm, size_t size, struct drm_gem_cma_objec
 	bo = malloc(sizeof(*bo), DRM_MEM_DRIVER, M_WAITOK | M_ZERO);
 
 	size = round_page(size);
-	rv = drm_gem_object_init(drm, &bo->gem_obj, size);
-	if (rv != 0) {
-		DRM_ERROR("%s: drm_gem_object_init failed\n", __func__);
-		free(bo, DRM_MEM_DRIVER);
-		return (rv);
+
+	if (private) {
+		drm_gem_private_object_init(drm, &bo->gem_obj, size);
+	} else {
+		rv = drm_gem_object_init(drm, &bo->gem_obj, size);
+		if (rv != 0) {
+			DRM_ERROR("%s: drm_gem_object_init failed\n", __func__);
+			free(bo, DRM_MEM_DRIVER);
+			return (rv);
+		}
 	}
+
 	rv = drm_gem_create_mmap_offset(&bo->gem_obj);
 	if (rv != 0) {
 		DRM_ERROR("%s: drm_gem_create_mmap_offset failed\n", __func__);
 		drm_gem_object_release(&bo->gem_obj);
 		free(bo, DRM_MEM_DRIVER);
+		return (rv);
+	}
+
+	*res_bo = bo;
+
+	return (0);
+}
+
+int
+drm_gem_cma_create(struct drm_device *drm, size_t size, struct drm_gem_cma_object **res_bo)
+{
+	struct drm_gem_cma_object *bo;
+	int rv;
+
+	rv = drm_gem_cma_create_nobufs(drm, size, false, &bo);
+	if (rv != 0) {
+		DRM_ERROR("%s: drm_gem_cma_alloc failed\n", __func__);
 		return (rv);
 	}
 

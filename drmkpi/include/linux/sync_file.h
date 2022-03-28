@@ -1,5 +1,5 @@
-#ifndef __DRMKPI_LINUX_SYNC_FILE_H__
-#define __DRMKPI_LINUX_SYNC_FILE_H__
+#ifndef __DRMCOMPAT_LINUX_SYNC_FILE_H__
+#define __DRMCOMPAT_LINUX_SYNC_FILE_H__
 
 #include <sys/types.h>
 #include <sys/mutex.h>
@@ -22,4 +22,4 @@ struct sync_file *sync_file_create(struct dma_fence *fence);
 struct dma_fence *sync_file_get_fence(int fd);
 char *sync_file_get_name(struct sync_file *sync_file, char *buf, int len);
 
-#endif /* __DRMKPI_LINUX_SYNC_H__ */
+#endif /* __DRMCOMPAT_LINUX_SYNC_H__ */

@@ -29,9 +29,12 @@
  *
  */
 
-#ifndef __DRMKPI_LINUX_I2C_H__
-#define	__DRMKPI_LINUX_I2C_H__
+
+#ifndef __DRMCOMPAT_LINUX_I2C_H__
+#define	__DRMCOMPAT_LINUX_I2C_H__
 #include <linux/device.h>
+
+
 #include <sys/param.h>
 #include <sys/malloc.h>
 #include <dev/iicbus/iiconf.h>
@@ -161,4 +164,4 @@ i2c_set_adapdata(struct i2c_adapter *adapter, void *data)
 	adapter->i2ca_adapdata = data;
 }
 
-#endif	/* __DRMKPI_LINUX_I2C_H__ */
+#endif	/* __DRMCOMPAT_LINUX_I2C_H__ */

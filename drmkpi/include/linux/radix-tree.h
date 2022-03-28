@@ -29,8 +29,8 @@
  * $FreeBSD$
  */
 
-#ifndef __DRMKPI_LINUX_RADIX_TREE_H__
-#define	__DRMKPI_LINUX_RADIX_TREE_H__
+#ifndef __DRMCOMPAT_LINUX_RADIX_TREE_H__
+#define	__DRMCOMPAT_LINUX_RADIX_TREE_H__
 
 #include <linux/types.h>
 
@@ -83,4 +83,4 @@ int	radix_tree_store(struct radix_tree_root *, unsigned long, void **);
 bool	radix_tree_iter_find(struct radix_tree_root *, struct radix_tree_iter *, void ***);
 void	radix_tree_iter_delete(struct radix_tree_root *, struct radix_tree_iter *, void **);
 
-#endif	/* __DRMKPI_LINUX_RADIX_TREE_H__ */
+#endif	/* __DRMCOMPAT_LINUX_RADIX_TREE_H__ */

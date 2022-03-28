@@ -31,8 +31,8 @@
  * $FreeBSD$
  */
 
-#ifndef __DRMKPI_LINUX_MM_H__
-#define	__DRMKPI_LINUX_MM_H__
+#ifndef __DRMCOMPAT_LINUX_MM_H__
+#define	__DRMCOMPAT_LINUX_MM_H__
 
 #include <linux/spinlock.h>
 #include <linux/gfp.h>
@@ -46,7 +46,7 @@
 #define	PAGE_ALIGN(x)	ALIGN(x, PAGE_SIZE)
 
 /*
- * Make sure our DRMKPI defined virtual memory flags don't conflict
+ * Make sure our DRMCOMPAT defined virtual memory flags don't conflict
  * with the ones defined by FreeBSD:
  */
 CTASSERT((VM_PROT_ALL & -(1 << 8)) == 0);
@@ -257,4 +257,4 @@ vmalloc_to_page(const void *addr)
 
 extern int is_vmalloc_addr(const void *addr);
 
-#endif	/* __DRMKPI_LINUX_MM_H__ */
+#endif	/* __DRMCOMPAT_LINUX_MM_H__ */

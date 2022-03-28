@@ -800,7 +800,7 @@ int drm_irq_uninstall(struct drm_device *dev)
 static void
 drm_stub_init(void *arg)
 {
-	rw_init(&drm_vma_lock, "drmkpi-vma-lock");
+	rw_init(&drm_vma_lock, "drmcompat-vma-lock");
 }
 
 static void

@@ -357,10 +357,9 @@ aw_de2_hdmi_phy_get_prediv(struct aw_de2_hdmi_phy_softc *sc, uint64_t pixel_cloc
 {
 	uint64_t pll_freq;
 	uint64_t cur, best;
-	int rv;
 	int m, best_m;
 
-	rv = clk_get_freq(sc->clk_pll, &pll_freq);
+	clk_get_freq(sc->clk_pll, &pll_freq);
 
 	cur = best = 0;
 	for (m = 1; m < 16; m++) {

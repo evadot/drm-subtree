@@ -119,17 +119,15 @@ int drm_unbind_agp(struct agp_memory *handle)
 }
 
 #else /*  CONFIG_AGP  */
-#ifdef __linux__
 static inline void *agp_remap(unsigned long offset, unsigned long size,
 			      struct drm_device *dev)
 {
 	return NULL;
 }
 
-#endif /* __linux__ */
 #endif /* CONFIG_AGP */
 
-#ifdef __linux__
+#ifdef CONFIG_DRM_LEGACY
 void drm_legacy_ioremap(struct drm_local_map *map, struct drm_device *dev)
 {
 	if (dev->agp && dev->agp->cant_use_aperture && map->type == _DRM_AGP)
@@ -159,11 +157,11 @@ void drm_legacy_ioremapfree(struct drm_local_map *map, struct drm_device *dev)
 		iounmap(map->handle);
 }
 EXPORT_SYMBOL(drm_legacy_ioremapfree);
-#endif /* __linux__ */
+#endif /* CONFIG_DRM_LEGACY */
 
-#ifdef __linux__
 bool drm_need_swiotlb(int dma_bits)
 {
+#ifdef __linux__
 	struct resource *tmp;
 	resource_size_t max_iomem = 0;
 
@@ -191,6 +189,10 @@ bool drm_need_swiotlb(int dma_bits)
 	}
 
 	return max_iomem > ((u64)1 << dma_bits);
+#elif defined(__FreeBSD__)
+	// Only used in combination with CONFIG_SWIOTLB in v4.17
+	// BSDFIXME: Let's say we can dma all physical memory...
+	return false;
+#endif
 }
 EXPORT_SYMBOL(drm_need_swiotlb);
-#endif /* __linux__ */

@@ -249,7 +249,8 @@ static const struct drm_connector_helper_funcs
 };
 
 static int
-dw_hdmi_bridge_attach(struct drm_bridge *bridge)
+dw_hdmi_bridge_attach(struct drm_bridge *bridge,
+    enum drm_bridge_attach_flags flags)
 {
 	struct dw_hdmi_softc *sc;
 
@@ -272,9 +273,6 @@ static enum drm_mode_status
 dw_hdmi_bridge_mode_valid(struct drm_bridge *bridge,
 			  const struct drm_display_mode *mode)
 {
-	struct dw_hdmi_softc *sc;
-
-	sc = container_of(bridge, struct dw_hdmi_softc, bridge);
 
 	return (MODE_OK);
 }
@@ -295,9 +293,6 @@ dw_hdmi_bridge_mode_set(struct drm_bridge *bridge,
 static void
 dw_hdmi_bridge_disable(struct drm_bridge *bridge)
 {
-	struct dw_hdmi_softc *sc;
-
-	sc = container_of(bridge, struct dw_hdmi_softc, bridge);
 }
 
 static inline void
@@ -713,7 +708,7 @@ dw_hdmi_add_bridge(struct dw_hdmi_softc *sc)
 {
 
 	sc->bridge.funcs = &dw_hdmi_bridge_funcs;
-	drm_bridge_attach(&sc->encoder, &sc->bridge, NULL);
+	drm_bridge_attach(&sc->encoder, &sc->bridge, NULL, 0);
 }
 
 static void

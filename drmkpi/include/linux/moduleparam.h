@@ -29,106 +29,106 @@
  * $FreeBSD$
  */
 
-#ifndef	__DRMKPI_LINUX_MODULEPARAM_H__
-#define	__DRMKPI_LINUX_MODULEPARAM_H__
+#ifndef	__DRMCOMPAT_LINUX_MODULEPARAM_H__
+#define	__DRMCOMPAT_LINUX_MODULEPARAM_H__
 
 #include <sys/types.h>
 #include <sys/sysctl.h>
 
 #include <linux/types.h>
 
-#ifndef DRMKPI_PARAM_PARENT
-#define	DRMKPI_PARAM_PARENT	_dev_drm
+#ifndef DRMCOMPAT_PARAM_PARENT
+#define	DRMCOMPAT_PARAM_PARENT	_dev_drm
 #endif
 
-#ifndef DRMKPI_PARAM_PREFIX
-#define	DRMKPI_PARAM_PREFIX	/* empty prefix is the default */
+#ifndef DRMCOMPAT_PARAM_PREFIX
+#define	DRMCOMPAT_PARAM_PREFIX	/* empty prefix is the default */
 #endif
 
-#ifndef DRMKPI_PARAM_PERM
-#define	DRMKPI_PARAM_PERM(perm) (((perm) & 0222) ? CTLFLAG_RWTUN : CTLFLAG_RDTUN)
+#ifndef DRMCOMPAT_PARAM_PERM
+#define	DRMCOMPAT_PARAM_PERM(perm) (((perm) & 0222) ? CTLFLAG_RWTUN : CTLFLAG_RDTUN)
 #endif
 
-#define	DRMKPI_PARAM_CONCAT_SUB(a,b,c,d) a##b##c##d
-#define	DRMKPI_PARAM_CONCAT(...) DRMKPI_PARAM_CONCAT_SUB(__VA_ARGS__)
-#define	DRMKPI_PARAM_PASS(...) __VA_ARGS__
-#define	DRMKPI_PARAM_DESC(name) DRMKPI_PARAM_CONCAT(drmkpi_,DRMKPI_PARAM_PREFIX,name,_desc)
-#define	DRMKPI_PARAM_NAME(name) DRMKPI_PARAM_CONCAT(DRMKPI_PARAM_PREFIX,name,,)
+#define	DRMCOMPAT_PARAM_CONCAT_SUB(a,b,c,d) a##b##c##d
+#define	DRMCOMPAT_PARAM_CONCAT(...) DRMCOMPAT_PARAM_CONCAT_SUB(__VA_ARGS__)
+#define	DRMCOMPAT_PARAM_PASS(...) __VA_ARGS__
+#define	DRMCOMPAT_PARAM_DESC(name) DRMCOMPAT_PARAM_CONCAT(drmcompat_,DRMCOMPAT_PARAM_PREFIX,name,_desc)
+#define	DRMCOMPAT_PARAM_NAME(name) DRMCOMPAT_PARAM_CONCAT(DRMCOMPAT_PARAM_PREFIX,name,,)
 
-#define	DRMKPI_PARAM_bool(name, var, perm)				\
-	extern const char DRMKPI_PARAM_DESC(name)[];			\
-	DRMKPI_PARAM_PASS(SYSCTL_BOOL(DRMKPI_PARAM_PARENT, OID_AUTO,\
-	DRMKPI_PARAM_NAME(name), DRMKPI_PARAM_PERM(perm), &(var), 0, \
-	DRMKPI_PARAM_DESC(name)))
+#define	DRMCOMPAT_PARAM_bool(name, var, perm)				\
+	extern const char DRMCOMPAT_PARAM_DESC(name)[];			\
+	DRMCOMPAT_PARAM_PASS(SYSCTL_BOOL(DRMCOMPAT_PARAM_PARENT, OID_AUTO,\
+	DRMCOMPAT_PARAM_NAME(name), DRMCOMPAT_PARAM_PERM(perm), &(var), 0, \
+	DRMCOMPAT_PARAM_DESC(name)))
 
-#define	DRMKPI_PARAM_byte(name, var, perm)				\
-	extern const char DRMKPI_PARAM_DESC(name)[];			\
-	DRMKPI_PARAM_PASS(SYSCTL_U8(DRMKPI_PARAM_PARENT, OID_AUTO,	\
-	DRMKPI_PARAM_NAME(name), DRMKPI_PARAM_PERM(perm), &(var), 0, \
-	DRMKPI_PARAM_DESC(name)))
+#define	DRMCOMPAT_PARAM_byte(name, var, perm)				\
+	extern const char DRMCOMPAT_PARAM_DESC(name)[];			\
+	DRMCOMPAT_PARAM_PASS(SYSCTL_U8(DRMCOMPAT_PARAM_PARENT, OID_AUTO,	\
+	DRMCOMPAT_PARAM_NAME(name), DRMCOMPAT_PARAM_PERM(perm), &(var), 0, \
+	DRMCOMPAT_PARAM_DESC(name)))
 
-#define	DRMKPI_PARAM_short(name, var, perm)				\
-	extern const char DRMKPI_PARAM_DESC(name)[];			\
-	DRMKPI_PARAM_PASS(SYSCTL_S16(DRMKPI_PARAM_PARENT, OID_AUTO,	\
-	DRMKPI_PARAM_NAME(name), DRMKPI_PARAM_PERM(perm), &(var), 0, \
-	DRMKPI_PARAM_DESC(name)))
+#define	DRMCOMPAT_PARAM_short(name, var, perm)				\
+	extern const char DRMCOMPAT_PARAM_DESC(name)[];			\
+	DRMCOMPAT_PARAM_PASS(SYSCTL_S16(DRMCOMPAT_PARAM_PARENT, OID_AUTO,	\
+	DRMCOMPAT_PARAM_NAME(name), DRMCOMPAT_PARAM_PERM(perm), &(var), 0, \
+	DRMCOMPAT_PARAM_DESC(name)))
 
-#define	DRMKPI_PARAM_ushort(name, var, perm)				\
-	extern const char DRMKPI_PARAM_DESC(name)[];			\
-	DRMKPI_PARAM_PASS(SYSCTL_U16(DRMKPI_PARAM_PARENT, OID_AUTO,	\
-	DRMKPI_PARAM_NAME(name), DRMKPI_PARAM_PERM(perm), &(var), 0, \
-	DRMKPI_PARAM_DESC(name)))
+#define	DRMCOMPAT_PARAM_ushort(name, var, perm)				\
+	extern const char DRMCOMPAT_PARAM_DESC(name)[];			\
+	DRMCOMPAT_PARAM_PASS(SYSCTL_U16(DRMCOMPAT_PARAM_PARENT, OID_AUTO,	\
+	DRMCOMPAT_PARAM_NAME(name), DRMCOMPAT_PARAM_PERM(perm), &(var), 0, \
+	DRMCOMPAT_PARAM_DESC(name)))
 
-#define	DRMKPI_PARAM_int(name, var, perm)				\
-	extern const char DRMKPI_PARAM_DESC(name)[];			\
-	DRMKPI_PARAM_PASS(SYSCTL_INT(DRMKPI_PARAM_PARENT, OID_AUTO,	\
-	DRMKPI_PARAM_NAME(name), DRMKPI_PARAM_PERM(perm), &(var), 0,\
-	DRMKPI_PARAM_DESC(name)))
+#define	DRMCOMPAT_PARAM_int(name, var, perm)				\
+	extern const char DRMCOMPAT_PARAM_DESC(name)[];			\
+	DRMCOMPAT_PARAM_PASS(SYSCTL_INT(DRMCOMPAT_PARAM_PARENT, OID_AUTO,	\
+	DRMCOMPAT_PARAM_NAME(name), DRMCOMPAT_PARAM_PERM(perm), &(var), 0,\
+	DRMCOMPAT_PARAM_DESC(name)))
 
-#define	DRMKPI_PARAM_uint(name, var, perm)				\
-	extern const char DRMKPI_PARAM_DESC(name)[];			\
-	DRMKPI_PARAM_PASS(SYSCTL_UINT(DRMKPI_PARAM_PARENT, OID_AUTO, \
-	DRMKPI_PARAM_NAME(name), DRMKPI_PARAM_PERM(perm), &(var), 0, \
-	DRMKPI_PARAM_DESC(name)))
+#define	DRMCOMPAT_PARAM_uint(name, var, perm)				\
+	extern const char DRMCOMPAT_PARAM_DESC(name)[];			\
+	DRMCOMPAT_PARAM_PASS(SYSCTL_UINT(DRMCOMPAT_PARAM_PARENT, OID_AUTO, \
+	DRMCOMPAT_PARAM_NAME(name), DRMCOMPAT_PARAM_PERM(perm), &(var), 0, \
+	DRMCOMPAT_PARAM_DESC(name)))
 
-#define	DRMKPI_PARAM_long(name, var, perm)				\
-	extern const char DRMKPI_PARAM_DESC(name)[];			\
-	DRMKPI_PARAM_PASS(SYSCTL_LONG(DRMKPI_PARAM_PARENT, OID_AUTO, \
-	DRMKPI_PARAM_NAME(name), DRMKPI_PARAM_PERM(perm), &(var), 0, \
-	DRMKPI_PARAM_DESC(name)))
+#define	DRMCOMPAT_PARAM_long(name, var, perm)				\
+	extern const char DRMCOMPAT_PARAM_DESC(name)[];			\
+	DRMCOMPAT_PARAM_PASS(SYSCTL_LONG(DRMCOMPAT_PARAM_PARENT, OID_AUTO, \
+	DRMCOMPAT_PARAM_NAME(name), DRMCOMPAT_PARAM_PERM(perm), &(var), 0, \
+	DRMCOMPAT_PARAM_DESC(name)))
 
-#define	DRMKPI_PARAM_ulong(name, var, perm)				\
-	extern const char DRMKPI_PARAM_DESC(name)[];			\
-	DRMKPI_PARAM_PASS(SYSCTL_ULONG(DRMKPI_PARAM_PARENT, OID_AUTO, \
-	DRMKPI_PARAM_NAME(name), DRMKPI_PARAM_PERM(perm), &(var), 0, \
-	DRMKPI_PARAM_DESC(name)))
+#define	DRMCOMPAT_PARAM_ulong(name, var, perm)				\
+	extern const char DRMCOMPAT_PARAM_DESC(name)[];			\
+	DRMCOMPAT_PARAM_PASS(SYSCTL_ULONG(DRMCOMPAT_PARAM_PARENT, OID_AUTO, \
+	DRMCOMPAT_PARAM_NAME(name), DRMCOMPAT_PARAM_PERM(perm), &(var), 0, \
+	DRMCOMPAT_PARAM_DESC(name)))
 
 #define	module_param_string(name, str, len, perm)			\
-	extern const char DRMKPI_PARAM_DESC(name)[];			\
-	DRMKPI_PARAM_PASS(SYSCTL_STRING(DRMKPI_PARAM_PARENT, OID_AUTO, \
-	DRMKPI_PARAM_NAME(name), DRMKPI_PARAM_PERM(perm), (str), (len), \
-	DRMKPI_PARAM_DESC(name)))
+	extern const char DRMCOMPAT_PARAM_DESC(name)[];			\
+	DRMCOMPAT_PARAM_PASS(SYSCTL_STRING(DRMCOMPAT_PARAM_PARENT, OID_AUTO, \
+	DRMCOMPAT_PARAM_NAME(name), DRMCOMPAT_PARAM_PERM(perm), (str), (len), \
+	DRMCOMPAT_PARAM_DESC(name)))
 
 #define	module_param_named(name, var, type, mode)	\
-	DRMKPI_PARAM_##type(name, var, mode)
+	DRMCOMPAT_PARAM_##type(name, var, mode)
 
 #define	module_param(var, type, mode)	\
-	DRMKPI_PARAM_##type(var, var, mode)
+	DRMCOMPAT_PARAM_##type(var, var, mode)
 
 #define	module_param_named_unsafe(name, var, type, mode) \
-	DRMKPI_PARAM_##type(name, var, mode)
+	DRMCOMPAT_PARAM_##type(name, var, mode)
 
 #define	module_param_unsafe(var, type, mode) \
-	DRMKPI_PARAM_##type(var, var, mode)
+	DRMCOMPAT_PARAM_##type(var, var, mode)
 
 #define	module_param_array(var, type, addr_argc, mode)
 
 #define	MODULE_PARM_DESC(name, desc) \
-	const char DRMKPI_PARAM_DESC(name)[] = { desc }
+	const char DRMCOMPAT_PARAM_DESC(name)[] = { desc }
 
 #define	kernel_param_lock(...) do {} while (0)
 #define	kernel_param_unlock(...) do {} while (0)
 
 SYSCTL_DECL(_dev_drm);
 
-#endif	/* __DRMKPI_LINUX_MODULEPARAM_H__ */
+#endif	/* __DRMCOMPAT_LINUX_MODULEPARAM_H__ */

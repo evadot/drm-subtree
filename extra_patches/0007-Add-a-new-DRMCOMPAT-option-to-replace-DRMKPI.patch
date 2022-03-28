@@ -1,0 +1,25 @@
+From 9c70f85d857adb3ce5bfffc1c3b0752102e3d09f Mon Sep 17 00:00:00 2001
+From: Emmanuel Vadot <manu@FreeBSD.org>
+Date: Wed, 2 Mar 2022 10:15:58 +0100
+Subject: [PATCH] Add a new DRMCOMPAT option, to replace DRMKPI
+Content-Type: text/plain; charset=UTF-8
+
+---
+ sys/conf/options | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/sys/conf/options b/sys/conf/options
+index aea8083927cc..8e91d4166f0f 100644
+--- a/sys/conf/options
++++ b/sys/conf/options
+@@ -102,6 +102,7 @@ COMPAT_FREEBSD13	opt_global.h
+ COMPAT_LINUXKPI	opt_dontuse.h
+ _COMPAT_LINUX32	opt_compat.h	# XXX: make sure opt_compat.h exists
+ COMPAT_DRMKPI	opt_global.h
++COMPAT_DRMCOMPAT	opt_global.h
+ COMPILING_LINT	opt_global.h
+ CY_PCI_FASTINTR
+ DEADLKRES	opt_watchdog.h
+-- 
+2.35.1
+

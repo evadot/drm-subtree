@@ -29,12 +29,12 @@
  * $FreeBSD$
  */
 
-#ifndef	__DRMKPI_LINUX_COMPLETION_H__
-#define	__DRMKPI_LINUX_COMPLETION_H__
+#ifndef	__DRMCOMPAT_LINUX_COMPLETION_H__
+#define	__DRMCOMPAT_LINUX_COMPLETION_H__
 
 #include <linux/errno.h>
 
-#include <drmkpi/completion.h>
+#include <drmcompat/completion.h>
 
 #define	INIT_COMPLETION(c) \
 	((c).done = 0)
@@ -43,20 +43,20 @@
 #define	reinit_completion(c) \
 	do { (c)->done = 0; } while (0)
 #define	complete(c)				\
-	drmkpi_complete_common((c), 0)
+	drmcompat_complete_common((c), 0)
 #define	complete_all(c)				\
-	drmkpi_complete_common((c), 1)
+	drmcompat_complete_common((c), 1)
 #define	wait_for_completion(c)			\
-	drmkpi_wait_for_common((c), 0)
+	drmcompat_wait_for_common((c), 0)
 #define	wait_for_completion_interruptible(c)	\
-	drmkpi_wait_for_common((c), 1)
+	drmcompat_wait_for_common((c), 1)
 #define	wait_for_completion_timeout(c, timeout)	\
-	drmkpi_wait_for_timeout_common((c), (timeout), 0)
+	drmcompat_wait_for_timeout_common((c), (timeout), 0)
 #define	wait_for_completion_interruptible_timeout(c, timeout)	\
-	drmkpi_wait_for_timeout_common((c), (timeout), 1)
+	drmcompat_wait_for_timeout_common((c), (timeout), 1)
 #define	try_wait_for_completion(c) \
-	drmkpi_try_wait_for_completion(c)
+	drmcompat_try_wait_for_completion(c)
 #define	completion_done(c) \
-	drmkpi_completion_done(c)
+	drmcompat_completion_done(c)
 
-#endif	/* __DRMKPI_LINUX_COMPLETION_H__ */
+#endif	/* __DRMCOMPAT_LINUX_COMPLETION_H__ */

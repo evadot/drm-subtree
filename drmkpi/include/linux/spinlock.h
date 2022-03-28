@@ -29,8 +29,8 @@
  * $FreeBSD$
  */
 
-#ifndef __DRMKPI_LINUX_SPINLOCK_H__
-#define	__DRMKPI_LINUX_SPINLOCK_H__
+#ifndef __DRMCOMPAT_LINUX_SPINLOCK_H__
+#define	__DRMCOMPAT_LINUX_SPINLOCK_H__
 
 #include <sys/param.h>
 #include <sys/kernel.h>
@@ -48,7 +48,7 @@ typedef struct {
 } spinlock_t;
 
 /*
- * By defining CONFIG_SPIN_SKIP DRMKPI spinlocks and asserts will be
+ * By defining CONFIG_SPIN_SKIP DRMCOMPAT spinlocks and asserts will be
  * skipped during panic(). By default it is disabled due to
  * performance reasons.
  */
@@ -162,4 +162,4 @@ spin_lock_destroy(spinlock_t *lock)
 	mtx_assert(&(_l)->m, MA_OWNED);		\
 } while (0)
 
-#endif	/* __DRMKPI_LINUX_SPINLOCK_H__ */
+#endif	/* __DRMCOMPAT_LINUX_SPINLOCK_H__ */

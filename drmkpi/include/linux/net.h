@@ -29,8 +29,8 @@
  * $FreeBSD$
  */
 
-#ifndef __DRMKPI_LINUX_NET_H__
-#define	__DRMKPI_LINUX_NET_H__
+#ifndef __DRMCOMPAT_LINUX_NET_H__
+#define	__DRMCOMPAT_LINUX_NET_H__
 
 #include <sys/types.h>
 #include <sys/malloc.h>
@@ -77,4 +77,4 @@ sock_release(struct socket *so)
 	soclose(so);
 }
 
-#endif	/* __DRMKPI_LINUX_NET_H__ */
+#endif	/* __DRMCOMPAT_LINUX_NET_H__ */

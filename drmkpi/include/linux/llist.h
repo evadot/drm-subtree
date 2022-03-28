@@ -1,7 +1,7 @@
 /* Public domain. */
 
-#ifndef _LINUX_LLIST_H
-#define _LINUX_LLIST_H
+#ifndef __DRMCOMPAT_LINUX_LLIST_H__
+#define	__DRMCOMPAT_LINUX_LLIST_H__
 
 #include <machine/atomic.h>
 
@@ -67,4 +67,4 @@ llist_empty(struct llist_head *head)
 	    (n = llist_entry(pos->member.next, __typeof(*pos), member), pos); \
 	    pos = n)
 
-#endif
+#endif	/* __DRMCOMPAT_LINUX_LLIST_H__ */

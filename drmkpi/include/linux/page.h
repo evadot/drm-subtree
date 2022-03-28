@@ -29,8 +29,8 @@
  * $FreeBSD$
  */
 
-#ifndef __DRMKPI_LINUX_PAGE_H__
-#define	__DRMKPI_LINUX_PAGE_H__
+#ifndef __DRMCOMPAT_LINUX_PAGE_H__
+#define	__DRMCOMPAT_LINUX_PAGE_H__
 
 #include <linux/types.h>
 
@@ -49,22 +49,22 @@ typedef unsigned long pgprot_t;
 
 #define page	vm_page
 
-#define	DRMKPI_PROT_VALID (1 << 3)
-#define	DRMKPI_CACHE_MODE_SHIFT 4
+#define	DRMCOMPAT_PROT_VALID (1 << 3)
+#define	DRMCOMPAT_CACHE_MODE_SHIFT 4
 
-CTASSERT((VM_PROT_ALL & -DRMKPI_PROT_VALID) == 0);
+CTASSERT((VM_PROT_ALL & -DRMCOMPAT_PROT_VALID) == 0);
 
 static inline pgprot_t
 cachemode2protval(vm_memattr_t attr)
 {
-	return ((attr << DRMKPI_CACHE_MODE_SHIFT) | DRMKPI_PROT_VALID);
+	return ((attr << DRMCOMPAT_CACHE_MODE_SHIFT) | DRMCOMPAT_PROT_VALID);
 }
 
 static inline vm_memattr_t
 pgprot2cachemode(pgprot_t prot)
 {
-	if (prot & DRMKPI_PROT_VALID)
-		return (prot >> DRMKPI_CACHE_MODE_SHIFT);
+	if (prot & DRMCOMPAT_PROT_VALID)
+		return (prot >> DRMCOMPAT_CACHE_MODE_SHIFT);
 	else
 		return (VM_MEMATTR_DEFAULT);
 }
@@ -85,7 +85,7 @@ pgprot2cachemode(pgprot_t prot)
 /*
  * Modifying PAGE_MASK in the above way breaks trunc_page, round_page,
  * and btoc macros. Therefore, redefine them in a way that makes sense
- * so the DRMKPI consumers don't get totally broken behavior.
+ * so the DRMCOMPAT consumers don't get totally broken behavior.
  */
 #undef	btoc
 #define	btoc(x)	(((vm_offset_t)(x) + PAGE_SIZE - 1) >> PAGE_SHIFT)
@@ -128,4 +128,4 @@ void unmap_mapping_range(void *obj, loff_t const holebegin,
 #define linux_clflushopt(arg) __linux_clflushopt((u_long)(arg))
 extern void __linux_clflushopt(u_long addr);
 
-#endif	/* __DRMKPI_LINUX_PAGE_H__ */
+#endif	/* __DRMCOMPAT_LINUX_PAGE_H__ */

@@ -29,8 +29,8 @@
  * $FreeBSD$
  */
 
-#ifndef __DRMKPI_LINUX_GFP_H__
-#define	__DRMKPI_LINUX_GFP_H__
+#ifndef __DRMCOMPAT_LINUX_GFP_H__
+#define	__DRMCOMPAT_LINUX_GFP_H__
 
 #include <sys/cdefs.h>
 #include <sys/types.h>
@@ -59,7 +59,7 @@
 #define	__GFP_NO_KSWAPD	0
 #define	__GFP_KSWAPD_RECLAIM	0
 #define	__GFP_WAIT	M_WAITOK
-#define	__GFP_DMA32	(1U << 24) /* DRMKPI only */
+#define	__GFP_DMA32	(1U << 24) /* DRMCOMPAT only */
 #define	__GFP_BITS_SHIFT 25
 #define	__GFP_BITS_MASK	((1 << __GFP_BITS_SHIFT) - 1)
 #define	__GFP_NOFAIL	M_WAITOK
@@ -84,14 +84,14 @@ CTASSERT((__GFP_BITS_MASK & GFP_NATIVE_MASK) == GFP_NATIVE_MASK);
 /*
  * Page management for mapped pages:
  */
-vm_offset_t drmkpi_alloc_kmem(gfp_t flags, unsigned int order);
-void drmkpi_free_kmem(vm_offset_t, unsigned int order);
+vm_offset_t drmcompat_alloc_kmem(gfp_t flags, unsigned int order);
+void drmcompat_free_kmem(vm_offset_t, unsigned int order);
 
 static inline vm_offset_t
 __get_free_page(gfp_t flags)
 {
 
-	return (drmkpi_alloc_kmem(flags, 0));
+	return (drmcompat_alloc_kmem(flags, 0));
 }
 
 static inline void
@@ -100,10 +100,10 @@ free_page(uintptr_t addr)
 	if (addr == 0)
 		return;
 
-	drmkpi_free_kmem(addr, 0);
+	drmcompat_free_kmem(addr, 0);
 }
 
 #define	SetPageReserved(page)	do { } while (0)	/* NOP */
 #define	ClearPageReserved(page)	do { } while (0)	/* NOP */
 
-#endif	/* __DRMKPI_LINUX_GFP_H__ */
+#endif	/* __DRMCOMPAT_LINUX_GFP_H__ */

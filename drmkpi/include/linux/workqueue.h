@@ -29,8 +29,8 @@
  * $FreeBSD$
  */
 
-#ifndef	__DRMKPI_LINUX_WORKQUEUE_H__
-#define	__DRMKPI_LINUX_WORKQUEUE_H__
+#ifndef	__DRMCOMPAT_LINUX_WORKQUEUE_H__
+#define	__DRMCOMPAT_LINUX_WORKQUEUE_H__
 
 #include <linux/types.h>
 #include <linux/kernel.h>
@@ -43,7 +43,7 @@
 #include <sys/taskqueue.h>
 #include <sys/mutex.h>
 
-#include <drmkpi/workqueue.h>
+#include <drmcompat/workqueue.h>
 
 #define	WORK_CPU_UNBOUND MAXCPU
 #define	WQ_UNBOUND (1 << 0)
@@ -61,7 +61,7 @@
 	struct delayed_work name;					\
 	static void name##_init(void *arg)				\
 	{								\
-		drmkpi_init_delayed_work(&name, fn);			\
+		drmcompat_init_delayed_work(&name, fn);			\
 	}								\
 	SYSINIT(name, SI_SUB_LOCK, SI_ORDER_SECOND, name##_init, NULL)
 
@@ -71,28 +71,28 @@ to_delayed_work(struct work_struct *work)
 	return (container_of(work, struct delayed_work, work));
 }
 
-#define	system_wq			drmkpi_system_wq
-#define	system_long_wq			drmkpi_system_long_wq
-#define	system_unbound_wq		drmkpi_system_unbound_wq
-#define	system_highpri_wq		drmkpi_system_highpri_wq
-#define	system_power_efficient_wq	drmkpi_system_power_efficient_wq
+#define	system_wq			drmcompat_system_wq
+#define	system_long_wq			drmcompat_system_long_wq
+#define	system_unbound_wq		drmcompat_system_unbound_wq
+#define	system_highpri_wq		drmcompat_system_highpri_wq
+#define	system_power_efficient_wq	drmcompat_system_power_efficient_wq
 
 #define	INIT_WORK(work, fn)						\
 do {									\
 	(work)->func = (fn);						\
 	(work)->work_queue = NULL;					\
 	atomic_set(&(work)->state, 0);					\
-	TASK_INIT(&(work)->work_task, 0, drmkpi_work_fn, (work));	\
+	TASK_INIT(&(work)->work_task, 0, drmcompat_work_fn, (work));	\
 } while (0)
 
 #define	INIT_WORK_ONSTACK(work, fn) \
 	INIT_WORK(work, fn)
 
 #define	INIT_DELAYED_WORK(dwork, fn) \
-	drmkpi_init_delayed_work(dwork, fn)
+	drmcompat_init_delayed_work(dwork, fn)
 
 #define	INIT_DELAYED_WORK_ONSTACK(dwork, fn) \
-	drmkpi_init_delayed_work(dwork, fn)
+	drmcompat_init_delayed_work(dwork, fn)
 
 #define	INIT_DEFERRABLE_WORK(dwork, fn) \
 	INIT_DELAYED_WORK(dwork, fn)
@@ -101,37 +101,37 @@ do {									\
 	taskqueue_drain_all(system_wq->taskqueue)
 
 #define	queue_work(wq, work) \
-	drmkpi_queue_work_on(WORK_CPU_UNBOUND, wq, work)
+	drmcompat_queue_work_on(WORK_CPU_UNBOUND, wq, work)
 
 #define	schedule_work(work) \
-	drmkpi_queue_work_on(WORK_CPU_UNBOUND, system_wq, work)
+	drmcompat_queue_work_on(WORK_CPU_UNBOUND, system_wq, work)
 
 #define	queue_delayed_work(wq, dwork, delay) \
-	drmkpi_queue_delayed_work_on(WORK_CPU_UNBOUND, wq, dwork, delay)
+	drmcompat_queue_delayed_work_on(WORK_CPU_UNBOUND, wq, dwork, delay)
 
 #define	schedule_delayed_work_on(cpu, dwork, delay) \
-	drmkpi_queue_delayed_work_on(cpu, system_wq, dwork, delay)
+	drmcompat_queue_delayed_work_on(cpu, system_wq, dwork, delay)
 
 #define	queue_work_on(cpu, wq, work) \
-	drmkpi_queue_work_on(cpu, wq, work)
+	drmcompat_queue_work_on(cpu, wq, work)
 
 #define	schedule_delayed_work(dwork, delay) \
-	drmkpi_queue_delayed_work_on(WORK_CPU_UNBOUND, system_wq, dwork, delay)
+	drmcompat_queue_delayed_work_on(WORK_CPU_UNBOUND, system_wq, dwork, delay)
 
 #define	queue_delayed_work_on(cpu, wq, dwork, delay) \
-	drmkpi_queue_delayed_work_on(cpu, wq, dwork, delay)
+	drmcompat_queue_delayed_work_on(cpu, wq, dwork, delay)
 
 #define	create_singlethread_workqueue(name) \
-	drmkpi_create_workqueue_common(name, 1)
+	drmcompat_create_workqueue_common(name, 1)
 
 #define	create_workqueue(name) \
-	drmkpi_create_workqueue_common(name, mp_ncpus)
+	drmcompat_create_workqueue_common(name, mp_ncpus)
 
 #define	alloc_ordered_workqueue(name, flags) \
-	drmkpi_create_workqueue_common(name, 1)
+	drmcompat_create_workqueue_common(name, 1)
 
 #define	alloc_workqueue(name, flags, max_active) \
-	drmkpi_create_workqueue_common(name, max_active)
+	drmcompat_create_workqueue_common(name, max_active)
 
 #define	flush_workqueue(wq) \
 	taskqueue_drain_all((wq)->taskqueue)
@@ -144,35 +144,35 @@ do {									\
 
 #define	mod_delayed_work(wq, dwork, delay) ({		\
 	bool __retval;					\
-	__retval = drmkpi_cancel_delayed_work(dwork);	\
-	drmkpi_queue_delayed_work_on(WORK_CPU_UNBOUND,	\
+	__retval = drmcompat_cancel_delayed_work(dwork);	\
+	drmcompat_queue_delayed_work_on(WORK_CPU_UNBOUND,	\
 	    wq, dwork, delay);				\
 	__retval;					\
 })
 
 #define	delayed_work_pending(dwork) \
-	drmkpi_work_pending(&(dwork)->work)
+	drmcompat_work_pending(&(dwork)->work)
 
 #define	cancel_delayed_work(dwork) \
-	drmkpi_cancel_delayed_work(dwork)
+	drmcompat_cancel_delayed_work(dwork)
 
 #define	cancel_work_sync(work) \
-	drmkpi_cancel_work_sync(work)
+	drmcompat_cancel_work_sync(work)
 
 #define	cancel_delayed_work_sync(dwork) \
-	drmkpi_cancel_delayed_work_sync(dwork)
+	drmcompat_cancel_delayed_work_sync(dwork)
 
 #define	flush_work(work) \
-	drmkpi_flush_work(work)
+	drmcompat_flush_work(work)
 
 #define	flush_delayed_work(dwork) \
-	drmkpi_flush_delayed_work(dwork)
+	drmcompat_flush_delayed_work(dwork)
 
 #define	work_pending(work) \
-	drmkpi_work_pending(work)
+	drmcompat_work_pending(work)
 
 #define	work_busy(work) \
-	drmkpi_work_busy(work)
+	drmcompat_work_busy(work)
 
 #define	destroy_work_on_stack(work) \
 	do { } while (0)
@@ -181,9 +181,9 @@ do {									\
 	do { } while (0)
 
 #define	destroy_workqueue(wq) \
-	drmkpi_destroy_workqueue(wq)
+	drmcompat_destroy_workqueue(wq)
 
 #define	current_work() \
-	drmkpi_current_work()
+	drmcompat_current_work()
 
-#endif	/* __DRMKPI_LINUX_WORKQUEUE_H__ */
+#endif	/* __DRMCOMPAT_LINUX_WORKQUEUE_H__ */

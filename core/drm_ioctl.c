@@ -159,7 +159,7 @@ static int drm_set_busid(struct drm_device *dev, struct drm_file *file_priv)
 #if defined(__linux__) || defined(CONFIG_PCI)
 #ifdef __linux__
 	if (dev->dev && dev_is_pci(dev->dev)) {
-#else
+#elif defined(__FreeBSD__)
 	// BSDFIXME: Assume it's PCI for now
 	if (dev->dev) {
 #endif
@@ -625,8 +625,8 @@ static const struct drm_ioctl_desc drm_ioctls[] = {
 	DRM_LEGACY_IOCTL_DEF(DRM_IOCTL_SET_SAREA_CTX, drm_legacy_setsareactx, DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY),
 	DRM_LEGACY_IOCTL_DEF(DRM_IOCTL_GET_SAREA_CTX, drm_legacy_getsareactx, DRM_AUTH),
 
-	DRM_IOCTL_DEF(DRM_IOCTL_SET_MASTER, drm_setmaster_ioctl, DRM_ROOT_ONLY),
-	DRM_IOCTL_DEF(DRM_IOCTL_DROP_MASTER, drm_dropmaster_ioctl, DRM_ROOT_ONLY),
+	DRM_IOCTL_DEF(DRM_IOCTL_SET_MASTER, drm_setmaster_ioctl, 0),
+	DRM_IOCTL_DEF(DRM_IOCTL_DROP_MASTER, drm_dropmaster_ioctl, 0),
 
 	DRM_LEGACY_IOCTL_DEF(DRM_IOCTL_ADD_CTX, drm_legacy_addctx, DRM_AUTH|DRM_ROOT_ONLY),
 	DRM_LEGACY_IOCTL_DEF(DRM_IOCTL_RM_CTX, drm_legacy_rmctx, DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY),
@@ -697,6 +697,7 @@ static const struct drm_ioctl_desc drm_ioctls[] = {
 	DRM_IOCTL_DEF(DRM_IOCTL_MODE_SETPROPERTY, drm_connector_property_set_ioctl, DRM_MASTER),
 	DRM_IOCTL_DEF(DRM_IOCTL_MODE_GETPROPBLOB, drm_mode_getblob_ioctl, 0),
 	DRM_IOCTL_DEF(DRM_IOCTL_MODE_GETFB, drm_mode_getfb, 0),
+	DRM_IOCTL_DEF(DRM_IOCTL_MODE_GETFB2, drm_mode_getfb2_ioctl, 0),
 	DRM_IOCTL_DEF(DRM_IOCTL_MODE_ADDFB, drm_mode_addfb_ioctl, 0),
 	DRM_IOCTL_DEF(DRM_IOCTL_MODE_ADDFB2, drm_mode_addfb2_ioctl, 0),
 	DRM_IOCTL_DEF(DRM_IOCTL_MODE_RMFB, drm_mode_rmfb_ioctl, 0),
@@ -768,7 +769,7 @@ static const struct drm_ioctl_desc drm_ioctls[] = {
  *     };
  *
  * Please make sure that you follow all the best practices from
- * ``Documentation/ioctl/botching-up-ioctls.rst``. Note that drm_ioctl()
+ * ``Documentation/process/botching-up-ioctls.rst``. Note that drm_ioctl()
  * automatically zero-extends structures, hence make sure you can add more stuff
  * at the end, i.e. don't put a variable sized array there.
  *
@@ -843,9 +844,11 @@ long drm_ioctl(struct file *filp,
 	drm_ioctl_t *func;
 	unsigned int nr = DRM_IOCTL_NR(cmd);
 	int retcode = -EINVAL;
+#ifdef __linux__
 	char stack_kdata[128];
 	char *kdata = NULL;
 	unsigned int in_size, out_size, drv_size, ksize;
+#endif
 	bool is_driver_ioctl;
 
 	dev = file_priv->minor->dev;
@@ -871,6 +874,7 @@ long drm_ioctl(struct file *filp,
 		ioctl = &drm_ioctls[nr];
 	}
 
+#ifdef __linux__
 	drv_size = _IOC_SIZE(ioctl->cmd);
 	out_size = in_size = _IOC_SIZE(cmd);
 	if ((cmd & ioctl->cmd & IOC_IN) == 0)
@@ -879,7 +883,6 @@ long drm_ioctl(struct file *filp,
 		out_size = 0;
 	ksize = max(max(in_size, out_size), drv_size);
 
-#ifdef __linux__
 	DRM_DEBUG("pid=%d, dev=0x%lx, auth=%d, %s\n",
 		  task_pid_nr(current),
 		  (long)old_encode_dev(file_priv->minor->kdev->devt),
@@ -898,6 +901,7 @@ long drm_ioctl(struct file *filp,
 		goto err_i1;
 	}
 
+#ifdef __linux__
 	if (ksize <= sizeof(stack_kdata)) {
 		kdata = stack_kdata;
 	} else {
@@ -908,25 +912,19 @@ long drm_ioctl(struct file *filp,
 		}
 	}
 
-// Some weird stuff is happening in copy_from_user
-#ifdef __linux__
 	if (copy_from_user(kdata, (void __user *)arg, in_size) != 0) {
 		retcode = -EFAULT;
 		goto err_i1;
 	}
-#else
-	memcpy(kdata, (void __user *)arg, in_size);
-#endif
 
 	if (ksize > in_size)
 		memset(kdata + in_size, 0, ksize - in_size);
 
 	retcode = drm_ioctl_kernel(filp, func, kdata, ioctl->flags);
-#ifdef __linux__
 	if (copy_to_user((void __user *)arg, kdata, out_size) != 0)
 		retcode = -EFAULT;
 #else
-	memcpy((void __user *)arg, kdata, out_size);
+	retcode = drm_ioctl_kernel(filp, func, (void *)arg, ioctl->flags);
 #endif
 
       err_i1:
@@ -936,10 +934,10 @@ long drm_ioctl(struct file *filp,
 			  task_pid_nr(current),
 			  (long)old_encode_dev(file_priv->minor->kdev->devt),
 			  file_priv->authenticated, cmd, nr);
-#endif
 
 	if (kdata != stack_kdata)
 		kfree(kdata);
+#endif
 	if (retcode)
 		DRM_DEBUG("pid=%d, ret = %d\n", task_pid_nr(current), retcode);
 	return retcode;

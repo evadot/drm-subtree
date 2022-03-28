@@ -29,8 +29,8 @@
  * $FreeBSD$
  */
 
-#ifndef __DRMKPI_LINUX_MODULE_H__
-#define	__DRMKPI_LINUX_MODULE_H__
+#ifndef __DRMCOMPAT_LINUX_MODULE_H__
+#define	__DRMCOMPAT_LINUX_MODULE_H__
 
 #include <sys/cdefs.h>
 #include <sys/types.h>
@@ -61,4 +61,4 @@
 #define	module_put(module)
 #define	try_module_get(module)	1
 
-#endif /* __DRMKPI_LINUX_MODULE_H__ */
+#endif /* __DRMCOMPAT_LINUX_MODULE_H__ */

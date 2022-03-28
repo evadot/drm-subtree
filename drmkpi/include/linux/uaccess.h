@@ -30,27 +30,27 @@
  * $FreeBSD$
  */
 
-#ifndef	__DRMKPI_LINUX_UACCESS_H__
-#define	__DRMKPI_LINUX_UACCESS_H__
+#ifndef	__DRMCOMPAT_LINUX_UACCESS_H__
+#define	__DRMCOMPAT_LINUX_UACCESS_H__
 
-#include <drmkpi/uaccess.h>
+#include <drmcompat/uaccess.h>
 
 #define	__get_user(_x, _p) ({					\
 	int __err;						\
 	__typeof(*(_p)) __x;					\
-	__err = drmkpi_copyin((_p), &(__x), sizeof(*(_p)));	\
+	__err = drmcompat_copyin((_p), &(__x), sizeof(*(_p)));	\
 	(_x) = __x;						\
 	__err;							\
 })
 
 #define	__put_user(_x, _p) ({				\
 	__typeof(*(_p)) __x = (_x);			\
-	drmkpi_copyout(&(__x), (_p), sizeof(*(_p)));	\
+	drmcompat_copyout(&(__x), (_p), sizeof(*(_p)));	\
 })
 
-#define	get_user(_x, _p)	drmkpi_copyin((_p), &(_x), sizeof(*(_p)))
+#define	get_user(_x, _p)	drmcompat_copyin((_p), &(_x), sizeof(*(_p)))
 #define	put_user(_x, _p)	__put_user(_x, _p)
-#define	clear_user(...)		drmkpi_clear_user(__VA_ARGS__)
-#define	access_ok(...)		drmkpi_access_ok(__VA_ARGS__)
+#define	clear_user(...)		drmcompat_clear_user(__VA_ARGS__)
+#define	access_ok(...)		drmcompat_access_ok(__VA_ARGS__)
 
-#endif	/* __DRMKPI_LINUX_UACCESS_H__ */
+#endif	/* __DRMCOMPAT_LINUX_UACCESS_H__ */

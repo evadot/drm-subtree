@@ -208,6 +208,17 @@ struct drm_file {
 	bool writeback_connectors;
 
 	/**
+	 * @was_master:
+	 *
+	 * This client has or had, master capability. Protected by struct
+	 * &drm_device.master_mutex.
+	 *
+	 * This is used to ensure that CAP_SYS_ADMIN is not enforced, if the
+	 * client is or was master in the past.
+	 */
+	bool was_master;
+
+	/**
 	 * @is_master:
 	 *
 	 * This client is the creator of @master. Protected by struct
@@ -393,6 +404,7 @@ int drm_open(struct inode *inode, struct file *filp);
 ssize_t drm_read(struct file *filp, char __user *buffer,
 		 size_t count, loff_t *offset);
 int drm_release(struct inode *inode, struct file *filp);
+int drm_release_noglobal(struct inode *inode, struct file *filp);
 __poll_t drm_poll(struct file *filp, struct poll_table_struct *wait);
 
 #if defined(__FreeBSD__)
@@ -415,5 +427,14 @@ void drm_send_event(struct drm_device *dev, struct drm_pending_event *e);
 #ifdef __linux__
 struct file *mock_drm_getfile(struct drm_minor *minor, unsigned int flags);
 #endif
+
+#ifdef CONFIG_MMU
+struct drm_vma_offset_manager;
+unsigned long drm_get_unmapped_area(struct file *file,
+				    unsigned long uaddr, unsigned long len,
+				    unsigned long pgoff, unsigned long flags,
+				    struct drm_vma_offset_manager *mgr);
+#endif /* CONFIG_MMU */
+
 
 #endif /* _DRM_FILE_H_ */

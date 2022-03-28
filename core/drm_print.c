@@ -339,7 +339,7 @@ void __drm_err(const char *format, ...)
 }
 EXPORT_SYMBOL(__drm_err);
 
-#ifdef __linux__
+#ifdef CONFIG_DEBUGSFS
 /**
  * drm_print_regset32 - print the contents of registers to a
  * &drm_printer stream.

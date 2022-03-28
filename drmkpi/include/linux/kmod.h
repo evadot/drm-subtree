@@ -29,8 +29,8 @@
  * $FreeBSD$
  */
 
-#ifndef __DRMKPI_LINUX_KMOD_H__
-#define	__DRMKPI_LINUX_KMOD_H__
+#ifndef __DRMCOMPAT_LINUX_KMOD_H__
+#define	__DRMCOMPAT_LINUX_KMOD_H__
 
 #include <sys/types.h>
 #include <sys/syscallsubr.h>
@@ -49,4 +49,4 @@
 
 #define request_module_nowait request_module
 
-#endif /* __DRMKPI_LINUX_KMOD_H__ */
+#endif /* __DRMCOMPAT_LINUX_KMOD_H__ */

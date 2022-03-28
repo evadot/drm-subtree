@@ -73,9 +73,12 @@ struct drm_device {
 	/**
 	 * @dev_private:
 	 *
-	 * DRM driver private data. Instead of using this pointer it is
-	 * recommended that drivers use drm_dev_init() and embed struct
-	 * &drm_device in their larger per-device structure.
+	 * DRM driver private data. This is deprecated and should be left set to
+	 * NULL.
+	 *
+	 * Instead of using this pointer it is recommended that drivers use
+	 * drm_dev_init() and embed struct &drm_device in their larger
+	 * per-device structure.
 	 */
 	void *dev_private;
 
@@ -144,7 +147,7 @@ struct drm_device {
 	 * Usage counter for outstanding files open,
 	 * protected by drm_global_mutex
 	 */
-	int open_count;
+	atomic_t open_count;
 
 	/** @filelist_mutex: Protects @filelist. */
 	struct mutex filelist_mutex;
@@ -300,6 +303,14 @@ struct drm_device {
 	 */
 	enum switch_power_state switch_power_state;
 
+#ifdef __FreeBSD__
+	struct drm_sysctl_info *sysctl;
+	int  sysctl_node_idx;
+	void *sysctl_private;
+	char busid_str[128];
+	int modesetting;
+#define	MAX_ORDER 11
+#endif
 	/**
 	 * @fb_helper:
 	 *
@@ -307,26 +318,6 @@ struct drm_device {
 	 * Set by drm_fb_helper_init() and cleared by drm_fb_helper_fini().
 	 */
 	struct drm_fb_helper *fb_helper;
-#ifdef __FreeBSD__
-	struct drm_sysctl_info *sysctl;
-	int		  sysctl_node_idx;
-
-	void		  *drm_ttm_bdev;
-
-	void *sysctl_private;
-	char busid_str[128];
-	int modesetting;
-
-	/* const drm_pci_id_list_t *id_entry;	/\* PCI ID, name, and chipset private *\/ */
-
-#define	DRM_PCI_RESOURCE_MAX	7
-#define	MAX_ORDER 11
-
-	struct drm_pci_resource {
-		struct resource *res;
-		int rid;
-	} drm_pcir[DRM_PCI_RESOURCE_MAX];
-#endif
 
 	/* Everything below here is for legacy driver, never use! */
 	/* private: */

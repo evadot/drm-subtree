@@ -302,7 +302,8 @@ struct drm_panel *of_drm_find_panel(const struct device_node *np)
 EXPORT_SYMBOL(of_drm_find_panel);
 #endif
 
-#if 0 //IS_REACHABLE(CONFIG_BACKLIGHT_CLASS_DEVICE)
+#ifdef __linux__
+#if IS_REACHABLE(CONFIG_BACKLIGHT_CLASS_DEVICE)
 /**
  * drm_panel_of_backlight - use backlight device node for backlight
  * @panel: DRM panel
@@ -339,6 +340,7 @@ int drm_panel_of_backlight(struct drm_panel *panel)
 	return 0;
 }
 EXPORT_SYMBOL(drm_panel_of_backlight);
+#endif
 #endif
 
 MODULE_AUTHOR("Thierry Reding <treding@nvidia.com>");

@@ -43,26 +43,65 @@
  *  - Signal a syncobj (set a trivially signaled fence)
  *  - Wait for a syncobj's fence to appear and be signaled
  *
+ * The syncobj userspace API also provides operations to manipulate a syncobj
+ * in terms of a timeline of struct &dma_fence_chain rather than a single
+ * struct &dma_fence, through the following operations:
+ *
+ *   - Signal a given point on the timeline
+ *   - Wait for a given point to appear and/or be signaled
+ *   - Import and export from/to a given point of a timeline
+ *
  * At it's core, a syncobj is simply a wrapper around a pointer to a struct
  * &dma_fence which may be NULL.
  * When a syncobj is first created, its pointer is either NULL or a pointer
  * to an already signaled fence depending on whether the
  * &DRM_SYNCOBJ_CREATE_SIGNALED flag is passed to
  * &DRM_IOCTL_SYNCOBJ_CREATE.
- * When GPU work which signals a syncobj is enqueued in a DRM driver,
- * the syncobj fence is replaced with a fence which will be signaled by the
- * completion of that work.
- * When GPU work which waits on a syncobj is enqueued in a DRM driver, the
- * driver retrieves syncobj's current fence at the time the work is enqueued
- * waits on that fence before submitting the work to hardware.
- * If the syncobj's fence is NULL, the enqueue operation is expected to fail.
- * All manipulation of the syncobjs's fence happens in terms of the current
- * fence at the time the ioctl is called by userspace regardless of whether
- * that operation is an immediate host-side operation (signal or reset) or
- * or an operation which is enqueued in some driver queue.
- * &DRM_IOCTL_SYNCOBJ_RESET and &DRM_IOCTL_SYNCOBJ_SIGNAL can be used to
- * manipulate a syncobj from the host by resetting its pointer to NULL or
+ *
+ * If the syncobj is considered as a binary (its state is either signaled or
+ * unsignaled) primitive, when GPU work is enqueued in a DRM driver to signal
+ * the syncobj, the syncobj's fence is replaced with a fence which will be
+ * signaled by the completion of that work.
+ * If the syncobj is considered as a timeline primitive, when GPU work is
+ * enqueued in a DRM driver to signal the a given point of the syncobj, a new
+ * struct &dma_fence_chain pointing to the DRM driver's fence and also
+ * pointing to the previous fence that was in the syncobj. The new struct
+ * &dma_fence_chain fence replace the syncobj's fence and will be signaled by
+ * completion of the DRM driver's work and also any work associated with the
+ * fence previously in the syncobj.
+ *
+ * When GPU work which waits on a syncobj is enqueued in a DRM driver, at the
+ * time the work is enqueued, it waits on the syncobj's fence before
+ * submitting the work to hardware. That fence is either :
+ *
+ *    - The syncobj's current fence if the syncobj is considered as a binary
+ *      primitive.
+ *    - The struct &dma_fence associated with a given point if the syncobj is
+ *      considered as a timeline primitive.
+ *
+ * If the syncobj's fence is NULL or not present in the syncobj's timeline,
+ * the enqueue operation is expected to fail.
+ *
+ * With binary syncobj, all manipulation of the syncobjs's fence happens in
+ * terms of the current fence at the time the ioctl is called by userspace
+ * regardless of whether that operation is an immediate host-side operation
+ * (signal or reset) or or an operation which is enqueued in some driver
+ * queue. &DRM_IOCTL_SYNCOBJ_RESET and &DRM_IOCTL_SYNCOBJ_SIGNAL can be used
+ * to manipulate a syncobj from the host by resetting its pointer to NULL or
  * setting its pointer to a fence which is already signaled.
+ *
+ * With a timeline syncobj, all manipulation of the synobj's fence happens in
+ * terms of a u64 value referring to point in the timeline. See
+ * dma_fence_chain_find_seqno() to see how a given point is found in the
+ * timeline.
+ *
+ * Note that applications should be careful to always use timeline set of
+ * ioctl() when dealing with syncobj considered as timeline. Using a binary
+ * set of ioctl() with a syncobj considered as timeline could result incorrect
+ * synchronization. The use of binary syncobj is supported through the
+ * timeline set of ioctl() by using a point value of 0, this will reproduce
+ * the behavior of the binary set of ioctl() (for example replace the
+ * syncobj's fence when signaling).
  *
  *
  * Host-side wait on syncobjs
@@ -86,6 +125,16 @@
  * submitted in another thread (or process) without having to manually
  * synchronize between the two.
  * This requirement is inherited from the Vulkan fence API.
+ *
+ * Similarly, &DRM_IOCTL_SYNCOBJ_TIMELINE_WAIT takes an array of syncobj
+ * handles as well as an array of u64 points and does a host-side wait on all
+ * of syncobj fences at the given points simultaneously.
+ *
+ * &DRM_IOCTL_SYNCOBJ_TIMELINE_WAIT also adds the ability to wait for a given
+ * fence to materialize on the timeline without waiting for the fence to be
+ * signaled by using the &DRM_SYNCOBJ_WAIT_FLAGS_WAIT_AVAILABLE flag. This
+ * requirement is inherited from the wait-before-signal behavior required by
+ * the Vulkan timeline semaphore API.
  *
  *
  * Import/export of syncobjs
@@ -120,6 +169,18 @@
  * Because sync files are immutable, resetting or signaling the syncobj
  * will not affect any sync files whose fences have been imported into the
  * syncobj.
+ *
+ *
+ * Import/export of timeline points in timeline syncobjs
+ * -----------------------------------------------------
+ *
+ * &DRM_IOCTL_SYNCOBJ_TRANSFER provides a mechanism to transfer a struct
+ * &dma_fence_chain of a syncobj at a given u64 point to another u64 point
+ * into another syncobj.
+ *
+ * Note that if you want to transfer a struct &dma_fence_chain from a given
+ * point on a timeline syncobj from/into a binary syncobj, you can use the
+ * point 0 to mean take/replace the fence in the syncobj.
  */
 
 #include <linux/anon_inodes.h>
@@ -141,7 +202,12 @@
 
 struct syncobj_wait_entry {
 	struct list_head node;
+#ifdef __linux__
 	struct task_struct *task;
+#else
+	struct thread *task;
+	bool   *signalledp;
+#endif
 	struct dma_fence *fence;
 	struct dma_fence_cb fence_cb;
 	u64    point;
@@ -321,6 +387,9 @@ int drm_syncobj_find_fence(struct drm_file *file_private,
 	struct drm_syncobj *syncobj = drm_syncobj_find(file_private, handle);
 	struct syncobj_wait_entry wait;
 	u64 timeout = nsecs_to_jiffies64(DRM_SYNCOBJ_WAIT_FOR_SUBMIT_TIMEOUT);
+#ifdef __FreeBSD__
+	bool signalled;
+#endif
 	int ret;
 
 	if (!syncobj)
@@ -343,6 +412,10 @@ int drm_syncobj_find_fence(struct drm_file *file_private,
 
 	memset(&wait, 0, sizeof(wait));
 	wait.task = current;
+#ifdef __FreeBSD__
+	signalled = false;
+	wait.signalledp = &signalled;
+#endif
 	wait.point = point;
 	drm_syncobj_fence_add_wait(syncobj, &wait);
 
@@ -362,7 +435,16 @@ int drm_syncobj_find_fence(struct drm_file *file_private,
 			break;
 		}
 
+#ifdef __linux__
                 timeout = schedule_timeout(timeout);
+#else
+		sleepq_lock(wait.task);
+		if (signalled)
+			sleepq_release(wait.task);
+		else
+			timeout =
+			    drmcompat_schedule_timeout_interruptible(timeout);
+#endif
 	} while (1);
 
 	__set_current_state(TASK_RUNNING);
@@ -919,7 +1001,13 @@ static void syncobj_wait_fence_func(struct dma_fence *fence,
 	struct syncobj_wait_entry *wait =
 		container_of(cb, struct syncobj_wait_entry, fence_cb);
 
+#ifdef __FreeBSD__
+	sleepq_lock(wait->task);
+	*wait->signalledp = true;
+	wake_up_process_locked(wait->task);
+#else
 	wake_up_process(wait->task);
+#endif
 }
 
 static void syncobj_wait_syncobj_func(struct drm_syncobj *syncobj,
@@ -940,7 +1028,13 @@ static void syncobj_wait_syncobj_func(struct drm_syncobj *syncobj,
 		wait->fence = fence;
 	}
 
+#ifdef __FreeBSD__
+	sleepq_lock(wait->task);
+	*wait->signalledp = true;
+	wake_up_process_locked(wait->task);
+#else
 	wake_up_process(wait->task);
+#endif
 	list_del_init(&wait->node);
 }
 
@@ -955,6 +1049,11 @@ static signed long drm_syncobj_array_wait_timeout(struct drm_syncobj **syncobjs,
 	struct dma_fence *fence;
 	uint64_t *points;
 	uint32_t signaled_count, i;
+#ifdef __FreeBSD__
+	bool signalled;
+
+	signalled = false;
+#endif
 
 	points = kmalloc_array(count, sizeof(*points), GFP_KERNEL);
 	if (points == NULL)
@@ -983,6 +1082,9 @@ static signed long drm_syncobj_array_wait_timeout(struct drm_syncobj **syncobjs,
 	for (i = 0; i < count; ++i) {
 		struct dma_fence *fence;
 
+#ifdef __FreeBSD__
+		entries[i].signalledp = &signalled;
+#endif
 		entries[i].task = current;
 		entries[i].point = points[i];
 		fence = drm_syncobj_fence_get(syncobjs[i]);
@@ -1065,7 +1167,16 @@ static signed long drm_syncobj_array_wait_timeout(struct drm_syncobj **syncobjs,
 			goto done_waiting;
 		}
 
+#ifdef __linux__
 		timeout = schedule_timeout(timeout);
+#else
+		sleepq_lock(current);
+		if (signalled)
+			sleepq_release(current);
+		else
+			timeout =
+			    drmcompat_schedule_timeout_interruptible(timeout);
+#endif
 	} while (1);
 
 done_waiting:

@@ -30,8 +30,8 @@
  * $FreeBSD$
  */
 
-#ifndef __DRMKPI_LINUX_WAIT_H__
-#define	__DRMKPI_LINUX_WAIT_H__
+#ifndef __DRMCOMPAT_LINUX_WAIT_H__
+#define	__DRMCOMPAT_LINUX_WAIT_H__
 
 #include <linux/compiler.h>
 #include <linux/list.h>
@@ -39,7 +39,7 @@
 
 #include <asm/atomic.h>
 
-#include <drmkpi/wait.h>
+#include <drmcompat/wait.h>
 
 #include <sys/param.h>
 #include <sys/systm.h>
@@ -61,7 +61,7 @@
 	}
 
 #define	DEFINE_WAIT(name) \
-	DEFINE_WAIT_FUNC(name, drmkpi_autoremove_wake_function)
+	DEFINE_WAIT_FUNC(name, drmcompat_autoremove_wake_function)
 
 #define	DECLARE_WAITQUEUE(name, task)					\
 	wait_queue_entry_t name = {					\
@@ -82,17 +82,17 @@
 } while (0)
 
 #define	wake_up(wqh)							\
-	drmkpi_wake_up(wqh, TASK_NORMAL, 1, false)
+	drmcompat_wake_up(wqh, TASK_NORMAL, 1, false)
 #define	wake_up_all(wqh)						\
-	drmkpi_wake_up(wqh, TASK_NORMAL, 0, false)
+	drmcompat_wake_up(wqh, TASK_NORMAL, 0, false)
 #define	wake_up_locked(wqh)						\
-	drmkpi_wake_up(wqh, TASK_NORMAL, 1, true)
+	drmcompat_wake_up(wqh, TASK_NORMAL, 1, true)
 #define	wake_up_all_locked(wqh)						\
-	drmkpi_wake_up(wqh, TASK_NORMAL, 0, true)
+	drmcompat_wake_up(wqh, TASK_NORMAL, 0, true)
 #define	wake_up_interruptible(wqh)					\
-	drmkpi_wake_up(wqh, TASK_INTERRUPTIBLE, 1, false)
+	drmcompat_wake_up(wqh, TASK_INTERRUPTIBLE, 1, false)
 #define	wake_up_interruptible_all(wqh)					\
-	drmkpi_wake_up(wqh, TASK_INTERRUPTIBLE, 0, false)
+	drmcompat_wake_up(wqh, TASK_INTERRUPTIBLE, 0, false)
 
 /*
  * Returns -ERESTARTSYS for a signal, 0 if cond is false after timeout, 1 if
@@ -106,15 +106,15 @@
 	int __ret = 0;						\
 								\
 	for (;;) {						\
-		drmkpi_prepare_to_wait(&(wqh), &__wq, state);	\
+		drmcompat_prepare_to_wait(&(wqh), &__wq, state);	\
 		if (cond)					\
 			break;					\
-		__ret = drmkpi_wait_event_common(&(wqh), &__wq,	\
+		__ret = drmcompat_wait_event_common(&(wqh), &__wq,	\
 		    __timeout, state, lock);			\
 		if (__ret != 0)					\
 			break;					\
 	}							\
-	drmkpi_finish_wait(&(wqh), &__wq);			\
+	drmcompat_finish_wait(&(wqh), &__wq);			\
 	if (__timeout != MAX_SCHEDULE_TIMEOUT) {		\
 		if (__ret == -EWOULDBLOCK)			\
 			__ret = !!(cond);			\
@@ -140,6 +140,11 @@
 	    NULL);							\
 })
 
+#define	wait_event_killable(wqh, cond) ({				\
+	__wait_event_common(wqh, cond, MAX_SCHEDULE_TIMEOUT,		\
+	    TASK_INTERRUPTIBLE, NULL);					\
+})
+
 #define	wait_event_interruptible(wqh, cond) ({				\
 	__wait_event_common(wqh, cond, MAX_SCHEDULE_TIMEOUT,		\
 	    TASK_INTERRUPTIBLE, NULL);					\
@@ -150,8 +155,8 @@
 	    NULL);							\
 })
 
-#define	prepare_to_wait(wqh, wq, state)	drmkpi_prepare_to_wait(wqh, wq, state)
-#define	finish_wait(wqh, wq)		drmkpi_finish_wait(wqh, wq)
+#define	prepare_to_wait(wqh, wq, state)	drmcompat_prepare_to_wait(wqh, wq, state)
+#define	finish_wait(wqh, wq)		drmcompat_finish_wait(wqh, wq)
 
 /*
  * All existing callers have a cb that just schedule()s. To avoid adding
@@ -160,7 +165,6 @@
  * schedule() will require special treatment.
  */
 
-#define	wake_up_process(task)		drmkpi_wake_up_state(task, TASK_NORMAL)
-#define	wake_up_state(task, state)	drmkpi_wake_up_state(task, state)
+#define	wake_up_process_locked(task)	drmcompat_wake_up_task_locked(task)
 
-#endif /* __DRMKPI_LINUX_WAIT_H__ */
+#endif /* __DRMCOMPAT_LINUX_WAIT_H__ */

@@ -29,8 +29,8 @@
  * $FreeBSD$
  */
 
-#ifndef __DRMKPI_LINUX_VMALLOC_H__
-#define	__DRMKPI_LINUX_VMALLOC_H__
+#ifndef __DRMCOMPAT_LINUX_VMALLOC_H__
+#define	__DRMCOMPAT_LINUX_VMALLOC_H__
 
 #include <linux/page.h>
 #include <linux/overflow.h>
@@ -42,4 +42,4 @@ void *vmap(struct page **pages, unsigned int count, unsigned long flags,
     int prot);
 void vunmap(void *addr);
 
-#endif	/* __DRMKPI_LINUX_LINUX_VMALLOC_H__ */
+#endif	/* __DRMCOMPAT_LINUX_LINUX_VMALLOC_H__ */

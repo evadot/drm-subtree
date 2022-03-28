@@ -504,3 +504,90 @@ void drm_mode_config_cleanup(struct drm_device *dev)
 	drm_modeset_lock_fini(&dev->mode_config.connection_mutex);
 }
 EXPORT_SYMBOL(drm_mode_config_cleanup);
+
+static u32 full_encoder_mask(struct drm_device *dev)
+{
+	struct drm_encoder *encoder;
+	u32 encoder_mask = 0;
+
+	drm_for_each_encoder(encoder, dev)
+		encoder_mask |= drm_encoder_mask(encoder);
+
+	return encoder_mask;
+}
+
+/*
+ * For some reason we want the encoder itself included in
+ * possible_clones. Make life easy for drivers by allowing them
+ * to leave possible_clones unset if no cloning is possible.
+ */
+static void fixup_encoder_possible_clones(struct drm_encoder *encoder)
+{
+	if (encoder->possible_clones == 0)
+		encoder->possible_clones = drm_encoder_mask(encoder);
+}
+
+static void validate_encoder_possible_clones(struct drm_encoder *encoder)
+{
+	struct drm_device *dev = encoder->dev;
+	u32 encoder_mask = full_encoder_mask(dev);
+	struct drm_encoder *other;
+
+	drm_for_each_encoder(other, dev) {
+		WARN(!!(encoder->possible_clones & drm_encoder_mask(other)) !=
+		     !!(other->possible_clones & drm_encoder_mask(encoder)),
+		     "possible_clones mismatch: "
+		     "[ENCODER:%d:%s] mask=0x%x possible_clones=0x%x vs. "
+		     "[ENCODER:%d:%s] mask=0x%x possible_clones=0x%x\n",
+		     encoder->base.id, encoder->name,
+		     drm_encoder_mask(encoder), encoder->possible_clones,
+		     other->base.id, other->name,
+		     drm_encoder_mask(other), other->possible_clones);
+	}
+
+	WARN((encoder->possible_clones & drm_encoder_mask(encoder)) == 0 ||
+	     (encoder->possible_clones & ~encoder_mask) != 0,
+	     "Bogus possible_clones: "
+	     "[ENCODER:%d:%s] possible_clones=0x%x (full encoder mask=0x%x)\n",
+	     encoder->base.id, encoder->name,
+	     encoder->possible_clones, encoder_mask);
+}
+
+static u32 full_crtc_mask(struct drm_device *dev)
+{
+	struct drm_crtc *crtc;
+	u32 crtc_mask = 0;
+
+	drm_for_each_crtc(crtc, dev)
+		crtc_mask |= drm_crtc_mask(crtc);
+
+	return crtc_mask;
+}
+
+static void validate_encoder_possible_crtcs(struct drm_encoder *encoder)
+{
+	u32 crtc_mask = full_crtc_mask(encoder->dev);
+
+	WARN((encoder->possible_crtcs & crtc_mask) == 0 ||
+	     (encoder->possible_crtcs & ~crtc_mask) != 0,
+	     "Bogus possible_crtcs: "
+	     "[ENCODER:%d:%s] possible_crtcs=0x%x (full crtc mask=0x%x)\n",
+	     encoder->base.id, encoder->name,
+	     encoder->possible_crtcs, crtc_mask);
+}
+
+void drm_mode_config_validate(struct drm_device *dev)
+{
+	struct drm_encoder *encoder;
+
+	if (!drm_core_check_feature(dev, DRIVER_MODESET))
+		return;
+
+	drm_for_each_encoder(encoder, dev)
+		fixup_encoder_possible_clones(encoder);
+
+	drm_for_each_encoder(encoder, dev) {
+		validate_encoder_possible_clones(encoder);
+		validate_encoder_possible_crtcs(encoder);
+	}
+}

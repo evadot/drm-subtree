@@ -28,8 +28,8 @@
  * $FreeBSD$
  */
 
-#ifndef __DRMKPI_LINUX_MOD_DEVICETABLE_H__
-#define	__DRMKPI_LINUX_MOD_DEVICETABLE_H__
+#ifndef __DRMCOMPAT_LINUX_MOD_DEVICETABLE_H__
+#define	__DRMCOMPAT_LINUX_MOD_DEVICETABLE_H__
 
 enum dmi_field {
 	DMI_NONE,
@@ -69,4 +69,4 @@ struct dmi_system_id {
 #define DMI_MATCH(a, b) { .slot = a, .substr = b }
 #define DMI_EXACT_MATCH(a, b)   { .slot = a, .substr = b, }
 
-#endif	/* __DRMKPI_LINUX_MOD_DEVICETABLE_H__ */
+#endif	/* __DRMCOMPAT_LINUX_MOD_DEVICETABLE_H__ */

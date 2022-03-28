@@ -1,5 +1,5 @@
-#ifndef __DRMKPI_LINUX_AGP_BACKEND_H__
-#define	__DRMKPI_LINUX_AGP_BACKEND_H__
+#ifndef __DRMCOMPAT_LINUX_AGP_BACKEND_H__
+#define	__DRMCOMPAT_LINUX_AGP_BACKEND_H__
 
 struct agp_kern_info
 {
@@ -10,4 +10,4 @@ struct agp_memory
 {
 };
 
-#endif	/* __DRMKPI_LINUX_AGP_BACKEND_H__ */
+#endif	/* __DRMCOMPAT_LINUX_AGP_BACKEND_H__ */

@@ -74,7 +74,6 @@
 #include <drm/drm_drv.h>
 #include <drm/drm_prime.h>
 #include <drm/drm_print.h>
-#include <drm/drm_pci.h>
 #include <drm/drm_file.h>
 #include <drm/drm_debugfs.h>
 #include <drm/drm_ioctl.h>
@@ -87,7 +86,7 @@ struct module;
 
 struct device_node;
 struct videomode;
-struct reservation_object;
+struct dma_resv;
 struct dma_buf_attachment;
 
 struct pci_dev;

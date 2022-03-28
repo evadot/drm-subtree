@@ -25,11 +25,11 @@
  * $FreeBSD$
  */
 
-#ifndef __DRMKPI_LINUX_LIST_SORT_H__
-#define	__DRMKPI_LINUX_LIST_SORT_H__
+#ifndef __DRMCOMPAT_LINUX_LIST_SORT_H__
+#define	__DRMCOMPAT_LINUX_LIST_SORT_H__
 
-#include <drmkpi/list_sort.h>
+#include <drmcompat/list_sort.h>
 
-#define	list_sort(priv, head, cmp)	drmkpi_list_sort(priv, head, cmp)
+#define	list_sort(priv, head, cmp)	drmcompat_list_sort(priv, head, cmp)
 
-#endif	/* __DRMKPI_LINUX_LIST_SORT_H__ */
+#endif	/* __DRMCOMPAT_LINUX_LIST_SORT_H__ */

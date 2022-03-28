@@ -29,8 +29,8 @@
  * $FreeBSD$
  */
 
-#ifndef __DRMKPI_LINUX_DEVICE_H__
-#define	__DRMKPI_LINUX_DEVICE_H__
+#ifndef __DRMCOMPAT_LINUX_DEVICE_H__
+#define	__DRMCOMPAT_LINUX_DEVICE_H__
 
 #include <linux/err.h>
 #include <linux/types.h>
@@ -47,7 +47,9 @@ char *kvasprintf(gfp_t, const char *, va_list);
 char *kasprintf(gfp_t, const char *, ...);
 
 #define dev_name(dev, ...) device_get_name(dev)
+#define dev_driver_string(dev, ...) device_get_name(dev)
 #define dev_dbg(dev, ...) device_printf(dev, ##__VA_ARGS__)
+#define dev_err(dev, ...) device_printf(dev, ##__VA_ARGS__)
 #define dev_warn(dev, ...) device_printf(dev, ##__VA_ARGS__)
 #define dev_info(dev, ...) device_printf(dev, ##__VA_ARGS__)
 #define dev_printk(level, dev, ...) device_printf(dev, ##__VA_ARGS__)
@@ -58,4 +60,4 @@ char *kasprintf(gfp_t, const char *, ...);
 
 #define	devm_add_action(parent, func, dev)	0
 
-#endif	/* __DRMKPI_LINUX__DEVICE_H__ */
+#endif	/* __DRMCOMPAT_LINUX__DEVICE_H__ */

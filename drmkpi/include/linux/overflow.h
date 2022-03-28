@@ -28,8 +28,8 @@
  * $FreeBSD$
  */
 
-#ifndef __DRMKPI_LINUX_OVERFLOW_H__
-#define	__DRMKPI_LINUX_OVERFLOW_H__
+#ifndef __DRMCOMPAT_LINUX_OVERFLOW_H__
+#define	__DRMCOMPAT_LINUX_OVERFLOW_H__
 
 #include <sys/stdint.h>
 #include <sys/types.h>
@@ -62,4 +62,4 @@ array_size(size_t x, size_t y)
 #error "Compiler does not support __builtin_mul_overflow"
 #endif
 
-#endif	/* __DRMKPI_LINUX_OVERFLOW_H__ */
+#endif	/* __DRMCOMPAT_LINUX_OVERFLOW_H__ */

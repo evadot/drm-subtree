@@ -67,7 +67,7 @@ static void edp_bridge_mode_set(struct drm_bridge *bridge, const struct drm_disp
 static bool edp_bridge_mode_fixup(struct drm_bridge *bridge, const struct drm_display_mode *mode, struct drm_display_mode *adjusted_mode);
 static void edp_bridge_pre_enable(struct drm_bridge *bridge);
 static void edp_bridge_post_disable(struct drm_bridge *bridge);
-static int edp_bridge_attach(struct drm_bridge *bridge);
+static int edp_bridge_attach(struct drm_bridge *bridge, enum drm_bridge_attach_flags flags);
 static void edp_bridge_disable(struct drm_bridge *bridge);
 static void edp_train_link(struct anxdp_softc * const sc);
 
@@ -155,12 +155,12 @@ void
 anxdp_add_bridge(struct anxdp_softc *sc,struct drm_encoder *encoder)
 {
 	sc->sc_bridge.funcs = &edp_bridge_funcs;
-	drm_bridge_attach(encoder, &sc->sc_bridge, NULL);
+	drm_bridge_attach(encoder, &sc->sc_bridge, NULL,0);
 }
 
 
 static int
-edp_bridge_attach(struct drm_bridge *bridge)
+edp_bridge_attach(struct drm_bridge *bridge, enum drm_bridge_attach_flags flags)
 {
 	struct anxdp_softc *sc;
 	sc = container_of(bridge, struct anxdp_softc, sc_bridge);

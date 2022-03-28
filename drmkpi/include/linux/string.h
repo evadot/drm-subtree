@@ -29,8 +29,8 @@
  * $FreeBSD$
  */
 
-#ifndef __DRMKPI_LINUX_STRING_H__
-#define	__DRMKPI_LINUX_STRING_H__
+#ifndef __DRMCOMPAT_LINUX_STRING_H__
+#define	__DRMCOMPAT_LINUX_STRING_H__
 
 #include <sys/ctype.h>
 
@@ -108,4 +108,20 @@ str_has_prefix(const char *str, const char *prefix)
 	return (strncmp(str, prefix, len) == 0 ? len : 0);
 }
 
-#endif	/* __DRMKPI_LINUX_STRING_H__ */
+static inline ssize_t
+strscpy(char* dst, const char* src, size_t len)
+{
+	size_t i;
+
+	if (len <= INT_MAX) {
+		for (i = 0; i < len; i++)
+			if ('\0' == (dst[i] = src[i]))
+				return ((ssize_t)i);
+		if (i != 0)
+			dst[--i] = '\0';
+	}
+
+	return (-E2BIG);
+}
+
+#endif	/* __DRMCOMPAT_LINUX_STRING_H__ */

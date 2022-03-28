@@ -26,8 +26,8 @@
  * $FreeBSD$
  */
 
-#ifndef __DRMKPI_LINUX_IRQRETURN_H__
-#define	__DRMKPI_LINUX_IRQRETURN_H__
+#ifndef __DRMCOMPAT_LINUX_IRQRETURN_H__
+#define	__DRMCOMPAT_LINUX_IRQRETURN_H__
 
 typedef enum irqreturn {
 	IRQ_NONE = 0,
@@ -37,4 +37,4 @@ typedef enum irqreturn {
 
 #define	IRQ_RETVAL(x) ((x) ? IRQ_HANDLED : IRQ_NONE)
 
-#endif /* __DRMKPI_LINUX_IRQRETURN_H__ */
+#endif /* __DRMCOMPAT_LINUX_IRQRETURN_H__ */

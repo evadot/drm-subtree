@@ -10,10 +10,6 @@
 
 #define	CONFIG_FB			1
 #define	CONFIG_DRM_FBDEV_EMULATION	1
-#define	CONFIG_DRM_LEGACY		0
-#define	CONFIG_DRM_VM			0
-#define CONFIG_AGP			0
-#define CONFIG_DRM_FBDEV_LEAK_PHYS_SMEM	0
 
 // Overallocation of the fbdev buffer
 // Defines the fbdev buffer overallocation in percent. Default is 100.

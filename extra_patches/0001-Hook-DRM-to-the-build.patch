@@ -1,7 +1,7 @@
-From 525ccc859d9fa7d61a55e6852f8df3be068856a2 Mon Sep 17 00:00:00 2001
+From 241ae169c94df33f728052dc82f362a50055a948 Mon Sep 17 00:00:00 2001
 From: Emmanuel Vadot <manu@FreeBSD.org>
 Date: Thu, 18 Mar 2021 10:26:55 +0100
-Subject: [PATCH] Hook DRM to the build
+Subject: [PATCH 1/4] Hook DRM to the build
 Content-Type: text/plain; charset=UTF-8
 
 ---
@@ -13,7 +13,7 @@ Content-Type: text/plain; charset=UTF-8
 
 diff --git a/sys/arm64/conf/GENERIC-DRM b/sys/arm64/conf/GENERIC-DRM
 new file mode 100644
-index 00000000000..db1fffb1729
+index 000000000000..db1fffb1729e
 --- /dev/null
 +++ b/sys/arm64/conf/GENERIC-DRM
 @@ -0,0 +1,21 @@
@@ -39,10 +39,10 @@ index 00000000000..db1fffb1729
 +files		"../../dev/drm/extra_patches/files"
 +files		"../../dev/drm/extra_patches/files.aw"
 diff --git a/sys/conf/kern.pre.mk b/sys/conf/kern.pre.mk
-index 75f59a90484..3f9fc2c17ae 100644
+index 5a786c81324d..d7b041148e0e 100644
 --- a/sys/conf/kern.pre.mk
 +++ b/sys/conf/kern.pre.mk
-@@ -310,6 +310,21 @@ MLXFW_C=	${OFED_C_NOIMP} \
+@@ -309,6 +309,21 @@ MLXFW_C=	${OFED_C_NOIMP} \
  		-I${SRCTOP}/sys/contrib/xz-embedded/linux/lib/xz \
  		${.IMPSRC}
  
@@ -65,11 +65,11 @@ index 75f59a90484..3f9fc2c17ae 100644
  SYSTEM_CFILES= config.c env.c hints.c vnode_if.c
  SYSTEM_DEP= Makefile ${SYSTEM_OBJS}
 diff --git a/sys/conf/options b/sys/conf/options
-index b6956193d84..7c00aaa634d 100644
+index c66b94ce2efd..aea8083927cc 100644
 --- a/sys/conf/options
 +++ b/sys/conf/options
-@@ -95,6 +95,7 @@ COMPAT_CLOUDABI32	opt_dontuse.h
- COMPAT_CLOUDABI64	opt_dontuse.h
+@@ -101,6 +101,7 @@ COMPAT_FREEBSD12	opt_global.h
+ COMPAT_FREEBSD13	opt_global.h
  COMPAT_LINUXKPI	opt_dontuse.h
  _COMPAT_LINUX32	opt_compat.h	# XXX: make sure opt_compat.h exists
 +COMPAT_DRMKPI	opt_global.h
@@ -77,5 +77,5 @@ index b6956193d84..7c00aaa634d 100644
  CY_PCI_FASTINTR
  DEADLKRES	opt_watchdog.h
 -- 
-2.30.1
+2.35.1
 

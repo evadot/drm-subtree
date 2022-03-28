@@ -26,8 +26,8 @@
  * $FreeBSD$
  */
 
-#ifndef __DRMKPI_LINUX_BITMAP_H__
-#define	__DRMKPI_LINUX_BITMAP_H__
+#ifndef __DRMCOMPAT_LINUX_BITMAP_H__
+#define	__DRMCOMPAT_LINUX_BITMAP_H__
 
 #include <linux/bitops.h>
 #include <linux/slab.h>
@@ -351,4 +351,4 @@ bitmap_free(const unsigned long *bitmap)
 	kfree(bitmap);
 }
 
-#endif /* __DRMKPI_LINUX_BITMAP_H__ */
+#endif /* __DRMCOMPAT_LINUX_BITMAP_H__ */

@@ -29,8 +29,8 @@
  * $FreeBSD$
  */
 
-#ifndef __DRMKPI_LINUX_FILE_H__
-#define	__DRMKPI_LINUX_FILE_H__
+#ifndef __DRMCOMPAT_LINUX_FILE_H__
+#define	__DRMCOMPAT_LINUX_FILE_H__
 
 #include <sys/param.h>
 #include <sys/file.h>
@@ -46,8 +46,7 @@ put_unused_fd(unsigned int fd)
 {
 	struct file *file;
 
-	if (fget_unlocked(curthread->td_proc->p_fd, fd,
-	    &cap_no_rights, &file) != 0) {
+	if (fget_unlocked(curthread, fd, &cap_no_rights, &file) != 0) {
 		return;
 	}
 	/*
@@ -91,7 +90,7 @@ get_unused_fd_flags(int flags)
 	 * Not sure how to use flags here,
 	 * UF_EXCLOSE set later in fd_install().
 	 */
-	KASSERT(flags == UF_EXCLOSE, ("Unexpected flags"));
+	KASSERT(flags == O_CLOEXEC, ("Unexpected flags"));
 
 	fdp = p->p_fd;
 
@@ -142,4 +141,4 @@ fput(struct file *file)
 	}
 }
 
-#endif	/* __DRMKPI_LINUX_FILE_H__ */
+#endif	/* __DRMCOMPAT_LINUX_FILE_H__ */

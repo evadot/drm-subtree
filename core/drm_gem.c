@@ -77,6 +77,12 @@
  * up at a later date, and as our interface with shmfs for memory allocation.
  */
 
+static void
+drm_gem_init_release(struct drm_device *dev, void *ptr)
+{
+	drm_vma_offset_manager_destroy(dev->vma_offset_manager);
+}
+
 /**
  * drm_gem_init - Initialize the GEM device fields
  * @dev: drm_devic structure to initialize
@@ -163,7 +169,7 @@ void drm_gem_private_object_init(struct drm_device *dev,
 	kref_init(&obj->refcount);
 	obj->handle_count = 0;
 	obj->size = size;
-	reservation_object_init(&obj->_resv);
+	dma_resv_init(&obj->_resv);
 	if (!obj->resv)
 		obj->resv = &obj->_resv;
 
@@ -222,7 +228,7 @@ drm_gem_object_handle_put_unlocked(struct drm_gem_object *obj)
 	struct drm_device *dev = obj->dev;
 	bool final = false;
 
-	if (WARN_ON(obj->handle_count == 0))
+	if (WARN_ON(READ_ONCE(obj->handle_count) == 0))
 		return;
 
 	/*
@@ -259,8 +265,7 @@ drm_gem_object_release_handle(int id, void *ptr, void *data)
 	else if (dev->driver->gem_close_object)
 		dev->driver->gem_close_object(obj, file_priv);
 
-	if (drm_core_check_feature(dev, DRIVER_PRIME))
-		drm_gem_remove_prime_handles(obj, file_priv);
+	drm_gem_remove_prime_handles(obj, file_priv);
 	drm_vma_node_revoke(&obj->vma_node, file_priv);
 
 	drm_gem_object_handle_put_unlocked(obj);
@@ -437,7 +442,7 @@ err_unref:
  * drm_gem_handle_create - create a gem handle for an object
  * @file_priv: drm file-private structure to register the handle for
  * @obj: object to register
- * @handlep: pionter to return the created handle to the caller
+ * @handlep: pointer to return the created handle to the caller
  *
  * Create a handle for this object. This adds a handle reference to the object,
  * which includes a regular reference count. Callers will likely want to
@@ -762,7 +767,7 @@ drm_gem_object_lookup(struct drm_file *filp, u32 handle)
 EXPORT_SYMBOL(drm_gem_object_lookup);
 
 /**
- * drm_gem_reservation_object_wait - Wait on GEM object's reservation's objects
+ * drm_gem_dma_resv_wait - Wait on GEM object's reservation's objects
  * shared and/or exclusive fences.
  * @filep: DRM file private date
  * @handle: userspace handle
@@ -774,7 +779,7 @@ EXPORT_SYMBOL(drm_gem_object_lookup);
  * Returns -ERESTARTSYS if interrupted, 0 if the wait timed out, or
  * greater than 0 on success.
  */
-long drm_gem_reservation_object_wait(struct drm_file *filep, u32 handle,
+long drm_gem_dma_resv_wait(struct drm_file *filep, u32 handle,
 				    bool wait_all, unsigned long timeout)
 {
 	long ret;
@@ -786,7 +791,7 @@ long drm_gem_reservation_object_wait(struct drm_file *filep, u32 handle,
 		return -EINVAL;
 	}
 
-	ret = reservation_object_wait_timeout_rcu(obj->resv, wait_all,
+	ret = dma_resv_wait_timeout_rcu(obj->resv, wait_all,
 						  true, timeout);
 	if (ret == 0)
 		ret = -ETIME;
@@ -797,7 +802,7 @@ long drm_gem_reservation_object_wait(struct drm_file *filep, u32 handle,
 
 	return ret;
 }
-EXPORT_SYMBOL(drm_gem_reservation_object_wait);
+EXPORT_SYMBOL(drm_gem_dma_resv_wait);
 
 /**
  * drm_gem_close_ioctl - implementation of the GEM_CLOSE ioctl
@@ -879,9 +884,6 @@ err:
  * @file_priv: drm file-private structure
  *
  * Open an object using the global name, returning a handle and the size.
- *
- * This handle (of course) holds a reference to the object, so the object
- * will not go away until the handle is deleted.
  */
 int
 drm_gem_open_ioctl(struct drm_device *dev, void *data,
@@ -906,14 +908,15 @@ drm_gem_open_ioctl(struct drm_device *dev, void *data,
 
 	/* drm_gem_handle_create_tail unlocks dev->object_name_lock. */
 	ret = drm_gem_handle_create_tail(file_priv, obj, &handle);
-	drm_gem_object_put_unlocked(obj);
 	if (ret)
-		return ret;
+		goto err;
 
 	args->handle = handle;
 	args->size = obj->size;
 
-	return 0;
+err:
+	drm_gem_object_put_unlocked(obj);
+	return ret;
 }
 
 /**
@@ -963,7 +966,7 @@ drm_gem_object_release(struct drm_gem_object *obj)
 	if (obj->filp)
 		fput(obj->filp);
 
-	reservation_object_fini(&obj->_resv);
+	dma_resv_fini(&obj->_resv);
 	drm_gem_free_mmap_offset(obj);
 }
 EXPORT_SYMBOL(drm_gem_object_release);
@@ -1305,14 +1308,14 @@ drm_gem_lock_reservations(struct drm_gem_object **objs, int count,
 	int contended = -1;
 	int i, ret;
 
-	ww_acquire_init(acquire_ctx, &reservation_ww_class);
+	ww_acquire_init(acquire_ctx, &dma_resv_ww_class);
 
 retry:
 	if (contended != -1) {
 		struct drm_gem_object *obj = objs[contended];
 
-		ret = ww_mutex_lock_slow_interruptible(&obj->resv->lock,
-						       acquire_ctx);
+		ret = dma_resv_lock_slow_interruptible(obj->resv,
+								 acquire_ctx);
 		if (ret) {
 			ww_acquire_done(acquire_ctx);
 			return ret;
@@ -1323,16 +1326,16 @@ retry:
 		if (i == contended)
 			continue;
 
-		ret = ww_mutex_lock_interruptible(&objs[i]->resv->lock,
-						  acquire_ctx);
+		ret = dma_resv_lock_interruptible(objs[i]->resv,
+							    acquire_ctx);
 		if (ret) {
 			int j;
 
 			for (j = 0; j < i; j++)
-				ww_mutex_unlock(&objs[j]->resv->lock);
+				dma_resv_unlock(objs[j]->resv);
 
 			if (contended != -1 && contended >= i)
-				ww_mutex_unlock(&objs[contended]->resv->lock);
+				dma_resv_unlock(objs[contended]->resv);
 
 			if (ret == -EDEADLK) {
 				contended = i;
@@ -1357,7 +1360,7 @@ drm_gem_unlock_reservations(struct drm_gem_object **objs, int count,
 	int i;
 
 	for (i = 0; i < count; i++)
-		ww_mutex_unlock(&objs[i]->resv->lock);
+		dma_resv_unlock(objs[i]->resv);
 
 	ww_acquire_fini(acquire_ctx);
 }

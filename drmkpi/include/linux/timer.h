@@ -33,13 +33,13 @@
 #define	__LINUX_TIMER_H__
 
 #include <linux/types.h>
-#include <drmkpi/timer.h>
+#include <drmcompat/timer.h>
 
 #include <sys/param.h>
 #include <sys/kernel.h>
 #include <sys/callout.h>
 
-extern unsigned long drmkpi_timer_hz_mask;
+extern unsigned long drmcompat_timer_hz_mask;
 
 #define	TIMER_IRQSAFE	0x0001
 
@@ -71,19 +71,19 @@ extern unsigned long drmkpi_timer_hz_mask;
 } while (0)
 
 #define	mod_timer(timer, expires)	\
-	drmkpi_mod_timer(timer, expires)
+	drmcompat_mod_timer(timer, expires)
 #define	add_timer(timer)		\
-	drmkpi_add_timer(timer)
+	drmcompat_add_timer(timer)
 #define	add_timer_on(timer, cpu)	\
-	drmkpi_timer_on(timer, cpu)
+	drmcompat_timer_on(timer, cpu)
 #define	del_timer(timer)		\
-	drmkpi_del_timer(timer)
+	drmcompat_del_timer(timer)
 #define	del_timer_sync(timer)		\
-	drmkpi_del_timer_sync(timer)
+	drmcompat_del_timer_sync(timer)
 
 #define	timer_pending(timer)	callout_pending(&(timer)->callout)
 #define	round_jiffies(j)	\
-	((int)(((j) + drmkpi_timer_hz_mask) & ~drmkpi_timer_hz_mask))
+	((int)(((j) + drmcompat_timer_hz_mask) & ~drmcompat_timer_hz_mask))
 #define	round_jiffies_relative(j) round_jiffies(j)
 #define	round_jiffies_up(j)	round_jiffies(j)
 #define	round_jiffies_up_relative(j) round_jiffies_up(j)

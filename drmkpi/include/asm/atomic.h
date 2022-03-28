@@ -55,6 +55,7 @@ typedef struct {
 #define	atomic_inc_and_test(v)		(atomic_add_return(1, (v)) == 0)
 #define	atomic_dec_return(v)		atomic_sub_return(1, (v))
 #define	atomic_inc_not_zero(v)		atomic_add_unless((v), 1, 0)
+#define	atomic_fetch_inc(v)		(atomic_inc_return(v) - 1)
 
 static inline int
 atomic_add_return(int i, atomic_t *v)
@@ -159,19 +160,19 @@ atomic_cmpxchg(atomic_t *v, int old, int new)
 }
 
 #if defined(__amd64__) || defined(__arm64__) || defined(__i386__)
-#define	DRMKPI_ATOMIC_8(...) __VA_ARGS__
-#define	DRMKPI_ATOMIC_16(...) __VA_ARGS__
+#define	DRMCOMPAT_ATOMIC_8(...) __VA_ARGS__
+#define	DRMCOMPAT_ATOMIC_16(...) __VA_ARGS__
 #else
-#define	DRMKPI_ATOMIC_8(...)
-#define	DRMKPI_ATOMIC_16(...)
+#define	DRMCOMPAT_ATOMIC_8(...)
+#define	DRMCOMPAT_ATOMIC_16(...)
 #endif
 
 #if !(defined(i386) || (defined(__mips__) && !(defined(__mips_n32) ||	\
     defined(__mips_n64))) || (defined(__powerpc__) &&			\
     !defined(__powerpc64__)))
-#define	DRMKPI_ATOMIC_64(...) __VA_ARGS__
+#define	DRMCOMPAT_ATOMIC_64(...) __VA_ARGS__
 #else
-#define	DRMKPI_ATOMIC_64(...)
+#define	DRMCOMPAT_ATOMIC_64(...)
 #endif
 
 #define	cmpxchg(ptr, old, new) ({					\
@@ -184,20 +185,20 @@ atomic_cmpxchg(atomic_t *v, int old, int new)
 	} __ret = { .val = (old) }, __new = { .val = (new) };		\
 									\
 	CTASSERT(							\
-	    DRMKPI_ATOMIC_8(sizeof(__ret.val) == 1 ||)		\
-	    DRMKPI_ATOMIC_16(sizeof(__ret.val) == 2 ||)		\
-	    DRMKPI_ATOMIC_64(sizeof(__ret.val) == 8 ||)		\
+	    DRMCOMPAT_ATOMIC_8(sizeof(__ret.val) == 1 ||)		\
+	    DRMCOMPAT_ATOMIC_16(sizeof(__ret.val) == 2 ||)		\
+	    DRMCOMPAT_ATOMIC_64(sizeof(__ret.val) == 8 ||)		\
 	    sizeof(__ret.val) == 4);					\
 									\
 	switch (sizeof(__ret.val)) {					\
-	DRMKPI_ATOMIC_8(						\
+	DRMCOMPAT_ATOMIC_8(						\
 	case 1:								\
 		while (!atomic_fcmpset_8((volatile u8 *)(ptr),		\
 		    __ret.u8, __new.u8[0]) && __ret.val == (old))	\
 			;						\
 		break;							\
 	)								\
-	DRMKPI_ATOMIC_16(						\
+	DRMCOMPAT_ATOMIC_16(						\
 	case 2:								\
 		while (!atomic_fcmpset_16((volatile u16 *)(ptr),	\
 		    __ret.u16, __new.u16[0]) && __ret.val == (old))	\
@@ -209,7 +210,7 @@ atomic_cmpxchg(atomic_t *v, int old, int new)
 		    __ret.u32, __new.u32[0]) && __ret.val == (old))	\
 			;						\
 		break;							\
-	DRMKPI_ATOMIC_64(						\
+	DRMCOMPAT_ATOMIC_64(						\
 	case 8:								\
 		while (!atomic_fcmpset_64((volatile u64 *)(ptr),	\
 		    __ret.u64, __new.u64[0]) && __ret.val == (old))	\
@@ -232,13 +233,13 @@ atomic_cmpxchg(atomic_t *v, int old, int new)
 	} __ret, __new = { .val = (new) };				\
 									\
 	CTASSERT(							\
-	    DRMKPI_ATOMIC_8(sizeof(__ret.val) == 1 ||)		\
-	    DRMKPI_ATOMIC_16(sizeof(__ret.val) == 2 ||)		\
-	    DRMKPI_ATOMIC_64(sizeof(__ret.val) == 8 ||)		\
+	    DRMCOMPAT_ATOMIC_8(sizeof(__ret.val) == 1 ||)		\
+	    DRMCOMPAT_ATOMIC_16(sizeof(__ret.val) == 2 ||)		\
+	    DRMCOMPAT_ATOMIC_64(sizeof(__ret.val) == 8 ||)		\
 	    sizeof(__ret.val) == 4);					\
 									\
 	switch (sizeof(__ret.val)) {					\
-	DRMKPI_ATOMIC_8(						\
+	DRMCOMPAT_ATOMIC_8(						\
 	case 1:								\
 		__ret.val = READ_ONCE(*ptr);				\
 		while (!atomic_fcmpset_8((volatile u8 *)(ptr),		\
@@ -246,7 +247,7 @@ atomic_cmpxchg(atomic_t *v, int old, int new)
 			;						\
 		break;							\
 	)								\
-	DRMKPI_ATOMIC_16(						\
+	DRMCOMPAT_ATOMIC_16(						\
 	case 2:								\
 		__ret.val = READ_ONCE(*ptr);				\
 		while (!atomic_fcmpset_16((volatile u16 *)(ptr),	\
@@ -258,7 +259,7 @@ atomic_cmpxchg(atomic_t *v, int old, int new)
 		__ret.u32[0] = atomic_swap_32((volatile u32 *)(ptr),	\
 		    __new.u32[0]);					\
 		break;							\
-	DRMKPI_ATOMIC_64(						\
+	DRMCOMPAT_ATOMIC_64(						\
 	case 8:								\
 		__ret.u64[0] = atomic_swap_64((volatile u64 *)(ptr),	\
 		    __new.u64[0]);					\

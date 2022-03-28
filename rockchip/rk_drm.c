@@ -61,7 +61,7 @@ __FBSDID("$FreeBSD$");
 
 #include <dev/drm/rockchip/rk_gem.h>
 
-#include <dev/drm/drmkpi/include/linux/dma-buf.h>
+#include <linux/dma-buf.h>
 
 #include "fb_if.h"
 #include "rk_vop_if.h"
@@ -100,8 +100,7 @@ static const struct file_operations rk_drm_drv_fops = {
 };
 
 static struct drm_driver rk_drm_driver = {
-	.driver_features = DRIVER_GEM | DRIVER_MODESET | \
-	    DRIVER_ATOMIC | DRIVER_PRIME,
+	.driver_features = DRIVER_GEM | DRIVER_MODESET | DRIVER_ATOMIC,
 
 	/* Generic Operations */
 	.lastclose = drm_fb_helper_lastclose,
@@ -218,6 +217,7 @@ err_fini:
 	return (rv);
 }
 
+#ifdef NOTYET
 static void
 rk_drm_fb_destroy(struct drm_device *drm_dev)
 {
@@ -239,6 +239,7 @@ rk_drm_fb_destroy(struct drm_device *drm_dev)
 	free(fb, DRM_MEM_DRIVER);
 	sc->fb = NULL;
 }
+#endif
 
 static void
 rk_drm_irq_hook(void *arg)

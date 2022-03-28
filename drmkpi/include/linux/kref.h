@@ -30,8 +30,8 @@
  * $FreeBSD$
  */
 
-#ifndef __DRMKPI_LINUX_KREF_H__
-#define	__DRMKPI_LINUX_KREF_H__
+#ifndef __DRMCOMPAT_LINUX_KREF_H__
+#define	__DRMCOMPAT_LINUX_KREF_H__
 
 #include <sys/types.h>
 #include <sys/refcount.h>
@@ -147,4 +147,4 @@ kref_exclusive_p(struct kref *kref)
 	return (kref->refcount.counter == 1);
 }
 
-#endif /* __DRMKPI_LINUX_KREF_H__ */
+#endif /* __DRMCOMPAT_LINUX_KREF_H__ */

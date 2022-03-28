@@ -26,8 +26,8 @@
  * $FreeBSD$
  */
 
-#ifndef __DRMKPI_LINUX_PFN_T_H__
-#define	__DRMKPI_LINUX_PFN_T_H__
+#ifndef __DRMCOMPAT_LINUX_PFN_T_H__
+#define	__DRMCOMPAT_LINUX_PFN_T_H__
 
 #include <linux/mm.h>
 
@@ -53,4 +53,4 @@ pfn_to_pfn_t(unsigned long pfn)
 	return (__pfn_to_pfn_t (pfn, 0));
 }
 
-#endif	/* __DRMKPI_LINUX_PFN_T_H__ */
+#endif	/* __DRMCOMPAT_LINUX_PFN_T_H__ */
