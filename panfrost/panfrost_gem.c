@@ -223,6 +223,8 @@ static int
 panfrost_gem_pin(struct drm_gem_object *obj)
 {
 
+	drm_gem_object_get(obj);
+
 	return (0);
 }
 
@@ -230,6 +232,7 @@ void
 panfrost_gem_unpin(struct drm_gem_object *obj)
 {
 
+	drm_gem_object_put(obj);
 }
 
 struct sg_table *
@@ -255,61 +258,76 @@ panfrost_gem_vunmap(struct drm_gem_object *obj, void *vaddr)
 
 }
 
+static struct page *
+sgt_get_page_by_idx(struct sg_table *sgt, int pidx)
+{
+	struct scatterlist *sg;
+	struct page *page;
+	int count;
+	int len;
+	int i;
+
+	i = 0;
+
+	for_each_sg(sgt->sgl, sg, sgt->nents, count) {
+		len = sg_dma_len(sg);
+		page = sg_page(sg);
+		while (len > 0) {
+			if (i == pidx)
+				return (page);
+			page++;
+			len -= PAGE_SIZE;
+			i++;
+		}
+	}
+
+	return (NULL);
+}
+
 static vm_fault_t
 panfrost_gem_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
 {
 	struct panfrost_gem_object *bo;
 	struct drm_gem_object *gem_obj;
 	struct panfrost_softc *sc;
-	struct scatterlist *sg;
-	struct sg_table *sgt;
 	struct page *page;
 	vm_pindex_t pidx;
 	vm_object_t obj;
-	int count;
-	int len;
-	int i;
 
 	obj = vma->vm_obj;
 	gem_obj = vma->vm_private_data;
 	bo = (struct panfrost_gem_object *)gem_obj;
 	sc = gem_obj->dev->dev_private;
 
-	/* TODO: not sure how to deal with imported objects. */
-	if (gem_obj->import_attach)
-		return (VM_FAULT_SIGBUS);
+	pidx = OFF_TO_IDX(vmf->virtual_address);
 
-	pidx = OFF_TO_IDX(vmf->address - vma->vm_start);
-
-	sgt = bo->sgt;
-
-	i = 0;
 	VM_OBJECT_WLOCK(obj);
-	for_each_sg(sgt->sgl, sg, sgt->nents, count) {
-		len = sg_dma_len(sg);
-		page = sg_page(sg);
-		while (len > 0) {
-			if (vm_page_busied(page))
-				goto fail_unlock;
-			if (vm_page_insert(page, obj, i))
-				goto fail_unlock;
-			vm_page_tryxbusy(page);
-			page->valid = VM_PAGE_BITS_ALL;
-			page++;
-			len -= PAGE_SIZE;
-			i++;
+	if (bo->pages) {
+		if (pidx >= bo->npages) {
+			device_printf(sc->dev, "%s: error: requested page is "
+			    "out of range (%d/%d)\n", __func__, bo->npages,
+			    pidx);
+			return (VM_FAULT_SIGBUS);
 		}
+		page = bo->pages[pidx];
+	} else {
+		/* Imported object. */
+		KASSERT(bo->sgt != NULL, ("sgt is NULL"));
+		page = sgt_get_page_by_idx(bo->sgt, pidx);
+		if (!page)
+			return (VM_FAULT_SIGBUS);
 	}
+
+	if (vm_page_busied(page))
+		goto fail_unlock;
+	if (vm_page_insert(page, obj, pidx))
+		goto fail_unlock;
+	vm_page_tryxbusy(page);
+	vm_page_valid(page);
 	VM_OBJECT_WUNLOCK(obj);
 
-	if (pidx >= i) {
-		device_printf(sc->dev, "%s: error: requested page is "
-		    "out of range (%d/%d)\n", __func__, pidx, i);
-		return (VM_FAULT_SIGBUS);
-	}
-
-	vma->vm_pfn_first = 0;
-	vma->vm_pfn_count = i;
+	vma->vm_pfn_first = pidx;
+	vma->vm_pfn_count = 1;
 
 	return (VM_FAULT_NOPAGE);
 
@@ -665,8 +683,8 @@ panfrost_gem_get_pages(struct panfrost_gem_object *bo)
 
 	KASSERT(npages != 0, ("npages is 0"));
 
-	m0 = malloc(sizeof(vm_page_t *) * npages,
-	    M_PANFROST, M_WAITOK | M_ZERO);
+	m0 = malloc(sizeof(vm_page_t *) * npages, M_PANFROST,
+	    M_WAITOK | M_ZERO);
 	bo->pages = m0;
 	bo->npages = npages;
 
