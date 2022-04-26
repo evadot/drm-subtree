@@ -689,6 +689,11 @@ panfrost_gem_get_pages(struct panfrost_gem_object *bo)
 	bo->pages = m0;
 	bo->npages = npages;
 
+	/*
+	 * Our DRM backends (rockchip, arm komeda, etc) have no IOMMU support,
+	 * so when panfrost gem object is imported to those DRM backends,
+	 * the backed pages have to be contiguous.
+	 */
 	if (1 == 0)
 		error = panfrost_alloc_pages_iommu(bo);
 	else
