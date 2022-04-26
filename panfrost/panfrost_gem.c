@@ -672,8 +672,9 @@ int
 panfrost_gem_get_pages(struct panfrost_gem_object *bo)
 {
 	struct drm_gem_object *obj;
-	int npages;
 	vm_page_t *m0;
+	int npages;
+	int error;
 
 	if (bo->sgt != NULL || bo->pages != NULL)
 		return (0);
@@ -689,9 +690,12 @@ panfrost_gem_get_pages(struct panfrost_gem_object *bo)
 	bo->npages = npages;
 
 	if (1 == 0)
-		panfrost_alloc_pages_iommu(bo);
+		error = panfrost_alloc_pages_iommu(bo);
 	else
-		panfrost_alloc_pages_contig(bo);
+		error = panfrost_alloc_pages_contig(bo);
+
+	if (error)
+		return (error);
 
 	bo->sgt = drm_prime_pages_to_sg(m0, npages);
 
