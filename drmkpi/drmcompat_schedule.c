@@ -128,10 +128,8 @@ int
 drmcompat_autoremove_wake_function(wait_queue_entry_t *wq, unsigned int state,
     int flags, void *key __unused)
 {
-	struct thread *task;
 	int ret;
 
-	task = wq->private;
 	if ((ret = wake_up_task_by_wq(wq, state)) != 0)
 		list_del_init(&wq->entry);
 	return (ret);
