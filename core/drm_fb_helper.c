@@ -2916,8 +2916,9 @@ static void drm_setup_crtcs_fb(struct drm_fb_helper *fb_helper)
 {
 #ifdef __linux__
 	struct fb_info *info = fb_helper->fbdev;
-#endif
 	unsigned int rotation, sw_rotations = 0;
+#endif
+	unsigned int rotation;
 	int i;
 
 	for (i = 0; i < fb_helper->crtc_count; i++) {
@@ -2928,11 +2929,15 @@ static void drm_setup_crtcs_fb(struct drm_fb_helper *fb_helper)
 
 		modeset->fb = fb_helper->fb;
 
+#ifdef __linux__
 		if (drm_fb_helper_panel_rotation(modeset, &rotation))
 			/* Rotating in hardware, fbcon should not rotate */
 			sw_rotations |= DRM_MODE_ROTATE_0;
 		else
 			sw_rotations |= rotation;
+#elif defined(__FreeBSD__)
+		drm_fb_helper_panel_rotation(modeset, &rotation);
+#endif
 	}
 
 #ifdef __linux__

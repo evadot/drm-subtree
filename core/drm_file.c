@@ -705,11 +705,9 @@ static int
 drm_fstub_kqread(struct knote *kn, long hint)
 {
 	struct drm_file *file_priv;
-	struct drm_device *dev;
 	int rv;
 
 	file_priv = kn->kn_hook;
-	dev = file_priv->minor->dev;
 
 	kn->kn_data = file_priv->ev_cnt;
 	if (kn->kn_data)
