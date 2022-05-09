@@ -102,15 +102,21 @@ static struct resource_spec rk_vop_spec[] = {
 };
 
 static void
-rk_vop_set_polarity(struct rk_vop_softc *sc, uint32_t pin_polarity)
+rk_vop_set_polarity(struct rk_vop_softc *sc, uint32_t pin_polarity,int connector_type)
 {
 	uint32_t reg;
-
-	/* HDMI */
 	reg = VOP_READ(sc, RK3399_DSP_CTRL1);
-	reg &= ~DSP_CTRL1_HDMI_POL_M;
-	reg |= pin_polarity << DSP_CTRL1_HDMI_POL_S;
+	if(connector_type == DRM_MODE_CONNECTOR_eDP) {
+		reg &= ~RK3399_VOP_EDP_POL;
+		reg |= pin_polarity << RK3399_DSP_BG;
+	}
+	else {
+		/* HDMI */
+		reg &= ~DSP_CTRL1_HDMI_POL_M;
+		reg |= pin_polarity << DSP_CTRL1_HDMI_POL_S;
+	}
 	VOP_WRITE(sc, RK3399_DSP_CTRL1, reg);
+
 }
 
 static int
@@ -461,17 +467,26 @@ rk_crtc_atomic_enable(struct drm_crtc *crtc, struct drm_crtc_state *old_state)
 		pol |= (1 << HSYNC_POSITIVE);
 	if (adj->flags & DRM_MODE_FLAG_PVSYNC)
 		pol |= (1 << VSYNC_POSITIVE);
-	rk_vop_set_polarity(sc, pol);
+
+	rk_vop_set_polarity(sc, pol,sc->connector_type);
+
+
 
 	/* Remove standby bit */
 	reg = VOP_READ(sc, RK3399_SYS_CTRL);
 	reg &= ~SYS_CTRL_STANDBY_EN;
 	VOP_WRITE(sc, RK3399_SYS_CTRL, reg);
 
-	/* Enable HDMI output only. */
 	reg = VOP_READ(sc, RK3399_SYS_CTRL);
 	reg &= ~SYS_CTRL_ALL_OUT_EN;
-	reg |= SYS_CTRL_HDMI_OUT_EN;
+        switch(sc->connector_type) {
+	case DRM_MODE_CONNECTOR_eDP: {
+		reg |= SYS_CTRL_EDP_OUT_EN;
+		break;
+	}
+	default:
+		reg |= SYS_CTRL_HDMI_OUT_EN;
+	}
 	VOP_WRITE(sc, RK3399_SYS_CTRL, reg);
 
 	dprintf("SYS_CTRL %x\n", VOP_READ(sc, RK3399_SYS_CTRL));
@@ -565,23 +580,24 @@ rk_vop_add_encoder(struct rk_vop_softc *sc, struct drm_device *drm)
 {
 	phandle_t node;
 	device_t dev;
-	int ret;
+	int ret,i;
 
 	node = ofw_bus_get_node(sc->dev);
 	if (node == 0)
 		return (ENOENT);
+        for(i=1;i<=2;i++) {
+		dev = ofw_graph_get_device_by_port_ep(ofw_bus_get_node(sc->dev),0, i);
+		if (dev != NULL) {
 
-	dev = ofw_graph_get_device_by_port_ep(ofw_bus_get_node(sc->dev),
-	    0, 2 /* HDMI */);
-	if (dev == NULL)
-		return (ENOENT);
+			sc->connector_type = strncmp(device_get_name(dev),"rk_edp",6)==0 ? DRM_MODE_CONNECTOR_eDP : DRM_MODE_CONNECTOR_HDMIA;
 
-	ret = DW_HDMI_ADD_ENCODER(dev, &sc->crtc, drm);
-	if (ret == 0)
-		return (ENODEV);
-
-	sc->outport = dev;
-
+			ret = DW_HDMI_ADD_ENCODER(dev, &sc->crtc, drm);
+			if (ret == 0)
+				return (ENODEV);
+			sc->outport = dev;
+			break;
+		}
+	}
 	return (0);
 
 }

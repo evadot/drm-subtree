@@ -27,7 +27,9 @@
 #include <linux/kernel.h>
 #include <linux/sched.h>
 #include <linux/seq_file.h>
+#ifdef __linux__
 #include <linux/iopoll.h>
+#endif
 
 #if IS_ENABLED(CONFIG_DRM_DEBUG_DP_MST_TOPOLOGY_REFS)
 #include <linux/stacktrace.h>
@@ -2116,9 +2118,11 @@ static void build_mst_prop_path(const struct drm_dp_mst_branch *mstb,
 int drm_dp_mst_connector_late_register(struct drm_connector *connector,
 				       struct drm_dp_mst_port *port)
 {
+#ifndef __FreeBSD__
 	DRM_DEBUG_KMS("registering %s remote bus for %s\n",
 		      port->aux.name, connector->kdev->kobj.name);
 
+#endif
 	port->aux.dev = connector->kdev;
 	return drm_dp_aux_register_devnode(&port->aux);
 }
@@ -2136,8 +2140,11 @@ EXPORT_SYMBOL(drm_dp_mst_connector_late_register);
 void drm_dp_mst_connector_early_unregister(struct drm_connector *connector,
 					   struct drm_dp_mst_port *port)
 {
+
+#ifndef __FreeBSD__
 	DRM_DEBUG_KMS("unregistering %s remote bus for %s\n",
 		      port->aux.name, connector->kdev->kobj.name);
+#endif
 	drm_dp_aux_unregister_devnode(&port->aux);
 }
 EXPORT_SYMBOL(drm_dp_mst_connector_early_unregister);
@@ -4424,10 +4431,23 @@ int drm_dp_check_act_status(struct drm_dp_mst_topology_mgr *mgr)
 	 */
 	const int timeout_ms = 3000;
 	int ret, status;
+#ifdef __FreeBSD__
+	int tries=0;
+	status = do_get_act_status(mgr->aux);
 
+	while(!(status & DP_PAYLOAD_ACT_HANDLED || status < 0)) {
+		DELAY(200);
+		status = do_get_act_status(mgr->aux);
+		tries++;
+		if(tries >=15000)
+			ret = -ETIMEDOUT;
+
+	}
+#elif defined( __linux__)
 	ret = readx_poll_timeout(do_get_act_status, mgr->aux, status,
 				 status & DP_PAYLOAD_ACT_HANDLED || status < 0,
 				 200, timeout_ms * USEC_PER_MSEC);
+#endif
 	if (ret < 0 && status >= 0) {
 		DRM_ERROR("Failed to get ACT after %dms, last status: %02x\n",
 			  timeout_ms, status);
@@ -5359,7 +5379,9 @@ static int drm_dp_mst_register_i2c_bus(struct drm_dp_aux *aux)
 	aux->ddc.class = I2C_CLASS_DDC;
 	aux->ddc.owner = THIS_MODULE;
 	aux->ddc.dev.parent = aux->dev;
+#ifndef __FreeBSD__
 	aux->ddc.dev.of_node = aux->dev->of_node;
+#endif
 
 	strlcpy(aux->ddc.name, aux->name ? aux->name : dev_name(aux->dev),
 		sizeof(aux->ddc.name));
