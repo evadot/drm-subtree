@@ -24,8 +24,9 @@ index 7243a4f35b94..2ca1b117bd50 100644
  files		"../../dev/drm/extra_patches/files.aw"
  files		"../../dev/drm/extra_patches/files.bridges"
  files		"../../dev/drm/extra_patches/files.rk"
+
 diff --git a/sys/conf/files.arm64 b/sys/conf/files.arm64
-index ab7b5eb3a2d6..6d3baa41b6dd 100644
+index 30358a5d67d..df6eb1ea169 100644
 --- a/sys/conf/files.arm64
 +++ b/sys/conf/files.arm64
 @@ -104,7 +104,7 @@ arm64/coresight/coresight_tmc_fdt.c		optional fdt
@@ -35,8 +36,5 @@ index ab7b5eb3a2d6..6d3baa41b6dd 100644
 -arm64/iommu/iommu_pmap.c			optional iommu
 +arm64/iommu/iommu_pmap.c			optional iommu | panfrost
  arm64/iommu/smmu.c				optional iommu
- arm64/iommu/smmu_acpi.c				optional acpi iommu
- arm64/iommu/smmu_quirks.c			optional iommu
--- 
-2.35.1
-
+ arm64/iommu/smmu_acpi.c				optional iommu acpi
+ arm64/iommu/smmu_fdt.c				optional iommu fdt
