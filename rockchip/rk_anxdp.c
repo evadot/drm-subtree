@@ -1,7 +1,7 @@
 /*-
  * SPDX-License-Identifier: BSD-2-Clause
  *
- * Copyright (c) 2021 Jesper Schmitz Mouridsen  <jsm@FreeBSD.org>
+ * Copyright (c) 2022 Jesper Schmitz Mouridsen  <jsm@FreeBSD.org>
  * Copyright (c) 2019 Jonathan A. Kollasch <jakllsch@kollasch.net>
 
  * Redistribution and use in source and binary forms, with or without
@@ -27,14 +27,39 @@
  *
  * $FreeBSD$
  */
+#include <sys/param.h>
+#include <sys/systm.h>
+#include <sys/bus.h>
+#include <sys/kernel.h>
+#include <sys/module.h>
 
-#include <sys/cdefs.h>
-__FBSDID("$FreeBSD$");
-#include "rk_edp.h"
+#include <dev/ofw/ofw_bus.h>
+#include <dev/ofw/ofw_bus_subr.h>
+#include <dev/extres/clk/clk.h>
+#include <dev/extres/syscon/syscon.h>
+#include <dev/extres/hwreset/hwreset.h>
+#include <dev/fdt/fdt_common.h>
+
+#include <dev/ofw/ofw_bus.h>
+#include <dev/ofw/ofw_bus_subr.h>
+#include <dev/drm/core/include/drm/drm_atomic_helper.h>
+#include <dev/drm/core/include/drm/drm_bridge.h>
+#include <dev/drm/core/include/drm/drm_dp_helper.h>
+#include <dev/drm/bridges/anxdp/anx_dp.h>
+struct rk_anxdp_softc {
+	struct anxdp_softc  sc_base;
+	device_t dev;
+	struct syscon *grf;
+	struct drm_encoder sc_encoder;
+	clk_t pclk;
+	clk_t dpclk;
+	clk_t grfclk;
+};
+
+DECLARE_CLASS(rk_anxdp_driver);
+
 #include "syscon_if.h"
-#include "dev/drm/bridges/anxdp/anx_dp.h"
 #include "dw_hdmi_if.h"
-//#include "iicbus_if.h"
 #define	 RK3399_GRF_SOC_CON20		0x6250
 #define  EDP_LCDC_SEL			BIT(5)
 
@@ -45,64 +70,80 @@ static struct ofw_compat_data   rkedp_compat_data[] = {
 
 };
 
-static struct resource_spec rk_edp_spec[]  = {
+static struct resource_spec rk_anxdp_spec[]  = {
 	{ SYS_RES_MEMORY,	0,	RF_ACTIVE },
 	{ SYS_RES_IRQ,		0,	RF_ACTIVE | RF_SHAREABLE },
 	{ -1,0}
 };
-static int rk_edp_probe(device_t dev);
-static int rk_edp_attach(device_t dev);
+static int rk_anxdp_probe(device_t dev);
+static int rk_anxdp_attach(device_t dev);
 
-static int rk_edp_add_encoder(device_t dev, struct drm_crtc *crtc, struct drm_device *drm);
+static int rk_anxdp_add_encoder(device_t dev, struct drm_crtc *crtc, struct drm_device *drm);
 
-#define	to_rk_anxdp_softc(x)	container_of(x, struct rk_edp_softc, sc_base)
+#define	to_rk_anxdp_softc(x)	container_of(x, struct rk_anxdp_softc, sc_base)
 #define	to_anxdp_encoder(x)	container_of(x, struct anxdp_softc, sc_encoder)
 
 
-static void rk_anxdp_select_input(struct rk_edp_softc *sc, u_int crtc_index)
+static bool
+rk_anxdp_encoder_mode_fixup(struct drm_encoder *encoder,
+    const struct drm_display_mode *mode, struct drm_display_mode *adjusted_mode)
 {
-	const uint32_t write_mask = EDP_LCDC_SEL << 16;
-	const uint32_t write_val = crtc_index == 0 ? EDP_LCDC_SEL : 0;
-	SYSCON_WRITE_4(sc->grf, RK3399_GRF_SOC_CON20, write_mask | write_val);
-
+	return true;
 }
-
 
 static void
-rk_anxdp_encoder_prepare(struct drm_encoder *encoder)
+rk_anxdp_encoder_mode_set(struct drm_encoder *encoder,
+    struct drm_display_mode *mode, struct drm_display_mode *adjusted)
 {
-	printf("%s:%d %s\n",__FILE__,__LINE__,__FUNCTION__);
-	struct anxdp_softc *sc_base;
-	struct rk_edp_softc *sc;
-	sc_base = container_of(encoder, struct anxdp_softc, sc_encoder);
-	sc = container_of(sc_base, struct rk_edp_softc, sc_base);
-
-	const u_int crtc_index = drm_crtc_index(encoder->crtc);
-
-	rk_anxdp_select_input(sc, crtc_index);
 }
+
+static void
+rk_anxdp_encoder_enable(struct drm_encoder *encoder)
+{
+}
+
+static void
+rk_anxdp_encoder_disable(struct drm_encoder *encoder)
+{
+}
+
+static void
+rk_anxdp_encoder_prepare(struct drm_encoder *encoder,struct drm_atomic_state * state)
+{
+	struct rk_anxdp_softc * const sc =container_of(encoder,struct rk_anxdp_softc,sc_encoder);
+
+	SYSCON_WRITE_4(sc->grf, RK3399_GRF_SOC_CON20, (EDP_LCDC_SEL | (EDP_LCDC_SEL) <<16));
+
+
+}
+
+
 
 static const struct drm_encoder_funcs rk_anxdp_encoder_funcs = {
 	.destroy = drm_encoder_cleanup,
 };
 
 static const struct drm_encoder_helper_funcs rk_anxdp_encoder_helper_funcs = {
-	.prepare = rk_anxdp_encoder_prepare,
+	.atomic_enable = rk_anxdp_encoder_prepare,
+	.mode_fixup = rk_anxdp_encoder_mode_fixup,
+	.mode_set = rk_anxdp_encoder_mode_set,
+	.enable = rk_anxdp_encoder_enable,
+	.disable = rk_anxdp_encoder_disable,
 };
 
-#define	to_rk_edp_softc(x)	container_of(x, struct rk_edp_softc, sc_base)
-#define	to_rk_edp_encoder(x)	container_of(x, struct rk_edp_softc, sc_encoder)
+#define	to_rk_anxdp_softc(x)	container_of(x, struct rk_anxdp_softc, sc_base)
+#define	to_rk_anxdp_encoder(x)	container_of(x, struct rk_anxdp_softc, sc_encoder)
 
 static device_method_t
-rk_edp_methods[] = {
-	DEVMETHOD(device_probe,		rk_edp_probe),
-	DEVMETHOD(device_attach,	rk_edp_attach),
-	DEVMETHOD(dw_hdmi_add_encoder,  rk_edp_add_encoder),
+rk_anxdp_methods[] = {
+	DEVMETHOD(device_probe,		rk_anxdp_probe),
+	DEVMETHOD(device_attach,	rk_anxdp_attach),
+	DEVMETHOD(dw_hdmi_add_encoder,  rk_anxdp_add_encoder),
 	DEVMETHOD_END
 };
 
 static int
-rk_edp_probe(device_t dev){
+rk_anxdp_probe(device_t dev){
 
 	if (!ofw_bus_status_okay(dev))
 		return (ENXIO);
@@ -110,21 +151,21 @@ rk_edp_probe(device_t dev){
 	if (ofw_bus_search_compatible(dev, rkedp_compat_data)->ocd_data == 0)
 		return (ENXIO);
 
-	device_set_desc(dev, "RockChip edp");
+	device_set_desc(dev, "RockChip Analogix DP");
 	return (BUS_PROBE_DEFAULT);
 }
 static int
-rk_edp_attach(device_t dev)
+rk_anxdp_attach(device_t dev)
 {
-	struct rk_edp_softc *sc;
+	struct rk_anxdp_softc *sc;
 	phandle_t node;
 	int error;
 
 
 	sc = device_get_softc(dev);
-	mtx_init(&sc->sc_base.mtx, device_get_nameunit(dev), "rk_edp", MTX_DEF);
+
 	node = ofw_bus_get_node(dev);
-	if (bus_alloc_resources(dev,rk_edp_spec, sc->sc_base.res)!=0) {
+	if (bus_alloc_resources(dev,rk_anxdp_spec, sc->sc_base.res)!=0) {
 		device_printf(dev, "could not allocate resources\n");
 		return (ENXIO);
 	}
@@ -169,7 +210,7 @@ rk_edp_attach(device_t dev)
 	}
 
 	sc->dev=dev;
-
+	OF_device_register_xref(OF_xref_from_node(node),sc->dev);
 	sc->sc_base.sc_dev=dev;
 	anxdp_attach(&sc->sc_base);
 	return (0);
@@ -177,24 +218,28 @@ rk_edp_attach(device_t dev)
 }
 
 static int
-rk_edp_add_encoder(device_t dev, struct drm_crtc *crtc, struct drm_device *drm)
+rk_anxdp_add_encoder(device_t dev, struct drm_crtc *crtc, struct drm_device *drm)
 {
-	struct rk_edp_softc *sc;
+	struct rk_anxdp_softc *sc;
+	int error = 0;
 	sc = device_get_softc(dev);
-	drm_encoder_helper_add(&sc->sc_base.sc_encoder,&rk_anxdp_encoder_helper_funcs);
-	sc->sc_base.sc_encoder.possible_crtcs = drm_crtc_mask(crtc);
-	drm_encoder_init(drm, &sc->sc_base.sc_encoder, &rk_anxdp_encoder_funcs,
+
+	drm_encoder_helper_add(&sc->sc_encoder,&rk_anxdp_encoder_helper_funcs);
+	sc->sc_encoder.possible_crtcs = drm_crtc_mask(crtc);
+
+	drm_encoder_init(drm, &sc->sc_encoder, &rk_anxdp_encoder_funcs,
 	    DRM_MODE_ENCODER_TMDS, NULL);
-	rk_anxdp_select_input(sc,crtc->index);
-	anxdp_add_bridge(&sc->sc_base,&sc->sc_base.sc_encoder);
-	return (0);
+	sc->sc_base.sc_connector.base.connector_type = DRM_MODE_CONNECTOR_eDP;
+
+	error = anxdp_bind(&sc->sc_base, &sc->sc_encoder);
+
+	return error;
 }
 
 
-static devclass_t rk_edp_devclass;
-DEFINE_CLASS_1(rk_edp, rk_edp_driver, rk_edp_methods,
-    sizeof(struct rk_edp_softc), anxdp_driver);
+DEFINE_CLASS_1(rk_anxdp, rk_anxdp_driver, rk_anxdp_methods,
+    sizeof(struct rk_anxdp_softc), anxdp_driver);
 
-EARLY_DRIVER_MODULE(rk_edp, simplebus, rk_edp_driver,rk_edp_devclass,
-    0,0,BUS_PASS_SUPPORTDEV + BUS_PASS_ORDER_EARLY);
-MODULE_VERSION(rk_edp, 1);
+EARLY_DRIVER_MODULE(rk_anxdp, simplebus, rk_anxdp_driver,
+0,0, BUS_PASS_SUPPORTDEV + BUS_PASS_ORDER_EARLY);
+MODULE_VERSION(rk_anxdp, 1);

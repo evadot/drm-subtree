@@ -35,20 +35,11 @@
 #include <sys/param.h>
 #include <sys/malloc.h>
 #include <dev/iicbus/iiconf.h>
-#include <linux/device.h>
+
 /* I2C compatibility. */
 #define	I2C_M_RD	IIC_M_RD
 #define	I2C_M_WR	IIC_M_WR
 #define	I2C_M_NOSTART	IIC_M_NOSTART
-#define	I2C_M_STOP	0x0004
-/* No need for us */
-#define I2C_FUNC_I2C                    0
-#define I2C_FUNC_SMBUS_EMUL             0
-#define I2C_FUNC_SMBUS_READ_BLOCK_DATA  0
-#define I2C_FUNC_SMBUS_BLOCK_PROC_CALL  0
-#define I2C_FUNC_10BIT_ADDR             0
-
-#define	I2C_CLASS_DDC	0x8
 
 struct i2c_msg {
 	uint16_t 	addr;
@@ -61,35 +52,15 @@ struct i2c_adapter
 {
 	device_t bsddev;	
 	char name[20];
-	const struct i2c_lock_operations *lock_ops;
-        const struct i2c_algorithm *algo;
-	void				*algo_data;
-	int retries;
-	struct module			*owner;
-	unsigned int			class; /* I2C_CLASS_* */
-	struct {
-		device_t	parent;
-	}	dev;
 	
 };
-struct i2c_algorithm {
-        int (*master_xfer)(struct i2c_adapter *, struct i2c_msg *, int);
-        uint32_t (*functionality)(struct i2c_adapter *);
-};
-
-struct i2c_lock_operations {
-        void (*lock_bus)(struct i2c_adapter *, unsigned int);
-        int (*trylock_bus)(struct i2c_adapter *, unsigned int);
-        void (*unlock_bus)(struct i2c_adapter *, unsigned int);
-};
-
 
 static inline struct i2c_adapter *
 i2c_bsd_adapter(device_t dev)
 {
 	struct i2c_adapter *adap;
 	
-	adap =  malloc(sizeof(struct i2c_adapter), M_TEMP, M_WAITOK | M_ZERO);
+	adap =  malloc(sizeof(struct i2c_adapter), M_TEMP, M_WAITOK);
 	adap->bsddev = dev;
 	strcpy(adap->name, "emulated-i2c");
 	return (adap);
@@ -98,57 +69,24 @@ i2c_bsd_adapter(device_t dev)
 static inline int 
 i2c_transfer (struct i2c_adapter *adap, struct i2c_msg *msgs, int num)
 {
-
-        int ret,retries = 0;
-        retries = adap->retries == 0 ? 1 : adap->retries;
-
-	if (adap->lock_ops)
-		adap->lock_ops->lock_bus(adap, 0);
-	if (adap->algo != NULL && adap->algo->master_xfer != NULL) {
-		for (; retries != 0; retries--) {
-			ret = adap->algo->master_xfer(adap, msgs, num);
-			if (ret != -EAGAIN)
-				break;
-		}
-
-	} else {
-			    struct iic_msg *bsd_msgs;
-				int i;
-
-				bsd_msgs = malloc(sizeof(struct iic_msg) * num, M_TEMP, M_WAITOK);
-				memcpy(bsd_msgs, msgs, sizeof(struct iic_msg) * num);
-				/*inux uses 7-bit addresses but FreeBSD 8-bit */
-				for (i = 0; i < num; i++) {
-					bsd_msgs[i].slave = msgs[i].addr << 1;
-					bsd_msgs[i].flags = msgs[i].flags;
-					bsd_msgs[i].len = msgs[i].len;
-					bsd_msgs[i].buf = msgs[i].buf;
-				}
-
-				ret = iicbus_transfer(adap->bsddev, bsd_msgs, num);
-				free(bsd_msgs, M_TEMP);
-				if (ret !=0)
-					ret = (-ret);
+	struct iic_msg *bsd_msgs;
+	int i, ret;
+	
+	bsd_msgs = malloc(sizeof(struct iic_msg) * num, M_TEMP, M_WAITOK);
+	memcpy(bsd_msgs, msgs, sizeof(struct iic_msg) * num);
+	/* Linux uses 7-bit addresses but FreeBSD 8-bit */
+	for (i = 0; i < num; i++) {
+		bsd_msgs[i].slave = msgs[i].addr << 1;
+		bsd_msgs[i].flags = msgs[i].flags;
+		bsd_msgs[i].len = msgs[i].len;
+		bsd_msgs[i].buf = msgs[i].buf;
 	}
-	if (adap->lock_ops)
-		adap->lock_ops->unlock_bus(adap, 0);
-				if (ret < 0)
-					return (ret);
-
-				return (num);
-
-
-}
-static inline int
-i2c_add_adapter(struct i2c_adapter *adapter __unused)
-{
-
-	return 0;
-}
-
-static inline void
-i2c_del_adapter(struct i2c_adapter *adapter __unused)
-{
+	 
+	ret = iicbus_transfer(adap->bsddev, bsd_msgs, num);
+	free(bsd_msgs, M_TEMP);
+	if (ret != 0)
+		return (-ret);
+	return (num);
 }
  	
 #endif	/* __DRMCOMPAT_LINUX_I2C_H__ */

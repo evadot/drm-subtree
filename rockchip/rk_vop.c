@@ -585,13 +585,13 @@ rk_vop_add_encoder(struct rk_vop_softc *sc, struct drm_device *drm)
 	node = ofw_bus_get_node(sc->dev);
 	if (node == 0)
 		return (ENOENT);
-        for(i=1;i<=2;i++) {
+	for(i=1;i<=2;i++) {
 		dev = ofw_graph_get_device_by_port_ep(ofw_bus_get_node(sc->dev),0, i);
 		if (dev != NULL) {
 
-			sc->connector_type = strncmp(device_get_name(dev),"rk_edp",6)==0 ? DRM_MODE_CONNECTOR_eDP : DRM_MODE_CONNECTOR_HDMIA;
-
+			sc->connector_type = strncmp(device_get_name(dev),"rk_anxdp",8)==0 ? DRM_MODE_CONNECTOR_eDP : DRM_MODE_CONNECTOR_HDMIA;
 			ret = DW_HDMI_ADD_ENCODER(dev, &sc->crtc, drm);
+
 			if (ret == 0)
 				return (ENODEV);
 			sc->outport = dev;
@@ -646,7 +646,6 @@ static driver_t rk_vop_driver = {
 	sizeof(struct rk_vop_softc)
 };
 
-static devclass_t rk_vop_devclass;
 EARLY_DRIVER_MODULE(rk_vop, simplebus, rk_vop_driver,
-    rk_vop_devclass, 0, 0, BUS_PASS_INTERRUPT + BUS_PASS_ORDER_LAST);
+    0, 0, BUS_PASS_INTERRUPT + BUS_PASS_ORDER_LAST);
 MODULE_VERSION(rk_vop, 1);

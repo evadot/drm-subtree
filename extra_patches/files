@@ -15,7 +15,7 @@ dev/drm/core/drm_connector.c			optional compat_drmcompat drm compile-with "${DRM
 dev/drm/core/drm_crtc.c				optional compat_drmcompat drm compile-with "${DRM_C}"
 dev/drm/core/drm_crtc_helper.c			optional compat_drmcompat drm compile-with "${DRM_C}"
 dev/drm/core/drm_dp_helper.c                    optional compat_drmcompat drm compile-with "${DRM_C}"
-dev/drm/core/drm_dp_mst_topology.c              optional compat_drmcompat drm compile-with "${DRM_C}"
+#dev/drm/core/drm_dp_mst_topology.c              optional compat_drmcompat drm compile-with "${DRM_C}"
 dev/drm/core/drm_damage_helper.c		optional compat_drmcompat drm compile-with "${DRM_C}"
 dev/drm/core/drm_drv.c				optional compat_drmcompat drm compile-with "${DRM_C}"
 dev/drm/core/drm_dumb_buffers.c			optional compat_drmcompat drm compile-with "${DRM_C}"

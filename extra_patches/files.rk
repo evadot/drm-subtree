@@ -4,4 +4,4 @@ dev/drm/rockchip/rk_gem.c		optional drm fdt rk_drm compile-with "${DRM_C}"
 dev/drm/rockchip/rk_plane.c		optional drm fdt rk_drm compile-with "${DRM_C}"
 dev/drm/rockchip/rk_vop.c		optional drm fdt rk_drm compile-with "${DRM_C}"
 dev/drm/rockchip/rk_vop_if.m		optional drm fdt rk_drm
-dev/drm/rockchip/rk_edp.c		optional drm fdt rk_edp compile-with "${DRM_C}"
+dev/drm/rockchip/rk_anxdp.c		optional drm fdt rk_anxdp compile-with "${DRM_C}"
