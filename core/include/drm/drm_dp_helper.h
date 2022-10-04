@@ -22,8 +22,10 @@
 
 #ifndef _DRM_DP_HELPER_H_
 #define _DRM_DP_HELPER_H_
-
+#include <linux/mutex.h>
+#include <linux/workqueue.h>
 #include <linux/delay.h>
+#include <linux/device.h>
 #include <linux/i2c.h>
 #include <linux/types.h>
 

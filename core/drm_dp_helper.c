@@ -302,10 +302,11 @@ ssize_t drm_dp_dpcd_read(struct drm_dp_aux *aux, unsigned int offset,
 		if (ret != 1)
 			goto out;
 	}
-
-	if (aux->is_remote)
+#ifdef __linux__
+	If (aux->is_remote)
 		ret = drm_dp_mst_dpcd_read(aux, offset, buffer, size);
 	else
+#endif
 		ret = drm_dp_dpcd_access(aux, DP_AUX_NATIVE_READ, offset,
 					 buffer, size);
 
@@ -333,10 +334,11 @@ ssize_t drm_dp_dpcd_write(struct drm_dp_aux *aux, unsigned int offset,
 			  void *buffer, size_t size)
 {
 	int ret;
-
+#ifdef __linux
 	if (aux->is_remote)
 		ret = drm_dp_mst_dpcd_write(aux, offset, buffer, size);
 	else
+#endif
 		ret = drm_dp_dpcd_access(aux, DP_AUX_NATIVE_WRITE, offset,
 					 buffer, size);
 
@@ -597,7 +599,7 @@ EXPORT_SYMBOL(drm_dp_downstream_debug);
 /*
  * I2C-over-AUX implementation
  */
-
+#ifdef __linux__
 static u32 drm_dp_i2c_functionality(struct i2c_adapter *adapter)
 {
 	return I2C_FUNC_I2C | I2C_FUNC_SMBUS_EMUL |
@@ -605,7 +607,7 @@ static u32 drm_dp_i2c_functionality(struct i2c_adapter *adapter)
 	       I2C_FUNC_SMBUS_BLOCK_PROC_CALL |
 	       I2C_FUNC_10BIT_ADDR;
 }
-
+#endif
 static void drm_dp_i2c_msg_write_status_update(struct drm_dp_aux_msg *msg)
 {
 	/*
@@ -821,7 +823,9 @@ static void drm_dp_i2c_msg_set_request(struct drm_dp_aux_msg *msg,
 {
 	msg->request = (i2c_msg->flags & I2C_M_RD) ?
 		DP_AUX_I2C_READ : DP_AUX_I2C_WRITE;
-	if (!(i2c_msg->flags & I2C_M_STOP))
+#ifdef __linux__
+	if (!(i2c_msg->flags & IIC_M_STOP))
+#endif
 		msg->request |= DP_AUX_I2C_MOT;
 }
 
@@ -862,11 +866,13 @@ static int dp_aux_i2c_transfer_size __read_mostly = DP_AUX_MAX_PAYLOAD_BYTES;
 module_param_unsafe(dp_aux_i2c_transfer_size, int, 0644);
 MODULE_PARM_DESC(dp_aux_i2c_transfer_size,
 		 "Number of bytes to transfer in a single I2C over DP AUX CH message, (1-16, default 16)");
-
+#ifdef __linux__
 static int drm_dp_i2c_xfer(struct i2c_adapter *adapter, struct i2c_msg *msgs,
 			   int num)
 {
+
 	struct drm_dp_aux *aux = adapter->algo_data;
+
 	unsigned int i, j;
 	unsigned transfer_size;
 	struct drm_dp_aux_msg msg;
@@ -937,7 +943,7 @@ static const struct i2c_algorithm drm_dp_i2c_algo = {
 	.functionality = drm_dp_i2c_functionality,
 	.master_xfer = drm_dp_i2c_xfer,
 };
-
+#endif
 static struct drm_dp_aux *i2c_to_aux(struct i2c_adapter *i2c)
 {
 	return container_of(i2c, struct drm_dp_aux, ddc);
@@ -957,13 +963,13 @@ static void unlock_bus(struct i2c_adapter *i2c, unsigned int flags)
 {
 	mutex_unlock(&i2c_to_aux(i2c)->hw_mutex);
 }
-
+#ifdef __linux__
 static const struct i2c_lock_operations drm_dp_i2c_lock_ops = {
 	.lock_bus = lock_bus,
 	.trylock_bus = trylock_bus,
 	.unlock_bus = unlock_bus,
 };
-
+#endif
 static int drm_dp_aux_get_crc(struct drm_dp_aux *aux, u8 *crc)
 {
 	u8 buf, count;
@@ -1063,12 +1069,12 @@ void drm_dp_aux_init(struct drm_dp_aux *aux)
 	mutex_init(&aux->hw_mutex);
 	mutex_init(&aux->cec.lock);
 	INIT_WORK(&aux->crc_work, drm_dp_aux_crc_work);
-
+#ifdef __linux__
 	aux->ddc.algo = &drm_dp_i2c_algo;
 	aux->ddc.algo_data = aux;
 	aux->ddc.retries = 3;
-
 	aux->ddc.lock_ops = &drm_dp_i2c_lock_ops;
+#endif
 }
 EXPORT_SYMBOL(drm_dp_aux_init);
 
@@ -1091,27 +1097,35 @@ EXPORT_SYMBOL(drm_dp_aux_init);
 int drm_dp_aux_register(struct drm_dp_aux *aux)
 {
 	int ret;
-
+#ifdef __linux__
 	if (!aux->ddc.algo)
+#else
+	if (!aux->ddc.bsddev)
+#endif
 		drm_dp_aux_init(aux);
 
+#ifdef __linux__
 	aux->ddc.class = I2C_CLASS_DDC;
 	aux->ddc.owner = THIS_MODULE;
 	aux->ddc.dev.parent = aux->dev;
 
 	strlcpy(aux->ddc.name, aux->name ? aux->name : dev_name(aux->dev),
 		sizeof(aux->ddc.name));
-
+#else
+	aux->ddc.bsddev = aux->dev;
+	strlcpy(aux->ddc.name, aux->name ? aux->name : device_get_name(aux->dev),
+	sizeof(aux->ddc.name));
+#endif
 	ret = drm_dp_aux_register_devnode(aux);
 	if (ret)
 		return ret;
-
+#ifdef __linux__
 	ret = i2c_add_adapter(&aux->ddc);
 	if (ret) {
 		drm_dp_aux_unregister_devnode(aux);
 		return ret;
 	}
-
+#endif
 	return 0;
 }
 EXPORT_SYMBOL(drm_dp_aux_register);
@@ -1123,7 +1137,9 @@ EXPORT_SYMBOL(drm_dp_aux_register);
 void drm_dp_aux_unregister(struct drm_dp_aux *aux)
 {
 	drm_dp_aux_unregister_devnode(aux);
+#ifdef __linux__
 	i2c_del_adapter(&aux->ddc);
+#endif
 }
 EXPORT_SYMBOL(drm_dp_aux_unregister);
 
